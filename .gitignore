@@ -1,0 +1,35 @@
+# ── Raw data (6.9 GB — download via code/01_download/) ───────────────────────
+data/raw/
+
+# ── Clean data files too large for GitHub (> 100 MB) ─────────────────────────
+data/clean/candidate_vote_panel.csv
+
+# ── LaTeX compilation artifacts ───────────────────────────────────────────────
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# ── R ─────────────────────────────────────────────────────────────────────────
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+desktop.ini
+Thumbs.db
+*.tmp

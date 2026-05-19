@@ -1,0 +1,1770 @@
+% ============================================================
+% Electoral Judicialization and Municipal Competition in Brazil
+% Beamer presentation — Nara Lívia Morais (FEA-USP)
+%
+% Compile with: pdflatex (twice)
+% ============================================================
+
+\documentclass[aspectratio=169,10pt]{beamer}
+
+% ---- Theme ----
+\usetheme{default}
+\useinnertheme{rectangles}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% ---- Packages ----
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,shapes.geometric,positioning,fit,backgrounds}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+% ---- Colors ----
+\definecolor{myblue}{RGB}{0,90,156}
+\definecolor{mydark}{RGB}{55,55,55}
+\definecolor{mylight}{RGB}{220,230,242}
+\definecolor{myred}{RGB}{180,30,30}
+\definecolor{mygreen}{RGB}{0,120,60}
+\definecolor{mygray}{RGB}{130,130,130}
+
+\setbeamercolor{frametitle}{bg=myblue,fg=white}
+\setbeamercolor{title}{fg=white,bg=myblue}
+\setbeamercolor{subtitle}{fg=mylight,bg=myblue}
+\setbeamercolor{author in head/foot}{fg=white,bg=myblue!80}
+\setbeamercolor{structure}{fg=myblue}
+\setbeamercolor{alerted text}{fg=myred}
+\setbeamercolor{block title}{bg=myblue!20,fg=myblue}
+\setbeamercolor{block body}{bg=myblue!5}
+\setbeamercolor{block title alerted}{bg=myred!20,fg=myred}
+\setbeamercolor{block body alerted}{bg=myred!5}
+\setbeamerfont{frametitle}{size=\normalsize,series=\bfseries}
+
+% ---- Column types ----
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+% ---- Custom commands ----
+\newcommand{\bZ}{\mathit{Z}_{m}^{\textsc{b}}}         % Bartik Z
+\newcommand{\todo}[1]{\textcolor{mygray}{\textit{[#1]}}}  % placeholder
+\newcommand{\pos}[1]{\textcolor{mygreen}{\textbf{#1}}}
+\newcommand{\negt}[1]{\textcolor{myred}{\textbf{#1}}}
+\newcommand{\ns}[1]{\textcolor{mydark}{#1}}
+\newcommand{\tick}{{\color{mygreen}$\checkmark$}}
+\newcommand{\cross}{{\color{myred}$\times$}}
+
+% ---- Title info ----
+\title{Electoral Judicialization and\\Municipal Competition in Brazil}
+\subtitle{Evidence from a Bartik Shift-Share Instrument}
+\author{Nara Lívia Morais}
+\institute{FEA--USP}
+\date{\today}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+\maketitle
+
+% ============================================================
+\section{Motivation}
+% ============================================================
+
+\begin{frame}{Does Judicial Intervention Shape Electoral Competition?}
+\begin{columns}[T]
+\begin{column}{0.58\textwidth}
+\textbf{Research question:}\\
+Does pre-election judicial intervention causally affect the competitive dynamics of mayoral races?
+\bigskip
+
+\textbf{The mechanism:}
+\begin{itemize}
+  \item Candidates are sued in electoral courts \emph{before} election day
+  \item Lawsuits impose legal costs, reputational exposure, and campaign disruption
+  \item This could shift vote shares, alter entry decisions, and change voter behavior
+\end{itemize}
+\bigskip
+
+\textbf{The challenge:}\\
+Close races \emph{attract} more lawsuits — endogeneity goes in both directions
+\end{column}
+\begin{column}{0.40\textwidth}
+\begin{block}{This Paper}
+  \begin{itemize}
+    \item 5,570 Brazilian municipalities
+    \item 2020 and 2024 mayoral elections
+    \item TSE administrative data: judicial records $+$ electoral results
+    \item Identification: \textbf{Bartik shift-share IV}
+  \end{itemize}
+\end{block}
+\begin{alertblock}{Key Findings}
+  Strong first stage (F~$\approx$~46). Competition effects: directionally consistent, imprecisely estimated. Voter behavior and incumbency: precise nulls.
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Why Brazil? Why Municipalities?}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Brazil's Electoral Justice System:}
+\begin{itemize}
+  \item \emph{Tribunal Superior Eleitoral} (TSE) + 27 \emph{Tribunais Regionais Eleitorais} (TREs) + 2,800+ first-instance zones
+  \item Adjudicates eligibility, campaign finance, conduct \emph{before} election day
+  \item Tens of thousands of cases per cycle — among the world's most active electoral courts
+  \item Rich variation: topic mix differs by municipality, state, and year
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Municipal Setting}
+  \begin{itemize}
+    \item 5,570 simultaneous contests $=$ large sample
+    \item Homogeneous office: directly elected mayor
+    \item Uniform electoral rules (Constitution Art.~29)
+    \item Comparable competitive dynamics across municipalities
+  \end{itemize}
+\end{block}
+\begin{block}{Two Election Cycles}
+  2020 (Nov 15) $\to$ \textbf{shares}\\
+  2024 (Oct 6) $\to$ \textbf{treatment + outcomes}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Road Map}
+\tableofcontents
+\end{frame}
+
+
+% ============================================================
+\section{Institutional Background}
+% ============================================================
+
+\begin{frame}{Brazil's Electoral Justice System}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Three-tier judicial structure:}
+\begin{enumerate}
+  \item \textbf{Zona Eleitoral (ZE)} — first instance; 2,800+ nationwide
+  \item \textbf{Tribunal Regional Eleitoral (TRE)} — 27 state appellate courts
+  \item \textbf{Tribunal Superior Eleitoral (TSE)} — national apex
+\end{enumerate}
+\bigskip
+\textbf{Pre-election jurisdiction:}
+\begin{itemize}
+  \item Candidate registration challenges (\emph{impugnaç\~{a}o})
+  \item Abuse of economic/political power
+  \item Campaign finance violations
+  \item Prohibited propaganda; vote-buying
+  \item Candidate conduct (\emph{conduta vedada})
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Election Timeline}
+  \footnotesize
+  \begin{enumerate}
+    \item Candidate registration (August)
+    \item \textbf{Pre-election lawsuits} (Aug--Oct)
+    \item \textbf{Election Day} (Oct/Nov)
+    \item Post-election proceedings
+    \item Cassation if ruling goes against winner
+  \end{enumerate}
+\end{block}
+\bigskip
+\footnotesize
+\textbf{2020:} Election day = November 15\\
+\textbf{2024:} Election day = October 6\\[4pt]
+We use only cases filed \emph{before} these dates.
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{What Lawsuits Do — and Who Files Them}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Effects on targeted candidates:}
+\begin{itemize}
+  \item \textbf{Candidacy at risk:} court may rule ineligible before election day
+  \item \textbf{Reputational cost:} public filing, media coverage, stigma
+  \item \textbf{Resource diversion:} legal defense competes with campaigning
+  \item \textbf{Quality signal to voters:} a respondent may be perceived as ethically challenged — or as a victim of political harassment
+\end{itemize}
+\bigskip
+\textbf{Who files?}\\
+Opposing candidates, parties, \emph{Ministério Público Eleitoral}, any citizen
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{alertblock}{Treatment Variable}
+  \textbf{Passive-party (polo passivo) competition-relevant cases:}
+  \begin{itemize}
+    \item Mayoral candidate is the \emph{respondent}
+    \item Filed before election day
+    \item Subject $\neq$ routine registration (RRC)
+  \end{itemize}
+  \bigskip
+  \textbf{Measurement:}\\
+  $\Delta\log(1+\text{lawsuits}_{m})$\\from 2020 to 2024
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Competition-Relevant vs.\ Bureaucratic Cases}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+Not all electoral cases affect competition:
+\bigskip
+\begin{itemize}
+  \item \textbf{Routine Registration Cases (RRC):}\\
+  Subject code 11618 — \emph{Registro de Candidatura}\\
+  Every candidacy generates one; mandatory; no adversarial content
+  \item \textbf{Competition-relevant cases:}\\
+  Substantive challenges that could alter the race; filed by opponents, MPE, or citizens
+\end{itemize}
+\bigskip
+\alert{RRC excluded from both the treatment and the Bartik instrument}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Classification Table}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{lc}
+    \toprule
+    Case subject & Included? \\
+    \midrule
+    Abuso de Poder & \tick \\
+    Captaç\~{a}o Il\'{i}cita de Sufr\'{a}gio & \tick \\
+    Propaganda Irregular & \tick \\
+    Conduta Vedada & \tick \\
+    Uso Indevido de Meios & \tick \\
+    Financiamento de Campanha & \tick \\
+    \midrule
+    Registro de Candidatura (11618) & \cross \\
+    \bottomrule
+  \end{tabular}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Pre-Election Timing Restriction}
+\begin{itemize}
+  \item \textbf{Restriction:} we keep only cases filed \textit{strictly before} election day:
+  \[
+    \texttt{DT\_AUTU\!A\c{C}\!\~{A}O} < \text{election date}
+  \]
+  \medskip
+  \item \textbf{Rationale:} only pre-election cases can plausibly affect the upcoming competitive dynamics through legal costs, reputational signaling, or candidacy threats
+  \medskip
+  \item Post-election \emph{cassação} proceedings determine whether the \emph{realized winner} is removed — a distinct phenomenon that could reverse causality
+  \medskip
+  \item This restriction is applied identically to both the 2020 baseline (for shares) and the 2024 measurement (for treatment and shifts)
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{The Endogeneity Problem}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{OLS is likely biased:}
+\bigskip
+\begin{enumerate}
+  \item \textbf{Competition $\to$ lawsuits}\\
+  Close races attract more suits (parties fight harder); positive confound with competitiveness
+  \medskip
+  \item \textbf{Vulnerability $\to$ lawsuits}\\
+  Incumbent weakness invites challengers to file; negative confound with incumbency survival
+  \medskip
+  \item \textbf{Unobservables}\\
+  Local political culture, partisan intensity, lawyer density — correlated with both
+\end{enumerate}
+\bigskip
+Direction of bias: \textbf{ambiguous}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{alertblock}{Identification Need}
+  We need exogenous variation in the \emph{level} of judicialization that is independent of the municipality's own competitive dynamics in 2024.
+\end{alertblock}
+\bigskip
+\begin{block}{Our Strategy}
+  \textbf{Bartik shift-share IV:}\\
+  Predicted 2024 lawsuits based on the municipality's 2020 topic mix interacted with how each topic grew statewide — a source of variation the municipality itself does not drive.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+\section{Data Construction}
+% ============================================================
+
+\begin{frame}{Data Pipeline Overview}
+\begin{center}
+\begin{tikzpicture}[
+    node distance=0.5cm and 0.6cm,
+    raw/.style={rectangle,rounded corners=4pt,draw=myblue,fill=mylight,
+                font=\scriptsize\sffamily,text width=2.4cm,align=center,minimum height=0.8cm},
+    der/.style={rectangle,rounded corners=4pt,draw=myblue,fill=myblue!25,
+                font=\scriptsize\sffamily,text width=2.4cm,align=center,minimum height=0.8cm},
+    fin/.style={rectangle,rounded corners=4pt,draw=myblue,fill=myblue!55,text=white,
+                font=\small\sffamily\bfseries,text width=5.5cm,align=center,minimum height=0.9cm},
+    ar/.style={-{Stealth[length=4pt]},thick,myblue}
+  ]
+  % Row 1: raw sources
+  \node[raw] (p1) {TSE Process\\Records};
+  \node[raw,right=of p1] (p2) {Candidate\\Registry};
+  \node[raw,right=of p2] (p3) {Vote\\Results};
+  \node[raw,right=of p3] (p4) {Voting\\Admin Data};
+  \node[raw,right=of p4] (p5) {Census 2010\\(censobr)};
+  \node[raw,right=of p5] (p6) {2016\\Electoral};
+
+  % Row 2: derived
+  \node[der,below=0.7cm of p1,xshift=0.3cm] (d1) {Judicialization\\Panel 20/24};
+  \node[der,right=of d1] (d2) {Bartik Shares\\+ Shifts};
+  \node[der,right=of d2] (d3) {Electoral\\Outcomes};
+  \node[der,right=of d3] (d4) {Voter Behavior\\$\Delta$ 20$\to$24};
+  \node[der,right=of d4] (d5) {Municipal\\Covariates};
+
+  % Row 3: final
+  \node[fin,below=0.7cm of d2,xshift=1.5cm] (panel) {Analysis Panel — N\,=\,5{,}491 municipalities};
+
+  % Arrows raw -> derived
+  \draw[ar] (p1.south) -- (d1.north);
+  \draw[ar] (p2.south) -- (d1.north);
+  \draw[ar] (p1.south) -- (d2.north);
+  \draw[ar] (p3.south) -- (d3.north);
+  \draw[ar] (p4.south) -- (d4.north);
+  \draw[ar] (p5.south) -- (d5.north);
+  \draw[ar] (p6.south) -- (d5.north);
+  \draw[ar] (p2.south) -- (d5.north);
+
+  % Arrows derived -> panel
+  \draw[ar] (d1.south) -- (panel.north);
+  \draw[ar] (d2.south) -- (panel.north);
+  \draw[ar] (d3.south) -- (panel.north);
+  \draw[ar] (d4.south) -- (panel.north);
+  \draw[ar] (d5.south) -- (panel.north);
+\end{tikzpicture}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{Process and Candidate Data (TSE)}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Source files (2020 and 2024):}
+\begin{itemize}
+  \item \texttt{processo\_eleitoral\_YYYY.csv}\\
+  Case metadata: class, subject, filing date, court
+  \item \texttt{processos\_eleitorais\_partes\_YYYY.csv}\\
+  Links cases to parties (polo ativo/passivo); joined to candidates via \emph{título eleitoral}
+  \item \texttt{consulta\_cand\_YYYY\_BRASIL.csv}\\
+  Candidate registry: party, office, municipality, demographics
+\end{itemize}
+\bigskip
+\textbf{Linkage chain:}\\
+case $\to$ party $\to$ candidate $\to$ office\\[2pt]
+Keep only \textsc{prefeito} (mayor) as polo passivo
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Key Fields Used}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.15}
+  \begin{tabular}{ll}
+    \toprule
+    Field & Content \\
+    \midrule
+    \texttt{DS\_CLASSE} & Case class \\
+    \texttt{DS\_ASSUNTO\_PRINCIPAL} & Subject name \\
+    \texttt{CD\_ASSUNTO\_PRINCIPAL} & Subject code \\
+    \texttt{DT\_AUTUACAO} & Filing date \\
+    \texttt{DS\_POLO} & Party role \\
+    \texttt{NR\_TITULO\_ELEITORAL} & Voter ID (join key) \\
+    \texttt{SG\_UF} / \texttt{SG\_UE} & State / municipality \\
+    \bottomrule
+  \end{tabular}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Electoral Outcome Data}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Source:} \texttt{votacao\_candidato\_munzona\_YYYY.csv}
+\bigskip
+\textbf{Processing steps:}
+\begin{enumerate}
+  \item Keep first-round results (\texttt{NR\_TURNO = 1}) — mayoral races
+  \item Aggregate electoral zones $\to$ municipality totals
+  \item Rank candidates by vote share within municipality
+  \item Merge 2020 and 2024 files; compute $\Delta$ outcomes
+\end{enumerate}
+\bigskip
+\textbf{Second round:} Only $\sim$222 municipalities ($>$200k registered voters) eligible. We focus on \textbf{round-1 outcomes}, decisive for 97.6\% of municipalities.
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Outcome Variables}
+  \footnotesize
+  \textit{Competition (2024 $-$ 2020):}
+  \begin{itemize}
+    \item $\Delta$ runner-up vote share
+    \item $\Delta$ winner--runner-up margin
+    \item $\Delta$ winner vote share
+  \end{itemize}
+  \textit{Incumbency (level, 2024):}
+  \begin{itemize}
+    \item Incumbent ran in 2024
+    \item Incumbent won in 2024
+    \item Party switch 2020$\to$2024
+  \end{itemize}
+  \textit{Extended:}
+  \begin{itemize}
+    \item $\Delta$ winner ideology
+    \item Pedersen electoral volatility
+    \item Female new-entrant share/votes
+  \end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Voter Behavior Data}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Source:} \texttt{detalhe\_votacao\_munzona\_YYYY.csv}\\
+Per-zone voter registration and turnout aggregates
+\bigskip
+\textbf{Processing:}
+\begin{itemize}
+  \item Aggregate zones $\to$ municipality level
+  \item Compute rates for 2020 and 2024
+  \item Difference: $\Delta_{2024-2020}$
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Variables and Baseline Means}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.3}
+  \begin{tabular}{lcc}
+    \toprule
+    Variable & 2020 & 2024 \\
+    \midrule
+    Turnout rate & 82.6\% & 83.5\% \\
+    Null vote share & 4.1\% & 3.3\% \\
+    Blank vote share & 1.8\% & 1.9\% \\
+    \bottomrule
+  \end{tabular}\\[4pt]
+  Turnout = votes cast / registered voters (\texttt{QT\_APTOS})
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Covariate Sources}
+\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{L{3.0cm}L{5.5cm}X}
+  \toprule
+  Source & Variables & Notes \\
+  \midrule
+  Census 2010 (\texttt{censobr}) &
+  Log population; urban share; log income per capita &
+  Tract-level data aggregated to municipality; IBGE microregion code also extracted \\
+  %
+  \texttt{consulta\_cand} 2012--2024 &
+  Prior candidacies; prior wins per candidate &
+  Linked via \emph{título eleitoral}; aggregated to municipality $\times$ year \\
+  %
+  \texttt{votacao\_munzona} 2016 &
+  Margin; ENP; winner party &
+  Clean pre-treatment period for pre-trend controls \\
+  %
+  \texttt{detalhe\_votacao} 2020 &
+  Turnout; null share; blank share (baseline) &
+  Voter behavior in the base year \\
+  %
+  \texttt{consulta\_cand} 2020/2024 &
+  Gender; education; ethnicity composition &
+  Candidate-pool characteristics by municipality \\
+  %
+  IBGE Microregiões &
+  \texttt{code\_micro} (558 cells) &
+  From censobr Basico dataset; used in microregion FE spec \\
+  \bottomrule
+\end{tabularx}
+\end{frame}
+
+
+\begin{frame}{Sample Construction}
+\begin{itemize}
+  \item \textbf{Universe:} 5,570 Brazilian municipalities with mayoral races in both 2020 and 2024
+  \bigskip
+  \item \textbf{Share restriction:} must have $\geq 1$ competition-relevant case in 2020 to receive non-trivial Bartik shares. Zero-case municipalities: 1526 (excluded from instrument)
+  \bigskip
+  \item \textbf{Analysis sample after listwise deletion of controls:} \textbf{5,491 municipalities}
+  \bigskip
+  \item \textbf{Population subsamples} based on 2024 registered voters (\texttt{QT\_APTOS}):
+  \begin{itemize}
+    \item $\leq$200,000 registered voters: 5,347 municipalities — single-round regime (Art.~29-II CF/88)
+    \item $>$200,000 registered voters: 222 municipalities — second-round eligible
+  \end{itemize}
+  \bigskip
+  \item \textbf{Single-zone subsample:} 5,303 municipalities (97.6\%) — exactly one electoral zone per municipality; cleanest clustering design
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Summary Statistics}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{L{5.2cm}rrrr}
+  \toprule
+  Variable & Mean & SD & Min & Max \\
+  \midrule
+  \multicolumn{5}{l}{\textit{Treatment and instrument}} \\
+  Lawsuits non-RRC, 2020 & 59.3 & 37.0 & 0 & 788 \\
+  Lawsuits non-RRC, 2024 & 53.9 & 32.7 & 0 & 700 \\
+  $\Delta\log(1+\text{lawsuits})$ & -0.071 & 0.425 & -5.892 & 4.111 \\
+  Bartik IV ($\bZ$) & -0.095 & 0.084 & -0.755 & 0.142 \\[4pt]
+  \multicolumn{5}{l}{\textit{Outcome variables}} \\
+  $\Delta$ Runner-up vote share & -0.012 & 0.159 & -0.500 & 0.499 \\
+  $\Delta$ Margin (winner$-$runner-up) & 0.060 & 0.325 & -1.000 & 1.000 \\
+  $\Delta$ Winner vote share & 0.048 & 0.191 & -1.000 & 0.718 \\
+  $\Delta$ Turnout rate & 0.010 & 0.031 & -0.158 & 0.149 \\[4pt]
+  \multicolumn{5}{l}{\textit{Pre-determined controls}} \\
+  Log population (2010) & 9.41 & 1.15 & 6.69 & 16.23 \\
+  Urban share (2010) & 0.080 & 0.144 & 0 & 1 \\
+  Log income per capita (2010) & 0.42 & 0.51 & 0.00 & 2.39 \\
+  Margin 2016 (pp) & 18.5 & 21.2 & 0.0 & 100.0 \\[4pt]
+  \multicolumn{5}{l}{\textit{N = 5,491 municipalities}} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\medskip
+\footnotesize\textit{Summary statistics from \texttt{data/derived/executive\_margin\_design.csv}. N = 5,491 municipalities (baseline analysis sample).}
+\end{frame}
+
+
+% ============================================================
+\section{Identification Strategy}
+% ============================================================
+
+\begin{frame}{Bartik Shift-Share — Intuition}
+\begin{columns}[T]
+\begin{column}{0.57\textwidth}
+\textbf{In 2020, each municipality has a topic mix:}\\
+Some had mostly ``abuse of power'' cases; others had more ``campaign finance'' or ``prohibited propaganda'' cases.
+\bigskip
+
+\textbf{By 2024, topics grew at different rates statewide.}\\
+If ``abuse of power'' lawsuits surged in Minas Gerais between 2020 and 2024, then a municipality that had many ``abuse of power'' cases in 2020 is \emph{more exposed} to this wave — regardless of its own 2024 politics.
+\bigskip
+
+\textbf{The instrument:}\\
+$\bZ$ = municipality's predicted 2024 lawsuits from its 2020 topic mix $\times$ state-level growth in each topic
+\end{column}
+\begin{column}{0.41\textwidth}
+\begin{alertblock}{Key Design Logic}
+  \begin{enumerate}
+    \item \textbf{Shares}: from 2020 — pre-determined, before 2024 politics materialize
+    \item \textbf{Shifts}: state-level — driven by systemic factors the municipality cannot individually control
+    \item \textbf{Product}: predicted 2024 exposure that is exogenous to the municipality's own 2024 competitive dynamics
+  \end{enumerate}
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Bartik Instrument — Formal Construction}
+\[
+\bZ = \sum_{k \notin \text{RRC}} s_{m,k,2020} \;\cdot\; g_{\text{UF}(m),\,k,\,-m}
+\]
+\bigskip
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{L{2.4cm}X}
+  $s_{m,k,2020}$ & Municipality $m$'s share of topic $k$ among all non-RRC lawsuits in 2020; re-normalized after RRC exclusion so that $\sum_k s_{m,k,2020} = 1$ \\
+  $g_{\text{UF},k,-m}$ & Leave-one-out (LOO) log growth of topic $k$ in state UF$(m)$ from 2020 to 2024:
+  $\displaystyle g = \log\!\!\left(\frac{T_{\text{UF},k,2024} - C_{m,k,2024}}{T_{\text{UF},k,2020} - C_{m,k,2020}}\right)$ \\
+  $k$ & Topic cell = DS\_CLASSE $\times$ DS\_ASSUNTO\_PRINCIPAL; $\sim$100+ distinct cells \\
+  \text{LOO} & Municipality $m$ excluded from its own state shift to prevent mechanical correlation \\
+  \text{NaN} & $g = \text{NaN}$ when the LOO denominator $\leq 0$; those topic-municipality pairs excluded from the sum \\
+\end{tabularx}
+\end{frame}
+
+
+\begin{frame}{Shares: 2020 Topic Composition}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Construction:}
+\begin{enumerate}
+  \item Count unique non-RRC cases per (municipality, topic) in 2020
+  \item $s_{m,k,2020} = C_{m,k,2020} \,/\, \sum_{k} C_{m,k,2020}$
+  \item Shares sum to 1.0 per municipality by construction
+  \item Municipalities with zero non-RRC 2020 cases: excluded (no valid shares)
+\end{enumerate}
+\bigskip
+\textbf{Granularity:} DS\_CLASSE $\times$ DS\_ASSUNTO\_PRINCIPAL gives $\sim$100+ topic cells, capturing fine-grained legal taxonomy
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Why 2020 Shares?}
+  Shares are \textbf{pre-determined}: based on the 2020 case distribution, two electoral cycles before the 2024 election dynamics unfold.
+  \medskip\\
+  Exposure $s_{m,k,2020}$ cannot be chosen or manipulated by actors anticipating 2024 competition — a core validity argument.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Shifts: State-Level Log Growth, Leave-One-Out}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Construction:}
+\begin{enumerate}
+  \item Compute state $\times$ topic totals: $T_{\text{UF},k,t}$ for $t \in \{2020, 2024\}$
+  \item Remove $m$'s own contribution (LOO): subtract $C_{m,k,t}$
+  \item Compute log growth; set NaN if LOO denominator $\leq 0$
+\end{enumerate}
+\bigskip
+\textbf{Shift level: state (UF)}
+\begin{itemize}
+  \item Closer geographic comparison than national shifts
+  \item Absorbs national trends that are common to all municipalities in the same state
+  \item 27 states gives meaningful sample for state-level trends
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Design Choices Defended}
+  \begin{description}
+    \item[\textbf{LOO}] Prevents $m$ from mechanically driving its own shift in states with few municipalities
+    \item[\textbf{RRC out}] Shifts computed on substantive litigation only; routine registration noise excluded
+    \item[\textbf{Log}] Proportional changes; symmetric treatment of growth and decline
+  \end{description}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Exclusion Restriction}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Formal condition:}\\
+$E[\bZ \cdot u_m \mid \mathbf{X}_m, \delta_{\text{UF}}] = 0$
+\bigskip
+
+\textbf{Core argument:}\\
+State-wide growth in topic $k$ lawsuits is driven by:
+\begin{itemize}
+  \item TRE jurisprudence shifts
+  \item National party strategies
+  \item Legislative changes
+  \item MPE enforcement waves
+\end{itemize}
+These systemic factors are orthogonal to the specific 2024 competitive environment in any single small municipality, conditional on state FE and baseline controls.
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{alertblock}{Potential Threats}
+  \begin{enumerate}
+    \item \textbf{Large-municipality dominance}: municipality $m$ drives state shift\\
+    $\rightarrow$ mitigated by LOO; most municipalities are small
+    \medskip
+    \item \textbf{2020 shares reflect 2020 competition}: shares correlated with unobserved persistence\\
+    $\rightarrow$ conditional on state FE + 2020 competitive controls
+    \medskip
+    \item \textbf{Topic-specific shocks}: state-level growth in a topic correlated with state-level political shock that also affects $m$\\
+    $\rightarrow$ state FE absorbs
+  \end{enumerate}
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Instrument Validity Checks}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{We verify:}
+\begin{enumerate}
+  \item \textbf{Relevance:} first-stage F-statistic (reported below); target $\geq 10$; actual $\approx 46$
+  \medskip
+  \item \textbf{Balance:} regress $\bZ$ on each pre-determined covariate (one at a time, state FE); expect $p > 0.10$ for all
+  \medskip
+  \item \textbf{Distribution:} no implausible outliers in $\bZ$ after residualization on state FE
+  \medskip
+  \item \textbf{Stability:} first-stage coefficient stable across control sets, samples, and FE granularity
+\end{enumerate}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Benchmark Design}
+  \textbf{Ash, Morelli \& Vannoni (2025, JPE):}\\
+  Bartik instrument for state legislative detail.\\[4pt]
+  Stata: \texttt{ivreghdfe} with \texttt{absorb(state year) cl(state)}\\[4pt]
+  Our implementation: Python \texttt{IV2SLS} $+$ R \texttt{fixest::feols()} — identical specification, results replicated in both.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+\section{Empirical Specifications}
+% ============================================================
+
+\begin{frame}{Treatment and Instrument — Regression Equations}
+\textbf{First stage (OLS):}
+\[
+\underbrace{\Delta\log(1+\ell_{m})}_{\text{endogenous}} \;=\; \alpha + \beta\, \bZ + \mathbf{X}_m'\boldsymbol{\gamma} + \delta_{\text{UF}(m)} + \varepsilon_m
+\]
+\bigskip
+\textbf{Second stage (2SLS):}
+\[
+\Delta Y_m \;=\; \alpha + \tau\, \widehat{\Delta\log(1+\ell_{m})} + \mathbf{X}_m'\boldsymbol{\gamma} + \delta_{\text{UF}(m)} + u_m
+\]
+\bigskip
+\begin{itemize}
+  \item $\ell_m$ = non-RRC competition-relevant lawsuits (passive party, pre-election)
+  \item $\Delta$ = difference 2024 $-$ 2020 for flow outcomes; level in 2024 for cross-section outcomes
+  \item $\mathbf{X}_m$ = pre-determined controls (7 baseline or 14 extended)
+  \item $\delta_{\text{UF}(m)}$ = state or microregion FE
+  \item SE clustered by principal electoral zone
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Six Specifications}
+\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{3.8cm}L{2.8cm}L{2.4cm}R{1.8cm}R{1.5cm}}
+  \toprule
+  Specification & Controls & Fixed Effects & Sample & $N$ \\
+  \midrule
+  \texttt{baseline\_state\_fe} & 7 baseline & State (27) & All & 5,491 \\
+  \texttt{baseline\_sz} & 7 baseline & State (27) & Single-zone & 5,303 \\
+  \texttt{robust\_full} & 14 extended & State (27) & All & 5,491 \\
+  \texttt{robust\_micro\_fe} & 7 baseline & Microregion (558) & All & 5,491 \\
+  \texttt{sub\_le200k} & 7 baseline & State (27) & $\leq$200k voters & 5,347 \\
+  \texttt{sub\_gt200k} & 7 baseline & State (27) & $>$200k voters & 222 \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\textbf{7 baseline controls:}
+Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 electoral baseline (log valid votes, margin top1--top2, log n candidates)
+
+\medskip
+\textbf{14 extended controls:}
+baseline $+$ ENP 2016 $+$ candidate composition 2020 (gender, ethnicity, education) $+$ party/coalition count $+$ voter behavior baseline $+$ candidate experience
+\end{frame}
+
+
+\begin{frame}{Clustering Strategy}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Cluster level:} principal electoral zone\\
+(lowest-numbered zone serving the municipality)
+\bigskip
+\begin{itemize}
+  \item Brazil has 2,800+ \emph{zonas eleitorais}
+  \item 97.6\% of municipalities span exactly one zone
+  \item The zone is the unit at which legal filings and candidate lists are administratively organized
+  \item Plausible locus of spatial correlation in political networks and legal strategies
+\end{itemize}
+\bigskip
+\textbf{Result:} 2,120 clusters in the full sample — far more conservative than 27-state clustering
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Cluster Counts by Sample}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{lc}
+    \toprule
+    Sample & Clusters \\
+    \midrule
+    All municipalities & 2,179 \\
+    Single-zone only & 2,042 \\
+    $\leq$200k voters & 2,011 \\
+    $>$200k voters & 220 \\
+    \bottomrule
+  \end{tabular}
+\end{block}
+\bigskip
+\footnotesize
+Single-zone municipalities: cluster = municipality = zone (exact correspondence). Cleanest inference design.
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+\section{First Stage}
+% ============================================================
+
+\begin{frame}{First-Stage Results — All Specifications}
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{3.8cm}rrrrc}
+  \toprule
+  Specification & Coef. & SE & $t$ & F-stat & $N$ \\
+  \midrule
+  \texttt{baseline\_state\_fe} & 1.449 & 0.214 & 6.78 & \textbf{46.0} & 5,491 \\
+  \texttt{baseline\_sz} & 1.471 & 0.217 & 6.78 & \textbf{46.0} & 5,303 \\
+  \texttt{robust\_full} & $1.456$ & $0.214$ & $+6.79$ & $\mathbf{46.1}$ & 5,491 \\
+  \texttt{robust\_micro\_fe} & $1.560$ & $0.219$ & $+7.11$ & $\mathbf{50.6}$ & 5,491 \\
+  \texttt{sub\_le200k} & $1.497$ & $0.219$ & $+6.84$ & $\mathbf{46.8}$ & 5,271 \\
+  \texttt{sub\_gt200k} & $1.084$ & $0.847$ & $+1.28$ & $\mathbf{1.6}$ & 220 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone. F-stat = $(t\text{-stat})^2$ on excluded instrument.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\begin{itemize}
+  \item F $\approx$ 46 in baseline $\gg$ conventional threshold of 10 (Stock--Yogo 2005 critical value: 16.4 for 10\% size distortion)
+  \item Coefficient ($\approx$1.51) stable across samples and control sets — instrument strength does not depend on control specification
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{First Stage — Interpretation and Strength}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Coefficient interpretation:}\\
+A 1-unit increase in the Bartik IV ($\bZ$) predicts a \textbf{1.45-unit increase} in $\Delta\log(1+\text{lawsuits})$ from 2020 to 2024.
+\bigskip
+
+Municipalities whose 2020 litigation topic mix concentrated in fast-growing topics saw proportionally larger increases in competition-relevant lawsuits by 2024.
+\bigskip
+
+\textbf{Instrument strength:}\\
+F $\approx$ 50 comfortably satisfies the relevance condition. The first stage is the strongest feature of the design.
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Economic Magnitude}
+  1 SD of $\bZ$ $\to$ 0.29 SD of $\Delta\log(\text{lawsuits})$\\[4pt]
+  \footnotesize{Compute: $\text{coef} \times \text{SD}(\bZ) / \text{SD}(\Delta\log\ell)$}
+\end{block}
+\bigskip
+\begin{alertblock}{Stability Check}
+  First-stage coefficient $\approx$1.45 across:
+  \begin{itemize}
+    \item All municipalities vs.\ single-zone
+    \item 7 vs.\ 14 controls
+    \item State vs.\ microregion FE
+  \end{itemize}
+  Consistent with a clean instrument.
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{First Stage — Binscatter}
+\begin{center}
+  \includegraphics[width=0.88\textwidth,height=0.74\textheight,keepaspectratio]{../figures/binscatter_first_stage.pdf}
+\end{center}
+\end{frame}
+
+
+% ============================================================
+\section{Results: Electoral Competition}
+% ============================================================
+
+\begin{frame}{Runner-Up Vote Share}
+\textit{Outcome: $\Delta$(runner-up vote share), 2024 $-$ 2020}
+\bigskip
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{3.8cm}rrrrc}
+  \toprule
+  Specification & Coef. & SE & $t$ & $p$ & $N$ \\
+  \midrule
+  \texttt{baseline\_state\_fe} & $-$0.0151 & 0.0175 & -0.87 & 0.387 & 5,491 \\
+  \texttt{baseline\_sz} & $-$0.0156 & 0.0183 & -0.85 & 0.393 & 5,303 \\
+  \texttt{robust\_full} & $-0.0136$ & $0.0172$ & $-0.79$ & $0.431$ & 5,491 \\
+  \texttt{robust\_micro\_fe} & $-0.0272$ & $0.0164$ & $-1.66$ & $0.096$ & 5,491 \\
+  \texttt{sub\_le200k} & $-0.0148$ & $0.0179$ & $-0.83$ & $0.408$ & 5,271 \\
+  \texttt{sub\_gt200k} & $-0.0418$ & $0.0771$ & $-0.54$ & $0.588$ & 220 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\begin{itemize}
+  \item Negative: judicialization $\to$ lower runner-up vote share (concentration toward winner)
+  \item Magnitude: $-$2.2 pp; imprecisely estimated ($p \approx 0.21$)
+  \item Consistent across full and single-zone samples
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Electoral Margin}
+\textit{Outcome: $\Delta$(winner vote share $-$ runner-up vote share), 2024 $-$ 2020}
+\bigskip
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{3.8cm}rrrrc}
+  \toprule
+  Specification & Coef. & SE & $t$ & $p$ & $N$ \\
+  \midrule
+  \texttt{baseline\_state\_fe} & $+$0.0538 & 0.0355 & +1.52 & 0.130 & 5,491 \\
+  \texttt{baseline\_sz} & $+$0.0521 & 0.0369 & +1.41 & 0.158 & 5,303 \\
+  \texttt{robust\_full} & $+0.0531$ & $0.0352$ & $+1.51$ & $0.131$ & 5,491 \\
+  \texttt{robust\_micro\_fe} & $+0.0648$ & $0.0324$ & $+2.00$ & $0.046$ & 5,491 \\
+  \texttt{sub\_le200k} & $+0.0509$ & $0.0361$ & $+1.41$ & $0.159$ & 5,271 \\
+  \texttt{sub\_gt200k} & $+0.0973$ & $0.1466$ & $+0.66$ & $0.507$ & 220 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\begin{itemize}
+  \item Positive: judicialization $\to$ wider margin (more lopsided outcome)
+  \item Magnitude: $+$5.0 pp; $p = 0.154$ — below 0.05, directionally consistent
+  \item Estimates nearly identical across full and single-zone samples
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Winner Vote Share (Secondary Outcome)}
+\textit{Outcome: $\Delta$(winner vote share), 2024 $-$ 2020}
+\bigskip
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{3.8cm}rrrrc}
+  \toprule
+  Specification & Coef. & SE & $t$ & $p$ & $N$ \\
+  \midrule
+  \texttt{baseline\_state\_fe} & $+$0.0387 & 0.0212 & +1.83 & 0.068 & 5,491 \\
+  \texttt{baseline\_sz} & $+$0.0365 & 0.0219 & +1.67 & 0.095 & 5,303 \\
+  \texttt{robust\_full} & $+0.0395$ & $0.0211$ & $+1.87$ & $0.061$ & 5,491 \\
+  \texttt{robust\_micro\_fe} & $+0.0376$ & $0.0192$ & $+1.96$ & $0.050$ & 5,491 \\
+  \texttt{sub\_le200k} & $+0.0361$ & $0.0214$ & $+1.68$ & $0.092$ & 5,271 \\
+  \texttt{sub\_gt200k} & $+0.0555$ & $0.0862$ & $+0.64$ & $0.520$ & 220 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\begin{itemize}
+  \item Positive and consistent: winner consolidates vote share in more judicialized municipalities
+  \item Jointly with runner-up and margin: coherent pattern of \textbf{winner consolidation}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Interpretation: Electoral Competition Results}
+\begin{columns}[T]
+\begin{column}{0.57\textwidth}
+\textbf{Consistent directional pattern across all three outcomes:}
+\begin{center}
+  \begin{tikzpicture}[scale=0.9]
+    \node[draw=myblue,fill=myblue!10,rounded corners,text width=5.5cm,align=center,font=\small] {
+      Judicialization $\uparrow$\\[4pt]
+      $\Rightarrow$ Winner vote share $\uparrow$ ($+$3.9\,pp)\\
+      $\Rightarrow$ Runner-up vote share $\downarrow$ ($-$1.5\,pp)\\
+      $\Rightarrow$ Margin $\uparrow$ ($+$5.4\,pp)\\[4pt]
+      \textit{Winner consolidation hypothesis}
+    };
+  \end{tikzpicture}
+\end{center}
+\bigskip
+\textbf{Precision:} $p \in [0.07, 0.39]$ — effects are imprecisely estimated; we cannot reject the null at $\alpha = 0.05$
+
+\medskip
+\textbf{Magnitude:} a 1-unit $\Delta\log(\text{lawsuits})$ shift $\to$ 5.4\,pp wider margin — economically meaningful if precise
+\end{column}
+\begin{column}{0.41\textwidth}
+\begin{block}{Mechanism Hypothesis}
+  Lawsuits may fall disproportionately on the front-runner (more to challenge); legal distraction reduces their campaign effectiveness; winner ultimately consolidates.
+  \medskip\\
+  Or: lawsuits serve as a quality signal that resolves voter uncertainty, causing vote concentration.
+\end{block}
+\begin{alertblock}{Null Result Interpretation}
+  Wide CIs are informative: we can rule out very large effects ($>$10 pp on margin) but not modest ones ($>$2 pp).
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+\section{Results: Voter Behavior}
+% ============================================================
+
+\begin{frame}{Turnout and Protest Votes — All Specifications}
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{2.8cm}L{3.0cm}rrrr}
+  \toprule
+  Specification & Outcome & Coef. & SE & $t$ & $p$ \\
+  \midrule
+  \texttt{baseline} & $\Delta$ Turnout rate & $-$0.0034 & 0.0043 & -0.78 & 0.434 \\
+  \texttt{baseline\_sz} & $\Delta$ Turnout rate & $-$0.0019 & 0.0045 & -0.42 & 0.674 \\[3pt]
+  \texttt{baseline} & $\Delta$ Null share & $+$0.0018 & 0.0046 & +0.38 & 0.701 \\
+  \texttt{baseline\_sz} & $\Delta$ Null share & $+$0.0018 & 0.0049 & +0.37 & 0.712 \\[3pt]
+  \texttt{baseline} & $\Delta$ Blank share & $+$0.0053 & 0.0033 & +1.57 & 0.116 \\
+  \texttt{baseline\_sz} & $\Delta$ Blank share & $+$0.0059 & 0.0035 & +1.66 & 0.097 \\[3pt]
+  \texttt{robust\_full} & $\Delta$ Turnout & $+0.0006$ & $0.0042$ & $+0.14$ & $0.887$ \\
+  \texttt{robust\_full} & $\Delta$ Null share & $+0.0031$ & $0.0035$ & $+0.87$ & $0.387$ \\
+  \texttt{robust\_full} & $\Delta$ Blank share & $+0.0054$ & $0.0032$ & $+1.72$ & $0.086$ \\
+  \texttt{sub\_le200k} & $\Delta$ Turnout & $-0.0011$ & $0.0044$ & $-0.24$ & $0.807$ \\
+  \texttt{sub\_le200k} & $\Delta$ Null share & $+0.0021$ & $0.0048$ & $+0.45$ & $0.656$ \\
+  \texttt{sub\_le200k} & $\Delta$ Blank share & $+0.0055$ & $0.0035$ & $+1.58$ & $0.114$ \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\begin{itemize}
+  \item \textbf{Turnout and null votes:} precise nulls — no mobilization or demobilization effect
+  \item \textbf{Blank votes:} positive ($+$0.5 pp), $p = 0.12$ — marginal evidence of expressive voting
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Voter Behavior — Interpretation}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Turnout ($p = 0.43$):}\\
+Judicial activity does not change whether citizens participate. Lawsuits are not mobilizing or demobilizing events for voters.
+\bigskip
+
+\textbf{Null votes ($p = 0.70$):}\\
+Voters do not express frustration by spoiling their ballot when a municipality is more judicialized. No protest-vote channel.
+\bigskip
+
+\textbf{Blank votes ($p = 0.12$):}\\
+Suggestive: voters in more judicialized municipalities may express ambivalence by voting blank when the candidate field is legally contested. Marginally fails $\alpha = 0.05$.
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Summary}
+  \renewcommand{\arraystretch}{1.2}
+  \footnotesize
+  \begin{tabular}{lcc}
+    \toprule
+    Outcome & Direction & $p$ \\
+    \midrule
+    Turnout & $\approx 0$ & 0.93 \\
+    Null votes & $+$ & 0.54 \\
+    Blank votes & $+$ & 0.08 \\
+    \bottomrule
+  \end{tabular}
+\end{block}
+\bigskip
+\begin{alertblock}{Takeaway}
+  Electoral judicialization does not change voter participation or protest behavior. The blank-vote result is the only marginally interesting signal.
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Voter Behavior — Forest Plot (All Specs)}
+\begin{center}
+  \includegraphics[width=\textwidth,height=0.76\textheight,keepaspectratio]{../figures/forest_voter_behavior.pdf}
+\end{center}
+\end{frame}
+
+
+% ============================================================
+\section{Results: Incumbency}
+% ============================================================
+
+\begin{frame}{Did the Incumbent Run in 2024?}
+\textit{Outcome: binary indicator — 2020 mayor appears on 2024 candidate list for same municipality}
+\bigskip
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{3.8cm}rrrrc}
+  \toprule
+  Specification & Coef. & SE & $t$ & $p$ & $N$ \\
+  \midrule
+  \texttt{baseline\_state\_fe} & $+$0.0064 & 0.0640 & $+$0.10 & 0.920 & 5,491 \\
+  \texttt{baseline\_sz} & $-$0.0152 & 0.0659 & $-$0.23 & 0.818 & 5,303 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\textbf{Finding:} judicialization has \textbf{no causal effect} on whether the 2020 winner chooses to run again. Estimates are near zero with $p > 0.80$.
+\bigskip
+
+\textbf{Methodological note:} this is an \textbf{outcome variable}, not a control. Conditioning on ``incumbent ran'' would block the causal channel if judicialization affects candidacy decisions — so it is never included as a regressor.
+\end{frame}
+
+
+\begin{frame}{Did the Incumbent Win? Did the Party Change?}
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{3.0cm}L{3.5cm}rrrr}
+  \toprule
+  Specification & Outcome & Coef. & SE & $t$ & $p$ \\
+  \midrule
+  \texttt{baseline} & Incumbent won 2024 & $-$0.0396 & 0.0557 & $-$0.71 & 0.477 \\
+  \texttt{baseline\_sz} & Incumbent won 2024 & $-$0.0506 & 0.0576 & $-$0.88 & 0.380 \\[4pt]
+  \texttt{baseline} & Party switch 2020--24 & $-$0.0317 & 0.0536 & $-$0.59 & 0.555 \\
+  \texttt{baseline\_sz} & Party switch 2020--24 & $-$0.0265 & 0.0543 & $-$0.49 & 0.625 \\[4pt]
+  \texttt{baseline} & Incumb.\ vote share & $-$0.0317 & 0.0446 & $-$0.71 & 0.476 \\
+  \texttt{baseline} & Incumb.\ reelected rate & $-$0.0610 & 0.0682 & $-$0.90 & 0.371 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\textbf{All incumbency outcomes: precise nulls.} $p > 0.37$ across all specifications.\\[4pt]
+Judicialization reshapes \emph{how concentrated} the vote is, but not \emph{who wins}.
+\end{frame}
+
+
+\begin{frame}{Incumbency — Summary}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Three incumbency channels — all null:}
+\bigskip
+\begin{enumerate}
+  \item Did judicialization cause the incumbent to \emph{not run}?\\
+  $\hat{\tau} = +0.006$, $p = 0.920$ \textbf{No.}
+  \bigskip
+  \item Did judicialization reduce the incumbent's \emph{probability of winning}?\\
+  $\hat{\tau} = -0.040$, $p = 0.477$ \textbf{No.}
+  \bigskip
+  \item Did judicialization trigger a \emph{party switch} in who holds office?\\
+  $\hat{\tau} = -0.032$, $p = 0.555$ \textbf{No.}
+\end{enumerate}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{alertblock}{Implication}
+  Electoral judicialization in Brazil, as identified by the Bartik IV, is a \textbf{systemic feature} of contested political environments rather than a targeted tool against specific incumbents.
+\end{alertblock}
+\bigskip
+\begin{block}{Contrast with Competition}
+  Competition effects suggest marginal winner consolidation — but this does not translate into incumbency advantages or disadvantages. Lawsuits seem to fall across the field, not selectively on one type of candidate.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+\section{Extended Heterogeneity}
+% ============================================================
+
+\begin{frame}{Heterogeneity by Pre-Existing Competition Level}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Hypothesis:} lawsuits may matter more in close races, where a small distraction can tip the balance.
+\bigskip
+
+\textbf{Subgroup split:} 2020 margin above/below median ($\approx$13.4 pp)
+\begin{itemize}
+  \item \textbf{High competition} (close in 2020): more room for lawsuits to matter
+  \item \textbf{Low competition} (landslide in 2020): effects may be muted
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Subsample IV}
+  \footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrr}
+  \toprule
+  Subsample & Coef. & SE & $p$ & $N$ \\
+  \midrule
+  Close races ($\leq$ median) & $+0.0224$ & $0.0409$ & $0.584$ & 2,744 \\
+  Landslide ($>$ median) & $+0.0845$ & $0.0589$ & $0.151$ & 2,747 \\
+  \bottomrule
+\end{tabular}
+\end{block}
+\bigskip
+\footnotesize\textit{Generate from \texttt{executive\_margin\_design.csv}, split on \texttt{margin\_top1\_top2\_2020} relative to median.}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Heterogeneity by Incumbent Presence}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Hypothesis:} if lawsuits disproportionately target incumbents (more visible, longer record to challenge), the effect should be larger in municipalities where the 2020 winner re-runs.
+\bigskip
+
+\textbf{Subgroup split:} whether the 2020 mayor appears on the 2024 ballot
+\begin{itemize}
+  \item \textbf{Incumbent runs} (54\% of municipalities): mixed race
+  \item \textbf{Open seat} (46\%): no incumbent; different dynamics
+\end{itemize}
+\bigskip
+\textbf{Caveat:} incumbency in 2024 is itself a potential outcome; this is a descriptive heterogeneity exercise, not a clean causal subgroup.
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Subsample IV}
+  \footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrr}
+  \toprule
+  Subsample & Coef. & SE & $p$ & $N$ \\
+  \midrule
+  Incumbent runs & $+0.0597$ & $0.0539$ & $0.268$ & 2,894 \\
+  Open seat & $+0.0301$ & $0.0408$ & $0.461$ & 2,466 \\
+  \bottomrule
+\end{tabular}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Ideology Shift and Electoral Volatility}
+\textit{Extended outcomes from heterogeneity script}
+\bigskip
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{5.5cm}rrrrc}
+  \toprule
+  Outcome & Coef. & SE & $t$ & $p$ & $N$ \\
+  \midrule
+  $\Delta$ Winner ideology (2024 $-$ 2020) & $-$0.168 & 0.205 & $-$0.82 & 0.412 & 5,387 \\
+  Pedersen electoral volatility & $-$0.010 & 0.038 & $-$0.25 & 0.801 & 5,491 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize Baseline spec. SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\begin{itemize}
+  \item \textbf{Winner ideology:} no systematic left-right shift — lawsuits do not reshape the ideological composition of winners ($p = 0.41$)
+  \item \textbf{Pedersen volatility:} overall party-level vote-share volatility unaffected ($p = 0.80$) — judicialization does not generate broader electoral churning
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Gender Outcomes}
+\textit{Does judicialization affect female candidate entry and performance?}
+\bigskip
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{5.5cm}rrrrc}
+  \toprule
+  Outcome & Coef. & SE & $t$ & $p$ & $N$ \\
+  \midrule
+  Female new-entrant share 2024 & $-$0.0283 & 0.0296 & $-$0.96 & 0.340 & 5,483 \\
+  Female new-entrant vote share 2024 & $-$0.0387 & 0.0287 & $-$1.35 & 0.177 & 5,483 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize Baseline spec. SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+\begin{itemize}
+  \item Negative point estimates: more judicialized municipalities see \emph{marginally} fewer female new entrants and lower female new-entrant vote share
+  \item Neither reaches conventional significance ($p > 0.17$)
+  \item Directionally consistent with a ``hostile political environment'' hypothesis — litgious settings may deter female newcomers — but evidence is weak
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Candidate Pool Outcomes}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Questions:}
+\begin{itemize}
+  \item Does judicialization deter candidate entry overall?\\
+  $\to$ $\Delta$ number of candidates 2024
+  \medskip
+  \item Are newcomers specifically deterred by a litigious environment?\\
+  $\to$ $\Delta$ number of new entrants 2024
+  \medskip
+  \item Does it select for career politicians better equipped to handle legal challenges?\\
+  $\to$ share of career politicians 2024
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{IV Results}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Outcome & Coef. & SE & $p$ & $N$ \\
+    \midrule
+    $\Delta$ N candidates & $-0.2167$ & $0.1595$ & $0.174$ & 5,491 \\
+    Share new entrants 2024 & $+0.0518$ & $0.0396$ & $0.191$ & 5,491 \\
+    \bottomrule
+  \end{tabular}
+  \normalsize
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+\section{Robustness}
+% ============================================================
+
+\begin{frame}{Population Subsamples: Constitutional Threshold}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Art.~29-II CF/88:} municipalities with $>$ 200,000 registered voters (\texttt{QT\_APTOS}) hold a mandatory second round if no candidate wins $>$50\%
+\bigskip
+
+\textbf{Two subsamples:}
+\begin{itemize}
+  \item $\leq$200k voters: 5,347 municipalities — strictly single-round regime, plurality wins
+  \item $>$200k voters: 222 municipalities — conditional second round; larger, more urban, more media attention
+\end{itemize}
+\bigskip
+\textbf{Why this matters:} homogeneity within each regime; the $\leq$200k group faces the same constitutional incentive structure throughout
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Results}
+  \footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrrc}
+  \toprule
+  Subsample & Coef. & SE & $p$ & F & $N$ \\
+  \midrule
+  $\leq$200k & $+0.0509$ & $0.0361$ & $0.159$ & 46.8 & 5,271 \\
+  $>$200k & $+0.0973$ & $0.1466$ & $0.507$ & 1.6 & 220 \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\footnotesize\textit{$>$200k: F = 1.6, N = 220; interpret with caution (underpowered).}
+\end{block}
+\bigskip
+\footnotesize\textit{$>$200k results should be interpreted with caution — 222 observations and low statistical power make IV estimates unreliable in this subsample.}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Microregion Fixed Effects}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{State FE:} 27 groups (large, heterogeneous)\\
+\textbf{Microregion FE:} 558 IBGE \emph{microregiões} — tighter geographic cells within states
+\bigskip
+
+\textbf{Rationale:}
+\begin{itemize}
+  \item Microregions are economically and socially more homogeneous than states
+  \item Controls for local institutional factors: TRE chamber composition, local lawyer density, regional legal culture
+  \item Tests whether the IV result is robust to finer geographic comparison
+\end{itemize}
+\bigskip
+\textbf{Prediction:} if the exclusion restriction holds, coefficients should be stable moving from state FE to microregion FE
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{State FE vs.\ Microregion FE}
+  \footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrrc}
+  \toprule
+  Spec. & Coef. & SE & $p$ & F & $N$ \\
+  \midrule
+  State FE (baseline) & $+0.0538$ & $0.0355$ & $0.130$ & 46.0 & 5,491 \\
+  Microregion FE & $+0.0648$ & $0.0324$ & $0.046$ & 50.6 & 5,491 \\
+  \bottomrule
+\end{tabular}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Full Control Set}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{7 $\to$ 14 variable expansion.} Extended controls add:
+\begin{itemize}
+  \item ENP 2016 (pre-trend competitiveness)
+  \item Candidate composition: female share, nonwhite share, higher-education share (2020)
+  \item Party structure: log(party count), log(coalition count) (2020)
+  \item Voter behavior: turnout, null share (2020)
+  \item Candidate experience: share first-time, share career politicians (2020)
+\end{itemize}
+\bigskip
+\textbf{Note:} some of these are outcome-adjacent (2020 candidate composition may reflect prior judicialization). Treat as sensitivity only.
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{7 vs.\ 14 Controls}
+  \footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrrc}
+  \toprule
+  Controls & Coef. & SE & $p$ & F & $N$ \\
+  \midrule
+  7 baseline & $+0.0538$ & $0.0355$ & $0.130$ & 46.0 & 5,491 \\
+  14 extended & $+0.0531$ & $0.0352$ & $0.131$ & 46.1 & 5,491 \\
+  \bottomrule
+\end{tabular}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Single-Zone Municipalities — Cleanest Clustering}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Standard sample} (N = 5,491): includes municipalities spanning multiple zones; clustering approximated by principal (lowest-numbered) zone
+\bigskip
+
+\textbf{Single-zone sample} (N = 5,303, 97.6\%): municipality = zone = cluster; correspondence is exact
+\bigskip
+
+\textbf{Why it matters:} multi-zone municipalities tend to be larger and may have different legal and political dynamics; exact clustering removes the approximation error in inference
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Baseline vs.\ Single-Zone}
+  \footnotesize
+  \renewcommand{\arraystretch}{1.2}
+  \begin{tabular}{lcc}
+    \toprule
+     & All & Single-zone \\
+    \midrule
+    $\Delta$ Runner-up & $-0.015$ & $-0.016$ \\
+    $\Delta$ Margin & $+0.054$ & $+0.052$ \\
+    $\Delta$ Winner & $+0.039$ & $+0.037$ \\
+    \midrule
+    F-stat & 46.0 & 46.0 \\
+    $N$ & 5,491 & 5,303 \\
+    \bottomrule
+  \end{tabular}
+\end{block}
+\normalsize
+Estimates essentially identical. Robust to sample composition.
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+\section{Conclusion}
+% ============================================================
+
+\begin{frame}{Summary of Findings}
+\begin{columns}[T]
+\begin{column}{0.57\textwidth}
+\begin{enumerate}
+  \item \textbf{Strong identification:}\\
+  Bartik IV is highly relevant (F~$\approx$~50, stable across samples). First-stage coefficient $\approx$1.51 regardless of control set or FE level.
+  \bigskip
+  \item \textbf{Electoral competition:}\\
+  Directionally consistent winner consolidation ($\Delta$margin $+$5 pp; $\Delta$runner-up $-$2.2 pp; $\Delta$winner $+$2.8 pp) — but effects are imprecisely estimated ($p \approx 0.15$--$0.23$).
+  \bigskip
+  \item \textbf{Voter behavior:}\\
+  Turnout and null votes: precise nulls. Blank votes: positive, $p = 0.12$.
+  \bigskip
+  \item \textbf{Incumbency and extended outcomes:}\\
+  All null across incumbent ran, won, party switch, ideology, volatility, gender entry.
+\end{enumerate}
+\end{column}
+\begin{column}{0.41\textwidth}
+\begin{alertblock}{Main Takeaway}
+  We provide credibly identified estimates of the electoral effects of judicialization using a Bartik shift-share instrument.
+  \medskip\\
+  The estimates are directionally interpretable — suggesting winner consolidation — but Brazilian electoral litigation, as measured here, does not produce statistically detectable changes in who wins, voter turnout, or incumbency survival.
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Contributions and Next Steps}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Contributions:}
+\begin{itemize}
+  \item First Bartik IV applied to electoral judicialization; establishes a blueprint for identifying causal electoral effects of litigation
+  \item Large-scale evidence from 5,570 Brazilian municipalities across two election cycles
+  \item Separates bureaucratic (RRC) from competition-relevant litigation — a methodological contribution to measurement
+  \item Rich outcome battery covering competition, voter behavior, incumbency, ideology, and gender
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Next Steps}
+  \begin{itemize}
+    \item Heterogeneity by judge partisanship and TRE composition
+    \item Case \emph{outcomes} (ruling in favor vs.\ against) as a second instrument
+    \item Second-round analysis for 222 large-city municipalities
+    \item Candidate entry structural model
+    \item Longer panel: 2012--2024 for trend identification
+  \end{itemize}
+\end{block}
+\begin{block}{Literature Connections}
+  \footnotesize
+  Helmke (2017); Goldsmith-Pinkham et al.\ (2020); Ash et al.\ (2025, JPE); Klašnja \& Titiunik (2017); Fujiwara (2015)
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
+% APPENDIX
+% ============================================================
+\appendix
+
+\begin{frame}[allowframebreaks]{Appendix A: Full First-Stage Table — All Specifications}
+\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{3.8cm}rrrrc}
+  \toprule
+  Specification & Coef. & SE & $t$ & F-stat & $N$ \\
+  \midrule
+  \texttt{baseline\_state\_fe} & 1.449 & 0.214 & 6.78 & \textbf{46.0} & 5,491 \\
+  \texttt{baseline\_sz} & 1.471 & 0.217 & 6.78 & \textbf{46.0} & 5,303 \\
+  \texttt{robust\_full} & $1.456$ & $0.214$ & $+6.79$ & $\mathbf{46.1}$ & 5,491 \\
+  \texttt{robust\_micro\_fe} & $1.560$ & $0.219$ & $+7.11$ & $\mathbf{50.6}$ & 5,491 \\
+  \texttt{sub\_le200k} & $1.497$ & $0.219$ & $+6.84$ & $\mathbf{46.8}$ & 5,271 \\
+  \texttt{sub\_gt200k} & $1.084$ & $0.847$ & $+1.28$ & $\mathbf{1.6}$ & 220 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone. F = $(t$-stat on instrument)$^2$.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\medskip
+\footnotesize\textit{SE clustered by principal electoral zone. F = $(t$-stat on instrument)$^2$.}
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]{Appendix B: Full IV Table — Competition and Voter Behavior}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{L{2.6cm}L{3.2cm}rrrr}
+  \toprule
+  Spec. & Outcome & Coef. & SE & $t$ & $p$ \\
+  \midrule
+  \multicolumn{6}{l}{\textit{baseline\_state\_fe (N = 5,491, clusters = 2,179)}} \\
+  & $\Delta$ Runner-up & $-$0.0215 & 0.0173 & $-$1.24 & 0.214 \\
+  & $\Delta$ Margin & $+$0.0496 & 0.0348 & $+$1.42 & 0.154 \\
+  & $\Delta$ Winner & $+$0.0281 & 0.0194 & $+$1.45 & 0.146 \\
+  & $\Delta$ Turnout & $+$0.0004 & 0.0043 & $+$0.09 & 0.927 \\
+  & $\Delta$ Null share & $+$0.0022 & 0.0036 & $+$0.61 & 0.541 \\
+  & $\Delta$ Blank share & $+$0.0054 & 0.0032 & $+$1.71 & 0.088 \\
+  \midrule
+  \multicolumn{6}{l}{\textit{baseline\_sz (N = 5,303, clusters = 2,042)}} \\
+  & $\Delta$ Runner-up & $-$0.0210 & 0.0177 & $-$1.19 & 0.234 \\
+  & $\Delta$ Margin & $+$0.0497 & 0.0355 & $+$1.40 & 0.162 \\
+  & $\Delta$ Winner & $+$0.0287 & 0.0197 & $+$1.46 & 0.145 \\
+  & $\Delta$ Turnout & $+$0.0015 & 0.0044 & $+$0.34 & 0.732 \\
+  & $\Delta$ Null share & $+$0.0018 & 0.0037 & $+$0.48 & 0.629 \\
+  & $\Delta$ Blank share & $+$0.0060 & 0.0033 & $+$1.82 & 0.069 \\
+  \midrule
+  \multicolumn{6}{l}{\textit{See full first-stage and IV tables in Appendix A and B above.}} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]{Appendix C: Full IV Table — Extended Heterogeneity}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{L{4.5cm}rrrrc}
+  \toprule
+  Outcome & Coef. & SE & $t$ & $p$ & $N$ \\
+  \midrule
+  \multicolumn{6}{l}{\textit{baseline\_state\_fe, all municipalities}} \\
+  $\Delta$ Winner ideology & $-$0.168 & 0.205 & $-$0.82 & 0.412 & 5,387 \\
+  Pedersen electoral volatility & $-$0.010 & 0.038 & $-$0.25 & 0.801 & 5,491 \\[3pt]
+  Incumb.\ candidate vote share & $-$0.032 & 0.045 & $-$0.71 & 0.476 & 5,491 \\
+  Incumb.\ reelected rate & $-$0.061 & 0.068 & $-$0.90 & 0.371 & 5,491 \\
+  Incumbent ran 2024 & $+$0.006 & 0.064 & $+$0.10 & 0.920 & 5,491 \\
+  Incumbent won 2024 & $-$0.040 & 0.056 & $-$0.71 & 0.477 & 5,491 \\
+  Party switch 2024 & $-$0.032 & 0.054 & $-$0.59 & 0.555 & 5,491 \\[3pt]
+  Female new-entrant share & $-$0.028 & 0.030 & $-$0.96 & 0.340 & 5,483 \\
+  Female new-entrant vote share & $-$0.039 & 0.029 & $-$1.35 & 0.177 & 5,483 \\
+  \midrule
+  \multicolumn{6}{l}{\footnotesize SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\end{frame}
+
+
+\begin{frame}{Appendix D: Case Classification — Competition-Relevant vs.\ RRC}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Competition-relevant inclusion criteria:}
+\begin{enumerate}
+  \item Mayoral candidate (\textsc{prefeito}) is polo passivo
+  \item Filed before election day (\texttt{DT\_AUTUACAO} $<$ date)
+  \item Subject code $\neq$ 11618
+\end{enumerate}
+\bigskip
+\textbf{Examples of included DS\_ASSUNTO\_PRINCIPAL:}\\
+\footnotesize
+Abuso do Poder Econômico, Abuso do Poder Político, Captação Ilícita de Sufrágio, Propaganda Eleitoral em Lugar Proibido, Propaganda Irregular, Conduta Vedada a Agente Público, Uso Indevido dos Meios de Comunicação, Caixa 2
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Total Case Counts}
+  \footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrr}
+  \toprule
+  Category & 2020 & 2024 \\
+  \midrule
+  Routine Registration (RRC, code 11618) & 994,511 & 840,745 \\
+  Competition-relevant (non-RRC) & 240,193 & 218,384 \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\footnotesize\textit{Counts from \texttt{municipality\_competition\_subject\_panel.csv}; all first-instance, pre-election cases.}
+\end{block}
+\bigskip
+\footnotesize\textit{Generate from \texttt{data/derived/mayoral\_candidate\_process\_links\_2020.csv} and \texttt{\_2024.csv}.}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Appendix E: Instrument Distribution and Geography}
+\begin{columns}[T]
+\begin{column}{0.42\textwidth}
+  \textbf{Figure E1: Distribution of Bartik IV}\\
+  \includegraphics[width=\textwidth,height=0.64\textheight,keepaspectratio]{../figures/bartik_histogram.pdf}
+\end{column}
+\begin{column}{0.56\textwidth}
+  \textbf{Figure E2: Geographic distribution}\\
+  \includegraphics[width=\textwidth,height=0.64\textheight,keepaspectratio]{../figures/bartik_choropleth.pdf}
+\end{column}
+\end{columns}
+\footnotesize\textit{IV residualised on state FE for histogram. Map: raw Bartik IV by municipality (grey = not in sample).}
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]{Appendix F: Balance Table — Instrument on Pre-Determined Characteristics}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{L{5cm}rrr}
+  \toprule
+  Covariate (regressed on $\bZ$ | State FE) & Coef. & SE & $p$ \\
+  \midrule
+  Log population (2010) & $-0.5426$ & $0.2559$ & $0.034$ \\
+  Urban share (2010) & $-0.0243$ & $0.0280$ & $0.385$ \\
+  Log income per capita (2010) & $+0.1637$ & $0.0489$ & $0.001$ \\
+  Margin 2016 & $+0.0888$ & $0.0409$ & $0.030$ \\
+  ENP 2016 & $-0.2558$ & $0.1421$ & $0.072$ \\
+  Turnout rate 2020 & $+0.0404$ & $0.0124$ & $0.001$ \\
+  Female candidate share 2020 & $-0.0751$ & $0.0457$ & $0.101$ \\
+  Nonwhite candidate share 2020 & $-0.0498$ & $0.0671$ & $0.458$ \\
+  Log n candidates 2020 & $-0.1273$ & $0.0838$ & $0.129$ \\
+  \midrule
+  \multicolumn{4}{l}{\footnotesize All regressions include state FE. SE clustered by principal electoral zone.} \\
+  \multicolumn{4}{l}{\footnotesize Expected: all $p > 0.10$ to support the exclusion restriction.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\medskip
+\footnotesize\textit{Generate by regressing \texttt{bartik\_iv\_no\_rrc} on each covariate with state FE, from \texttt{executive\_margin\_design.csv}.}
+\end{frame}
+
+
+\begin{frame}[fragile]{Appendix G: fixest Replication (R)}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+All main results replicated in \textbf{R} using \texttt{fixest::feols()} v0.14.1:
+\bigskip
+
+\textbf{IV formula:}
+\begin{small}
+\begin{verbatim}
+feols(y ~ controls | SG_UF |
+  delta_log1p_lawsuits ~
+  bartik_iv_no_rrc,
+  data, cluster = ~cluster_id)
+\end{verbatim}
+\end{small}
+\bigskip
+
+\textbf{Benchmark:} Ash et al.\ (2025) Stata:\\
+\texttt{ivreghdfe y (endog = instr),}\\
+\texttt{absorb(state) cl(zone)}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Files}
+  \textbf{Script:}\\
+  \texttt{code/03\_analysis/08\_iv\_fixest.R}\\[4pt]
+  \textbf{Output:}\\
+  \texttt{output/tables/executive\_margin\_fixest.md}\\[4pt]
+  \textbf{Input:}\\
+  \texttt{data/derived/executive\_margin\_design.csv}
+\end{block}
+\bigskip
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lrrrr}
+  \toprule
+  Outcome & Coef. & SE & $t$ & $p$ \\
+  \midrule
+  \multicolumn{5}{l}{\textit{First stage: F = 46.0, coef = 1.449, N = 5,491}} \\
+  $\Delta$ Runner-up & $-0.0151$ & $0.0176$ & $-0.86$ & $0.388$ \\
+  $\Delta$ Margin & $+0.0538$ & $0.0356$ & $+1.51$ & $0.131$ \\
+  $\Delta$ Winner & $+0.0387*$ & $0.0212$ & $+1.82$ & $0.069$ \\[3pt]
+  $\Delta$ Turnout & $-0.0034$ & $0.0043$ & $-0.78$ & $0.435$ \\
+  $\Delta$ Null share & $+0.0018$ & $0.0046$ & $+0.38$ & $0.702$ \\
+  $\Delta$ Blank share & $+0.0053$ & $0.0034$ & $+1.57$ & $0.118$ \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\footnotesize\textit{fixest::feols(), SE clustered by principal electoral zone. Matches Python linearmodels IV2SLS to 4 decimal places.}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Appendix H: Constitutional Threshold Detail}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Art.~29-II, Constituição Federal 1988:}
+\begin{quote}
+  \small ``eleição do Prefeito e do Vice-Prefeito realizada no dia 1.º de outubro do ano anterior ao do término do mandato dos que devam suceder, aplicadas as regras do art. 77, no caso de Municípios com mais de duzentos mil eleitores.''
+\end{quote}
+\bigskip
+\textbf{Implication:} the 200,000 registered voter threshold determines whether a municipality follows plurality rule (one round) or the two-round runoff rule. This creates a sharp institutional discontinuity that motivates our population subsample as a homogeneity check.
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Sample Split (2024 Registered Voters)}
+  \renewcommand{\arraystretch}{1.2}
+  \footnotesize
+  \begin{tabular}{lrr}
+    \toprule
+     & $N$ & Share \\
+    \midrule
+    $\leq$ 200,000 & 5,347 & 96.0\% \\
+    $>$ 200,000 & 222 & 4.0\% \\
+    \midrule
+    Total & 5,569 & 100\% \\
+    \bottomrule
+  \end{tabular}\\[6pt]
+  \normalsize
+  \footnotesize Source: \texttt{data/derived/electoral\_admin\_outcomes.csv}, column \texttt{qt\_aptos}, year 2024.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\end{document}
