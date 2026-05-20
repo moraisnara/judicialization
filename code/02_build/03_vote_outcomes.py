@@ -16,6 +16,18 @@ EXECUTIVE_DESIGN_PATH = DERIVED_DIR / "executive_shift_share_design.csv"
 LEGISLATIVE_DESIGN_PATH = DERIVED_DIR / "legislative_shift_share_design.csv"
 
 TARGET_YEARS = [2020, 2024]
+STANDARD_TO_LEGACY = {
+    "election_year": "ANO_ELEICAO",
+    "state": "SG_UF",
+    "municipality_id_tse": "SG_UE",
+    "municipality_name": "NM_UE",
+}
+LEGACY_TO_STANDARD = {value: key for key, value in STANDARD_TO_LEGACY.items()}
+LEGACY_TO_STANDARD.update({
+    "SQ_CANDIDATO": "candidate_id",
+    "NR_PARTIDO": "party_code",
+    "NR_PARTIDO_cand": "party_code_cand",
+})
 OFFICE_MAP = {
     "PREFEITO": "executive",
     "VEREADOR": "legislative",
@@ -173,6 +185,7 @@ def load_candidate_metadata() -> pd.DataFrame:
 def load_vote_rows() -> pd.DataFrame:
     usecols = [
         "ANO_ELEICAO",
+        "NR_TURNO",
         "TP_ABRANGENCIA",
         "CD_TIPO_ELEICAO",
         "SG_UF",
@@ -200,7 +213,8 @@ def load_vote_rows() -> pd.DataFrame:
         frames.append(df)
     votes = pd.concat(frames, ignore_index=True)
     votes = votes.loc[
-        (votes["TP_ABRANGENCIA"] == "M")
+        (votes["NR_TURNO"] == "1")
+        & (votes["TP_ABRANGENCIA"] == "M")
         & (votes["CD_TIPO_ELEICAO"] == "2")
         & (votes["DS_CARGO"].str.upper().isin(OFFICE_MAP))
     ].copy()
@@ -261,6 +275,18 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
         ["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE"]
     ).cumcount() + 1
 
+    # Winner (rank 1) attributes — extracted before pivoting
+    winner_chars = (
+        candidate_rank[candidate_rank["vote_rank"] == 1]
+        [["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE",
+          "is_female", "is_new_candidate_vs_2020"]]
+        .drop_duplicates(subset=["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE"])
+        .rename(columns={
+            "is_female": "winner_is_female",
+            "is_new_candidate_vs_2020": "winner_is_new_vs_2020",
+        })
+    )
+
     top_two = (
         candidate_rank[candidate_rank["vote_rank"] <= 2]
         .pivot_table(
@@ -281,6 +307,13 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
     )
     top_two["top2_vote_share"] = (
         top_two["winner_vote_share"].fillna(0) + top_two["runnerup_vote_share"].fillna(0)
+    )
+    top_two["others_vote_share"] = (1 - top_two["top2_vote_share"]).clip(lower=0)
+    top_two["winner_majority"] = (top_two["winner_vote_share"].fillna(0) > 0.5).astype(int)
+    top_two = top_two.merge(
+        winner_chars,
+        on=["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE"],
+        how="left",
     )
 
     municipal_outcomes = (
@@ -361,7 +394,8 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
 
 
 def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.DataFrame) -> pd.DataFrame:
-    design = pd.read_csv(base_path, dtype={"SG_UE": str}, low_memory=False)
+    design = pd.read_csv(base_path, dtype={"municipality_id_tse": str}, low_memory=False)
+    design = design.rename(columns=STANDARD_TO_LEGACY)
     office_panel = vote_outcomes[vote_outcomes["office_group"] == office_group].copy()
     value_cols = [
         col for col in office_panel.columns
@@ -378,17 +412,27 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
     out = design.merge(wide, on=["SG_UF", "SG_UE"], how="left")
 
     diff_pairs = {
+        # Concentration / margin
         "winner_vote_share": "delta_winner_vote_share_2024_2020",
         "runnerup_vote_share": "delta_runnerup_vote_share_2024_2020",
         "margin_top1_top2": "delta_margin_top1_top2_2024_2020",
         "top2_vote_share": "delta_top2_vote_share_2024_2020",
+        "others_vote_share": "delta_others_vote_share_2024_2020",
+        "winner_majority": "delta_winner_majority_2024_2020",
         "vote_hhi_candidate": "delta_vote_hhi_candidate_2024_2020",
         "effective_n_candidates_vote": "delta_effective_n_candidates_vote_2024_2020",
+        "vote_hhi_party": "delta_vote_hhi_party_2024_2020",
+        "effective_n_parties_vote": "delta_effective_n_parties_vote_2024_2020",
+        # Vote-weighted composition
         "female_vote_share": "delta_female_vote_share_2024_2020",
         "nonwhite_vote_share": "delta_nonwhite_vote_share_2024_2020",
         "higher_education_vote_share": "delta_higher_education_vote_share_2024_2020",
-        "vote_hhi_party": "delta_vote_hhi_party_2024_2020",
-        "effective_n_parties_vote": "delta_effective_n_parties_vote_2024_2020",
+        "new_candidate_vote_share": "delta_new_candidate_vote_share_2024_2020",
+        "incumbent_candidate_vote_share": "delta_incumbent_candidate_vote_share_2024_2020",
+        # Winner identity
+        "winner_is_female": "delta_winner_is_female_2024_2020",
+        "winner_is_new_vs_2020": "delta_winner_is_new_vs_2020_2024_2020",
+        # Electorate size
         "total_valid_votes": "delta_total_valid_votes_2024_2020",
     }
     for base, diff_name in diff_pairs.items():
@@ -399,6 +443,11 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
     if "total_valid_votes_2020" in out.columns and "total_valid_votes_2024" in out.columns:
         out["delta_log_total_valid_votes_2024_2020"] = (
             np.log1p(out["total_valid_votes_2024"]) - np.log1p(out["total_valid_votes_2020"])
+        )
+    if "n_candidates_with_votes_2020" in out.columns and "n_candidates_with_votes_2024" in out.columns:
+        out["delta_log1p_n_candidates_with_votes_2024_2020"] = (
+            np.log1p(out["n_candidates_with_votes_2024"])
+            - np.log1p(out["n_candidates_with_votes_2020"])
         )
     return out
 
@@ -436,22 +485,22 @@ def main() -> None:
     executive_vote_design = build_wide_design(EXECUTIVE_DESIGN_PATH, "executive", vote_outcomes)
     legislative_vote_design = build_wide_design(LEGISLATIVE_DESIGN_PATH, "legislative", vote_outcomes)
 
-    candidate_vote_panel.to_csv(
+    candidate_vote_panel.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "candidate_vote_panel.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    vote_outcomes.to_csv(
+    vote_outcomes.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "office_vote_outcomes_panel.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    executive_vote_design.to_csv(
+    executive_vote_design.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "executive_vote_shift_share_design.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    legislative_vote_design.to_csv(
+    legislative_vote_design.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "legislative_vote_shift_share_design.csv",
         index=False,
         encoding="utf-8-sig",

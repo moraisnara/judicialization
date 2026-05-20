@@ -13,4 +13,4 @@ first-instance shift-share design.
 - vote shares for female, nonwhite, and highly educated candidates
 - vote shares for new candidates and incumbents in 2024
 
-- municipality-office-year rows in vote panel: 22,242
+- municipality-office-year rows in vote panel: 22,241

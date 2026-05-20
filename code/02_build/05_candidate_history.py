@@ -6,7 +6,7 @@ times they have run before and how many times they have won.  Aggregates to
 municipality × year level for use as controls (2020) and outcomes (2024).
 
 Output: data/clean/candidate_experience_panel.csv
-Columns: ANO_ELEICAO, SG_UF, SG_UE, NM_UE,
+Columns: election_year, state, municipality_id_tse, municipality_name,
          share_first_time_candidates, mean_prior_candidacies,
          share_prior_winners, share_career_politicians
 """
@@ -96,7 +96,13 @@ def load_year(year: int) -> pd.DataFrame:
 
     # One row per candidate per municipality
     df = df.drop_duplicates(subset=["ANO_ELEICAO", "SG_UF", "SG_UE", "person_key"])
-    return df[["ANO_ELEICAO", "SG_UF", "SG_UE", "NM_UE", "person_key", "is_elected"]]
+    df = df[["ANO_ELEICAO", "SG_UF", "SG_UE", "NM_UE", "person_key", "is_elected"]]
+    return df.rename(columns={
+        "ANO_ELEICAO": "election_year",
+        "SG_UF": "state",
+        "SG_UE": "municipality_id_tse",
+        "NM_UE": "municipality_name",
+    })
 
 
 def main() -> None:
@@ -117,16 +123,16 @@ def main() -> None:
 
     print("\n[2] Computing prior candidacy counts", flush=True)
     # Sort by year so earlier records come first
-    all_cands = all_cands.sort_values("ANO_ELEICAO").reset_index(drop=True)
+    all_cands = all_cands.sort_values("election_year").reset_index(drop=True)
 
     results = []
     for yr in YEARS:
-        current = all_cands[all_cands["ANO_ELEICAO"] == yr].copy()
-        prior   = all_cands[all_cands["ANO_ELEICAO"] < yr]
+        current = all_cands[all_cands["election_year"] == yr].copy()
+        prior   = all_cands[all_cands["election_year"] < yr]
 
         prior_counts = (
             prior.groupby("person_key")
-            .agg(n_prior_candidacies=("ANO_ELEICAO", "count"),
+            .agg(n_prior_candidacies=("election_year", "count"),
                  n_prior_wins=("is_elected", "sum"))
             .reset_index()
         )
@@ -143,7 +149,7 @@ def main() -> None:
     print("\n[3] Aggregating to municipality × year", flush=True)
     panel = (
         all_with_history
-        .groupby(["ANO_ELEICAO", "SG_UF", "SG_UE", "NM_UE"], as_index=False)
+        .groupby(["election_year", "state", "municipality_id_tse", "municipality_name"], as_index=False)
         .agg(
             share_first_time_candidates=("is_first_time", "mean"),
             mean_prior_candidacies=("n_prior_candidacies", "mean"),
@@ -157,9 +163,9 @@ def main() -> None:
     panel.to_csv(out, index=False, encoding="utf-8-sig")
     print(f"\nSaved: {out.relative_to(PROJECT_ROOT)}")
     print(f"  Rows: {len(panel):,}")
-    print(f"  Years: {sorted(panel['ANO_ELEICAO'].unique())}")
+    print(f"  Years: {sorted(panel['election_year'].unique())}")
     for yr in YEARS:
-        sub = panel[panel["ANO_ELEICAO"] == yr]
+        sub = panel[panel["election_year"] == yr]
         if not sub.empty:
             print(f"  {yr}: {len(sub):,} municipalities, "
                   f"mean first-timers={sub['share_first_time_candidates'].mean():.2f}")

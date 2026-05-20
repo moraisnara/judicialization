@@ -18,6 +18,19 @@ OVERRIDES_PATH = DERIVED_DIR / "shift_share_subject_manual_assignments.csv"
 LOOKUP_PATH = RAW_DIR / "lista-zonas-municipios-10-07-24.csv"
 
 TARGET_YEARS = [2020, 2024]
+STANDARD_TO_LEGACY = {
+    "election_year": "ANO_ELEICAO",
+    "state": "SG_UF",
+    "electoral_zone": "zona_eleitoral",
+    "municipality_id_tse": "SG_UE",
+    "municipality_name": "NM_UE",
+    "n_municipalities_in_zone": "n_municipios_zona",
+    "case_class_code": "CD_CLASSE",
+    "case_class_name": "DS_CLASSE",
+    "main_subject_code": "CD_ASSUNTO_PRINCIPAL",
+    "main_subject_name": "DS_ASSUNTO_PRINCIPAL",
+}
+LEGACY_TO_STANDARD = {value: key for key, value in STANDARD_TO_LEGACY.items()}
 MAIN_FAMILIES = {
     "eligibility_ballot_access",
     "abuse_misuse_office",
@@ -97,9 +110,10 @@ def load_zone_lookup() -> pd.DataFrame:
 def load_zone_subject_panel(crosswalk: pd.DataFrame) -> pd.DataFrame:
     panel = pd.read_csv(
         ZONA_PANEL_PATH,
-        dtype={"SG_UE": str, "CD_CLASSE": str, "CD_ASSUNTO_PRINCIPAL": str},
+        dtype={"municipality_id_tse": str, "case_class_code": str, "main_subject_code": str},
         low_memory=False,
     )
+    panel = panel.rename(columns=STANDARD_TO_LEGACY)
     panel = panel[panel["ANO_ELEICAO"].isin(TARGET_YEARS)].copy()
     panel = (
         panel.groupby(
@@ -684,27 +698,27 @@ def main() -> None:
         office_outcomes,
     )
 
-    municipality_subject.to_csv(
+    municipality_subject.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "municipality_competition_subject_panel.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    bartik_components.to_csv(
+    bartik_components.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "municipality_bartik_components.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    office_outcomes.to_csv(
+    office_outcomes.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "office_candidate_outcomes_panel.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    executive_design.to_csv(
+    executive_design.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "executive_shift_share_design.csv",
         index=False,
         encoding="utf-8-sig",
     )
-    legislative_design.to_csv(
+    legislative_design.rename(columns=LEGACY_TO_STANDARD).to_csv(
         DERIVED_DIR / "legislative_shift_share_design.csv",
         index=False,
         encoding="utf-8-sig",

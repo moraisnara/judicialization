@@ -8,36 +8,36 @@ Clustering: principal electoral zone (all sample) / exact zone (single-zone samp
 
 | outcome | sample | coef | se | t | p | sig | N | clusters |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| delta_winner_ideology_2024_2020 | all_principal_zone_cluster | -0.1682 | 0.2049 | -0.821 | 0.412 |  | 5,387 | 2,163 |
-| delta_winner_ideology_2024_2020 | single_zone_exact_cluster | -0.1367 | 0.2047 | -0.668 | 0.504 |  | 5,201 | 2,026 |
+| delta_winner_ideology_2024_2020 | all_principal_zone_cluster | -0.2104 | 0.2073 | -1.015 | 0.310 |  | 5,456 | 2,171 |
+| delta_winner_ideology_2024_2020 | single_zone_exact_cluster | -0.1766 | 0.2071 | -0.853 | 0.394 |  | 5,269 | 2,033 |
 
 ## volatility
 
 | outcome | sample | coef | se | t | p | sig | N | clusters |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| pedersen_volatility | all_principal_zone_cluster | -0.0095 | 0.0376 | -0.252 | 0.801 |  | 5,491 | 2,179 |
-| pedersen_volatility | single_zone_exact_cluster | -0.0056 | 0.0390 | -0.143 | 0.887 |  | 5,303 | 2,042 |
+| pedersen_volatility | all_principal_zone_cluster | -0.0185 | 0.0377 | -0.490 | 0.624 |  | 5,560 | 2,187 |
+| pedersen_volatility | single_zone_exact_cluster | -0.0141 | 0.0391 | -0.360 | 0.719 |  | 5,371 | 2,049 |
 
 ## incumbent
 
 | outcome | sample | coef | se | t | p | sig | N | clusters |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| incumbent_candidate_vote_share_2024 | all_principal_zone_cluster | -0.0317 | 0.0446 | -0.712 | 0.476 |  | 5,491 | 2,179 |
-| incumbent_candidate_vote_share_2024 | single_zone_exact_cluster | -0.0363 | 0.0461 | -0.787 | 0.431 |  | 5,303 | 2,042 |
-| incumbent_reelected_share_2024 | all_principal_zone_cluster | -0.0610 | 0.0682 | -0.896 | 0.371 |  | 5,491 | 2,179 |
-| incumbent_reelected_share_2024 | single_zone_exact_cluster | -0.0637 | 0.0712 | -0.894 | 0.372 |  | 5,303 | 2,042 |
-| incumbent_ran_2024 | all_principal_zone_cluster | 0.0064 | 0.0640 | 0.100 | 0.920 |  | 5,360 | 2,120 |
-| incumbent_ran_2024 | single_zone_exact_cluster | -0.0152 | 0.0659 | -0.230 | 0.818 |  | 5,231 | 2,032 |
-| incumbent_won_2024 | all_principal_zone_cluster | -0.0396 | 0.0557 | -0.710 | 0.477 |  | 5,360 | 2,120 |
-| incumbent_won_2024 | single_zone_exact_cluster | -0.0506 | 0.0576 | -0.879 | 0.380 |  | 5,231 | 2,032 |
-| party_switch_2024 | all_principal_zone_cluster | -0.0317 | 0.0536 | -0.591 | 0.555 |  | 5,360 | 2,120 |
-| party_switch_2024 | single_zone_exact_cluster | -0.0265 | 0.0543 | -0.488 | 0.625 |  | 5,231 | 2,032 |
+| incumbent_candidate_vote_share_2024 | all_principal_zone_cluster | -0.0227 | 0.0452 | -0.502 | 0.616 |  | 5,560 | 2,187 |
+| incumbent_candidate_vote_share_2024 | single_zone_exact_cluster | -0.0256 | 0.0468 | -0.548 | 0.584 |  | 5,371 | 2,049 |
+| incumbent_reelected_share_2024 | all_principal_zone_cluster | -0.0396 | 0.0696 | -0.569 | 0.570 |  | 5,560 | 2,187 |
+| incumbent_reelected_share_2024 | single_zone_exact_cluster | -0.0394 | 0.0729 | -0.541 | 0.589 |  | 5,371 | 2,049 |
+| incumbent_ran_2024 | all_principal_zone_cluster | 0.0192 | 0.0646 | 0.298 | 0.766 |  | 5,429 | 2,128 |
+| incumbent_ran_2024 | single_zone_exact_cluster | -0.0026 | 0.0664 | -0.038 | 0.969 |  | 5,299 | 2,039 |
+| incumbent_won_2024 | all_principal_zone_cluster | -0.0315 | 0.0561 | -0.562 | 0.574 |  | 5,429 | 2,128 |
+| incumbent_won_2024 | single_zone_exact_cluster | -0.0437 | 0.0581 | -0.753 | 0.451 |  | 5,299 | 2,039 |
+| party_switch_2024 | all_principal_zone_cluster | -0.0368 | 0.0538 | -0.684 | 0.494 |  | 5,429 | 2,128 |
+| party_switch_2024 | single_zone_exact_cluster | -0.0321 | 0.0545 | -0.590 | 0.555 |  | 5,299 | 2,039 |
 
 ## female_entry
 
 | outcome | sample | coef | se | t | p | sig | N | clusters |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| female_new_entrant_share_2024 | all_principal_zone_cluster | -0.0283 | 0.0296 | -0.955 | 0.340 |  | 5,483 | 2,177 |
-| female_new_entrant_share_2024 | single_zone_exact_cluster | -0.0330 | 0.0308 | -1.071 | 0.284 |  | 5,295 | 2,040 |
-| female_new_entrant_vote_share_2024 | all_principal_zone_cluster | -0.0387 | 0.0287 | -1.349 | 0.177 |  | 5,483 | 2,177 |
-| female_new_entrant_vote_share_2024 | single_zone_exact_cluster | -0.0436 | 0.0294 | -1.484 | 0.138 |  | 5,295 | 2,040 |
+| female_new_entrant_share_2024 | all_principal_zone_cluster | -0.0288 | 0.0295 | -0.977 | 0.328 |  | 5,552 | 2,185 |
+| female_new_entrant_share_2024 | single_zone_exact_cluster | -0.0327 | 0.0307 | -1.066 | 0.286 |  | 5,363 | 2,047 |
+| female_new_entrant_vote_share_2024 | all_principal_zone_cluster | -0.0376 | 0.0286 | -1.311 | 0.190 |  | 5,552 | 2,185 |
+| female_new_entrant_vote_share_2024 | single_zone_exact_cluster | -0.0418 | 0.0293 | -1.426 | 0.154 |  | 5,363 | 2,047 |

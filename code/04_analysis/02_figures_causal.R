@@ -30,6 +30,7 @@ ROOT         <- normalizePath(file.path(SCRIPT_DIR, "..", ".."))
 ESTIMATION   <- file.path(ROOT, "data", "estimation")
 REGRESSIONS  <- file.path(ROOT, "output", "tables", "regressions")
 FIG_DIR      <- file.path(ROOT, "output", "figures")
+RAW_DIR      <- file.path(ROOT, "data", "raw")
 dir.create(FIG_DIR, recursive = TRUE, showWarnings = FALSE)
 
 # ── shared palette ────────────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ theme_clean <- function(...) {
 # ── load design ───────────────────────────────────────────────────────────────
 cat("Loading design...\n")
 df <- as.data.frame(fread(
-  file.path(DERIVED, "executive_margin_design.csv"),
+  file.path(ESTIMATION, "executive_margin_design.csv"),
   colClasses = list(character = c("SG_UF", "SG_UE", "cluster_id"))
 ))
 cat(sprintf("  N = %d municipalities\n", nrow(df)))
@@ -292,24 +293,19 @@ tryCatch({
 
   cat("  Downloading municipality shapefile (geobr)...\n")
   muni_sf <- read_municipality(year = 2020, simplified = TRUE, showProgress = FALSE)
-
-  # geobr uses code_muni (7-digit IBGE code); SG_UE is the 5-digit TSE code
-  # The first 6 digits of code_muni match a 6-digit IBGE code; TSE's SG_UE is
-  # the last 5 digits of the 7-digit IBGE (i.e., truncate leading state digit).
-  # In practice SG_UE = sprintf("%05d", code_muni %% 100000) works for most.
+  crosswalk <- as.data.frame(fread(
+    file.path(RAW_DIR, "bd_municipio_tse_ibge.csv"),
+    colClasses = list(character = c("id_municipio", "id_municipio_tse"))
+  ))
+  crosswalk$id_municipio_tse <- sprintf("%05d", as.integer(crosswalk$id_municipio_tse))
   map_df <- samp %>%
-    mutate(
-      SG_UE_num = as.integer(SG_UE),
-      code_muni_approx = SG_UE_num  # direct match if TSE == IBGE 5-digit suffix
-    )
+    select(SG_UE, bartik = all_of(INSTR)) %>%
+    left_join(crosswalk %>% select(SG_UE = id_municipio_tse, code_muni = id_municipio),
+              by = "SG_UE")
 
-  # merge
   merged <- muni_sf %>%
-    mutate(sg_ue = as.integer(code_muni) %% 100000L) %>%
-    left_join(
-      map_df %>% select(SG_UE_num, bartik = all_of(INSTR)),
-      by = c("sg_ue" = "SG_UE_num")
-    )
+    mutate(code_muni = as.character(code_muni)) %>%
+    left_join(map_df, by = "code_muni")
 
   # winsorise at 1st/99th for colour scale
   q_lo <- quantile(merged$bartik, 0.01, na.rm = TRUE)

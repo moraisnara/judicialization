@@ -14,11 +14,11 @@ which correspond to local `zonas eleitorais`, and maps them to municipalities.
 
 ## Derived Files
 
-- `data/derived/office_candidate_outcomes_panel.csv`
-- `data/derived/municipality_competition_subject_panel.csv`
-- `data/derived/municipality_bartik_components.csv`
-- `data/derived/executive_shift_share_design.csv`
-- `data/derived/legislative_shift_share_design.csv`
+- `data/clean/office_candidate_outcomes_panel.csv`
+- `data/clean/municipality_competition_subject_panel.csv`
+- `data/clean/municipality_bartik_components.csv`
+- `data/clean/executive_shift_share_design.csv`
+- `data/clean/legislative_shift_share_design.csv`
 
 ## Coverage
 

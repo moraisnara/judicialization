@@ -7,9 +7,9 @@ Aggregates zones to municipality, then computes rates.
 
 Output: data/clean/electoral_admin_outcomes.csv
 Columns:
-  ANO_ELEICAO, SG_UF, SG_UE, NM_UE,
-  qt_aptos, qt_comparecimento, qt_abstencoes,
-  qt_votos, qt_votos_brancos, qt_total_votos_nulos,
+  election_year, state, municipality_id_tse, municipality_name,
+  registered_voters, turnout_count, abstentions_count,
+  total_votes, blank_votes, null_votes,
   turnout_rate, abstention_rate, blank_share, null_share
 """
 from __future__ import annotations
@@ -95,26 +95,45 @@ def main() -> None:
     )
 
     # Compute rates
-    mun["turnout_rate"]    = mun["QT_COMPARECIMENTO"] / mun["QT_APTOS"].replace(0, float("nan"))
-    mun["abstention_rate"] = mun["QT_ABSTENCOES"]     / mun["QT_APTOS"].replace(0, float("nan"))
-    mun["blank_share"]     = mun["QT_VOTOS_BRANCOS"]  / mun["QT_VOTOS"].replace(0, float("nan"))
-    mun["null_share"]      = mun["QT_TOTAL_VOTOS_NULOS"] / mun["QT_VOTOS"].replace(0, float("nan"))
+    aptos = mun["QT_APTOS"].replace(0, float("nan"))
+    votos = mun["QT_VOTOS"].replace(0, float("nan"))
+    # All rates use registered voters (QT_APTOS) as denominator so they are
+    # unconditional probabilities over the eligible electorate:
+    #   turnout_rate + null_rate + blank_rate + abstention_rate = 1 (approximately)
+    mun["turnout_rate"]     = mun["QT_COMPARECIMENTO"]       / aptos
+    mun["abstention_rate"]  = mun["QT_ABSTENCOES"]           / aptos
+    mun["null_rate"]        = mun["QT_TOTAL_VOTOS_NULOS"]    / aptos
+    mun["blank_rate"]       = mun["QT_VOTOS_BRANCOS"]        / aptos
+    valid_votes             = mun["QT_VOTOS"] - mun["QT_VOTOS_BRANCOS"] - mun["QT_TOTAL_VOTOS_NULOS"]
+    mun["valid_vote_rate"]  = valid_votes                    / aptos
 
     # Rename count columns to lower case for cleanliness
-    mun = mun.rename(columns={c: c.lower() for c in COUNT_COLS})
+    mun = mun.rename(columns={
+        "ANO_ELEICAO": "election_year",
+        "SG_UF": "state",
+        "SG_UE": "municipality_id_tse",
+        "NM_UE": "municipality_name",
+        "QT_APTOS": "registered_voters",
+        "QT_COMPARECIMENTO": "turnout_count",
+        "QT_ABSTENCOES": "abstentions_count",
+        "QT_VOTOS": "total_votes",
+        "QT_VOTOS_BRANCOS": "blank_votes",
+        "QT_TOTAL_VOTOS_NULOS": "null_votes",
+    })
+    mun["valid_votes"] = valid_votes.values
 
     out = DERIVED_DIR / "electoral_admin_outcomes.csv"
     mun.to_csv(out, index=False, encoding="utf-8-sig")
     print(f"\nSaved: {out.relative_to(PROJECT_ROOT)}")
     print(f"  Rows: {len(mun):,}")
     for yr in YEARS:
-        sub = mun[mun["ANO_ELEICAO"] == str(yr)]
+        sub = mun[mun["election_year"] == str(yr)]
         if sub.empty:
-            sub = mun[mun["ANO_ELEICAO"] == yr]
+            sub = mun[mun["election_year"] == yr]
         if not sub.empty:
             print(f"  {yr}: {len(sub):,} municipalities, "
                   f"mean turnout={sub['turnout_rate'].mean():.3f}, "
-                  f"mean null_share={sub['null_share'].mean():.3f}")
+                  f"mean null_rate={sub['null_rate'].mean():.3f}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 """
 Builds the municipal covariates master table by merging:
-  1. Census 2010 covariates (log_pop, urban_share, log_income_pc)
+  1. Census 2010 covariates (raw population, urban share, raw income per capita)
+     via a code-only IBGE ↔ TSE municipality crosswalk
   2. 2016 electoral controls (n_candidates, margin, hhi, enp, winner info)
   3. Candidate experience panel, 2020 wave
   4. Electoral admin outcomes, 2020 wave (turnout, null/blank share)
@@ -12,10 +13,11 @@ All covariates are pre-determined relative to 2024 (the outcome year).
 
 Output: data/clean/municipal_covariates.csv
 Key columns:
-  SG_UF, SG_UE, NM_UE              municipality identifiers
-  log_pop_2010                      Census 2010 log population
+  state, municipality_id_tse, municipality_name
+  pop_2010                          Census 2010 population
   urban_share_2010                  Census 2010 urban share
-  log_income_pc_2010                Census 2010 log income per capita
+  income_pc_2010                    Census 2010 income per capita
+  higher_educ_share_2010            Census 2010 higher-education share (25+)
   n_candidates_2016                 2016 number of mayoral candidates
   margin_2016                       2016 winner-runnerup margin
   hhi_2016                          2016 HHI
@@ -40,6 +42,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DERIVED_DIR = PROJECT_ROOT / "data" / "clean"
+CROSSWALK_PATH = RAW_DIR / "bd_municipio_tse_ibge.csv"
 
 
 def normalize(s: object) -> str:
@@ -101,7 +104,13 @@ def load_consulta_cand(year: int) -> pd.DataFrame:
         df["DS_SIT_TOT_TURNO"].str.upper().str.strip().isin(ELECTED)
     ).astype(int)
 
-    return df
+    return df.rename(columns={
+        "ANO_ELEICAO": "election_year",
+        "SG_UF": "state",
+        "SG_UE": "municipality_id_tse",
+        "NM_UE": "municipality_name",
+        "SG_PARTIDO": "party_abbrev",
+    })
 
 
 def main() -> None:
@@ -112,15 +121,34 @@ def main() -> None:
     # ------------------------------------------------------------------ #
     print("[1] Loading Census 2010 covariates", flush=True)
     censo = pd.read_csv(DERIVED_DIR / "censo2010_municipal_ibge.csv", dtype=str)
-    censo["code_muni_6"] = censo["code_muni"].str[:6]
     print(f"    {len(censo):,} municipalities", flush=True)
+
+    print("[1b] Loading IBGE <-> TSE municipality crosswalk", flush=True)
+    if not CROSSWALK_PATH.exists():
+        raise FileNotFoundError(
+            "Missing required crosswalk file: "
+            f"{CROSSWALK_PATH}. Expected columns: id_municipio, id_municipio_tse."
+        )
+    crosswalk = pd.read_csv(CROSSWALK_PATH, dtype=str)
+    expected_cols = {"id_municipio", "id_municipio_tse"}
+    missing_cols = expected_cols.difference(crosswalk.columns)
+    if missing_cols:
+        raise ValueError(
+            f"Crosswalk file is missing columns: {sorted(missing_cols)}. "
+            "Expected: id_municipio, id_municipio_tse."
+        )
+    crosswalk = crosswalk[["id_municipio", "id_municipio_tse"]].dropna().copy()
+    crosswalk["id_municipio"] = crosswalk["id_municipio"].str.strip()
+    crosswalk["id_municipio_tse"] = crosswalk["id_municipio_tse"].str.strip().str.zfill(5)
+    crosswalk = crosswalk.drop_duplicates(subset=["id_municipio_tse"], keep="first")
+    print(f"    {len(crosswalk):,} municipality code pairs", flush=True)
 
     # ------------------------------------------------------------------ #
     # 2. 2016 electoral controls
     # ------------------------------------------------------------------ #
     print("[2] Loading 2016 electoral controls", flush=True)
     ctrl2016 = pd.read_csv(DERIVED_DIR / "electoral_controls_2016.csv", dtype=str)
-    ctrl2016["SG_UE"] = ctrl2016["SG_UE"].str.zfill(5)
+    ctrl2016["municipality_id_tse"] = ctrl2016["municipality_id_tse"].str.zfill(5)
     for col in ["n_candidates_2016", "top1_share_2016", "margin_2016",
                 "hhi_2016", "enp_2016"]:
         ctrl2016[col] = pd.to_numeric(ctrl2016[col], errors="coerce")
@@ -131,9 +159,9 @@ def main() -> None:
     # ------------------------------------------------------------------ #
     print("[3] Loading candidate experience panel (2020 wave)", flush=True)
     cexp = pd.read_csv(DERIVED_DIR / "candidate_experience_panel.csv", dtype=str)
-    cexp["ANO_ELEICAO"] = pd.to_numeric(cexp["ANO_ELEICAO"], errors="coerce")
-    cexp_2020 = cexp[cexp["ANO_ELEICAO"] == 2020].copy()
-    cexp_2020["SG_UE"] = cexp_2020["SG_UE"].str.zfill(5)
+    cexp["election_year"] = pd.to_numeric(cexp["election_year"], errors="coerce")
+    cexp_2020 = cexp[cexp["election_year"] == 2020].copy()
+    cexp_2020["municipality_id_tse"] = cexp_2020["municipality_id_tse"].str.zfill(5)
     for col in ["share_first_time_candidates", "mean_prior_candidacies",
                 "share_prior_winners", "share_career_politicians", "n_candidates"]:
         cexp_2020[col] = pd.to_numeric(cexp_2020[col], errors="coerce")
@@ -151,9 +179,9 @@ def main() -> None:
     # ------------------------------------------------------------------ #
     print("[4] Loading electoral admin outcomes (2020 wave)", flush=True)
     adm = pd.read_csv(DERIVED_DIR / "electoral_admin_outcomes.csv", dtype=str)
-    adm["ANO_ELEICAO"] = pd.to_numeric(adm["ANO_ELEICAO"], errors="coerce")
-    adm_2020 = adm[adm["ANO_ELEICAO"] == 2020].copy()
-    adm_2020["SG_UE"] = adm_2020["SG_UE"].str.zfill(5)
+    adm["election_year"] = pd.to_numeric(adm["election_year"], errors="coerce")
+    adm_2020 = adm[adm["election_year"] == 2020].copy()
+    adm_2020["municipality_id_tse"] = adm_2020["municipality_id_tse"].str.zfill(5)
     for col in ["turnout_rate", "abstention_rate", "blank_share", "null_share"]:
         adm_2020[col] = pd.to_numeric(adm_2020[col], errors="coerce")
     adm_2020 = adm_2020.rename(columns={
@@ -174,43 +202,43 @@ def main() -> None:
     if not cand_2020.empty and not cand_2024.empty:
         winners_2020 = (
             cand_2020[cand_2020["is_elected"] == 1]
-            .drop_duplicates(subset=["SG_UF", "SG_UE"])
-            [["SG_UF", "SG_UE", "person_key", "SG_PARTIDO"]]
+            .drop_duplicates(subset=["state", "municipality_id_tse"])
+            [["state", "municipality_id_tse", "person_key", "party_abbrev"]]
             .rename(columns={"person_key": "winner_key_2020",
-                             "SG_PARTIDO": "winner_party_2020"})
+                             "party_abbrev": "winner_party_2020"})
         )
-        winners_2020["SG_UE"] = winners_2020["SG_UE"].str.zfill(5)
+        winners_2020["municipality_id_tse"] = winners_2020["municipality_id_tse"].str.zfill(5)
 
         cands_2024_keys = (
-            cand_2024[["SG_UF", "SG_UE", "person_key", "is_elected", "SG_PARTIDO"]]
+            cand_2024[["state", "municipality_id_tse", "person_key", "is_elected", "party_abbrev"]]
             .copy()
         )
-        cands_2024_keys["SG_UE"] = cands_2024_keys["SG_UE"].str.zfill(5)
-        cands_2024_keys["SG_PARTIDO"] = cands_2024_keys["SG_PARTIDO"].fillna("")
+        cands_2024_keys["municipality_id_tse"] = cands_2024_keys["municipality_id_tse"].str.zfill(5)
+        cands_2024_keys["party_abbrev"] = cands_2024_keys["party_abbrev"].fillna("")
 
         # Did the 2020 winner run in 2024?
         ran = (
-            cands_2024_keys.groupby(["SG_UF", "SG_UE"])["person_key"]
+            cands_2024_keys.groupby(["state", "municipality_id_tse"])["person_key"]
             .apply(set)
             .reset_index()
             .rename(columns={"person_key": "keys_2024"})
         )
         won_2024 = (
             cands_2024_keys[cands_2024_keys["is_elected"] == 1]
-            .drop_duplicates(subset=["SG_UF", "SG_UE"])
-            [["SG_UF", "SG_UE", "person_key", "SG_PARTIDO"]]
+            .drop_duplicates(subset=["state", "municipality_id_tse"])
+            [["state", "municipality_id_tse", "person_key", "party_abbrev"]]
             .rename(columns={"person_key": "winner_key_2024",
-                             "SG_PARTIDO": "winner_party_2024"})
+                             "party_abbrev": "winner_party_2024"})
         )
-        won_2024["SG_UE"] = won_2024["SG_UE"].str.zfill(5)
+        won_2024["municipality_id_tse"] = won_2024["municipality_id_tse"].str.zfill(5)
 
-        incumbency = winners_2020.merge(ran, on=["SG_UF", "SG_UE"], how="left")
+        incumbency = winners_2020.merge(ran, on=["state", "municipality_id_tse"], how="left")
         incumbency["incumbent_ran_2024"] = incumbency.apply(
             lambda r: int(r["winner_key_2020"] in r["keys_2024"])
             if isinstance(r["keys_2024"], set) else 0,
             axis=1,
         )
-        incumbency = incumbency.merge(won_2024, on=["SG_UF", "SG_UE"], how="left")
+        incumbency = incumbency.merge(won_2024, on=["state", "municipality_id_tse"], how="left")
         incumbency["incumbent_won_2024"] = (
             incumbency["winner_key_2020"] == incumbency["winner_key_2024"]
         ).astype(int)
@@ -220,7 +248,7 @@ def main() -> None:
             incumbency["winner_party_2024"].notna()
         ).astype(int)
 
-        incumbency = incumbency[["SG_UF", "SG_UE",
+        incumbency = incumbency[["state", "municipality_id_tse",
                                  "incumbent_ran_2024", "incumbent_won_2024",
                                  "party_switch_2024"]]
         print(f"    2020 winners matched: {len(incumbency):,}", flush=True)
@@ -230,71 +258,67 @@ def main() -> None:
               flush=True)
     else:
         print("    WARNING: consulta_cand files not available; incumbency skipped.", flush=True)
-        incumbency = pd.DataFrame(columns=["SG_UF", "SG_UE",
+        incumbency = pd.DataFrame(columns=["state", "municipality_id_tse",
                                            "incumbent_ran_2024", "incumbent_won_2024",
                                            "party_switch_2024"])
 
     # ------------------------------------------------------------------ #
-    # 6. Assemble on (SG_UF, SG_UE)
+    # 6. Assemble on (state, municipality_id_tse)
     # ------------------------------------------------------------------ #
     print("\n[6] Assembling final covariate table", flush=True)
 
     # Base: 2016 controls define the municipality universe
-    base = ctrl2016[["SG_UF", "SG_UE", "NM_UE",
+    base = ctrl2016[["state", "municipality_id_tse", "municipality_name",
                      "n_candidates_2016", "top1_share_2016",
                      "margin_2016", "hhi_2016", "enp_2016",
-                     "winner_party_2016", "winner_sq_2016", "winner_name_2016"]].copy()
+                     "winner_party_2016", "winner_candidate_id_2016", "winner_name_2016"]].copy()
 
     def merge_on_ue(left, right, suffix=""):
-        cols = [c for c in right.columns if c not in ("SG_UF", "SG_UE", "NM_UE",
-                                                        "ANO_ELEICAO")]
+        cols = [c for c in right.columns if c not in ("state", "municipality_id_tse", "municipality_name",
+                                                      "election_year")]
         return left.merge(
-            right[["SG_UF", "SG_UE"] + cols],
-            on=["SG_UF", "SG_UE"], how="left"
+            right[["state", "municipality_id_tse"] + cols],
+            on=["state", "municipality_id_tse"], how="left"
         )
 
-    # Join Census: censobr uses IBGE numeric state codes and municipality names.
-    # TSE uses state abbreviations (SG_UF) and NM_UE. Match on state+name.
-    IBGE_STATE_TO_UF = {
-        11: "RO", 12: "AC", 13: "AM", 14: "RR", 15: "PA", 16: "AP", 17: "TO",
-        21: "MA", 22: "PI", 23: "CE", 24: "RN", 25: "PB", 26: "PE",
-        27: "AL", 28: "SE", 29: "BA",
-        31: "MG", 32: "ES", 33: "RJ", 35: "SP",
-        41: "PR", 42: "SC", 43: "RS",
-        50: "MS", 51: "MT", 52: "GO", 53: "DF",
-    }
-    censo_merge = censo[["abbrev_state", "name_muni", "code_micro", "name_micro",
-                          "log_pop_2010", "urban_share_2010",
-                          "log_income_pc_2010"]].copy()
-    for col in ["log_pop_2010", "urban_share_2010", "log_income_pc_2010"]:
-        censo_merge[col] = pd.to_numeric(censo_merge[col], errors="coerce")
-    censo_merge["SG_UF"] = (
-        pd.to_numeric(censo_merge["abbrev_state"], errors="coerce")
-        .map(IBGE_STATE_TO_UF)
-    )
-    censo_merge["name_muni_norm"] = censo_merge["name_muni"].map(normalize)
-    censo_merge = censo_merge.drop(columns=["abbrev_state", "name_muni"])
-
-    base["name_muni_norm"] = base["NM_UE"].map(normalize)
-    base = base.merge(
-        censo_merge,
-        on=["SG_UF", "name_muni_norm"],
+    # Join Census via code-only IBGE ↔ TSE crosswalk from Base dos Dados.
+    censo_merge = censo.merge(
+        crosswalk,
+        left_on="code_muni",
+        right_on="id_municipio",
         how="left",
+        validate="one_to_one",
     )
-    base = base.drop(columns=["name_muni_norm"])
+    for col in ["pop_2010", "urban_share_2010", "income_pc_2010", "higher_educ_share_2010"]:
+        censo_merge[col] = pd.to_numeric(censo_merge[col], errors="coerce")
+    censo_merge = censo_merge.rename(columns={"id_municipio_tse": "municipality_id_tse"})
+    censo_merge["municipality_id_tse"] = censo_merge["municipality_id_tse"].str.zfill(5)
+    base = base.merge(
+        censo_merge[[
+            "municipality_id_tse", "code_muni", "abbrev_state",
+            "pop_2010", "urban_share_2010", "income_pc_2010", "higher_educ_share_2010"
+        ]],
+        on="municipality_id_tse",
+        how="left",
+        validate="one_to_one",
+    )
+    base = base.rename(columns={
+        "code_muni": "municipality_id_ibge",
+        "abbrev_state": "state_abbrev_ibge",
+    })
 
-    n_matched = base["log_pop_2010"].notna().sum()
+    n_matched = base["pop_2010"].notna().sum()
     print(f"  Census matched: {n_matched:,}/{len(base):,} municipalities "
           f"({100*n_matched/len(base):.1f}%)", flush=True)
 
     base = merge_on_ue(base, cexp_2020[[
-        "SG_UF", "SG_UE",
+        "state", "municipality_id_tse",
         "share_first_time_candidates_2020", "mean_prior_candidacies_2020",
         "share_prior_winners_2020", "share_career_politicians_2020",
     ]])
 
     base = merge_on_ue(base, adm_2020[[
-        "SG_UF", "SG_UE",
+        "state", "municipality_id_tse",
         "turnout_rate_2020", "abstention_rate_2020",
         "blank_share_2020", "null_share_2020",
     ]])
@@ -305,7 +329,7 @@ def main() -> None:
     print(f"  Final rows: {len(base):,}", flush=True)
 
     # Report merge rates
-    for col in ["log_pop_2010", "margin_2016",
+    for col in ["pop_2010", "margin_2016",
                 "share_first_time_candidates_2020",
                 "turnout_rate_2020", "incumbent_ran_2024"]:
         if col in base.columns:

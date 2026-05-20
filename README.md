@@ -14,7 +14,7 @@ judicialization/
 ├── data/
 │   ├── raw/          — original downloads from TSE/IBGE, never modified
 │   ├── clean/        — intermediate datasets produced by 02_build scripts
-│   └── estimation/   — regression-ready design matrix (input to 03_analysis)
+│   └── estimation/   — regression-ready design matrix (input to 03_estimation)
 │
 ├── output/
 │   ├── figures/      — all figures (PDF and PNG)
@@ -26,7 +26,8 @@ judicialization/
 ├── code/
 │   ├── 01_download/  — scripts that download raw data from TSE/IBGE
 │   ├── 02_build/     — data cleaning and construction pipeline
-│   ├── 03_analysis/  — estimation, heterogeneity, and figures
+│   ├── 03_estimation/ — design assembly and IV estimation
+│   ├── 04_analysis/   — descriptive diagnostics, figures, and maps
 │   └── run_all.py    — runs the full pipeline end to end
 │
 ├── docs/             — supplementary documentation
@@ -71,7 +72,7 @@ and used as inputs to subsequent build steps or to the analysis.
 | `candidate_vote_panel.csv` | `03_vote_outcomes.py` | Candidate-level vote panel |
 | `office_candidate_outcomes_panel.csv` | `02_bartik_inputs.py` | Office-level candidate outcomes |
 | `office_vote_outcomes_panel.csv` | `03_vote_outcomes.py` | Office-level vote outcomes |
-| `censo2010_municipal_ibge.csv` | `04_census_covariates.R` | Census 2010: log pop, urban share, income per capita |
+| `censo2010_municipal_ibge.csv` | `05_download_census_covariates.R` | Census 2010: raw population, urban share, raw income per capita |
 | `candidate_experience_panel.csv` | `05_candidate_history.py` | Prior candidacies and wins per municipality (2012–2024) |
 | `electoral_admin_outcomes.csv` | `06_electoral_admin.py` | Turnout, blank/null share, registered voters (2020 and 2024) |
 | `electoral_controls_2016.csv` | `07_electoral_controls_2016.py` | 2016 baseline: margin, HHI, ENP, winner identity |
@@ -80,7 +81,7 @@ and used as inputs to subsequent build steps or to the analysis.
 
 ### `data/estimation/`
 
-The single flat file that enters the regressions. Produced by `03_analysis/01_assemble_design.py`
+The single flat file that enters the regressions. Produced by `03_estimation/01_assemble_design.py`
 by merging the executive design, Bartik components, subject panel, and master covariates.
 
 | File | Contents |
@@ -101,7 +102,9 @@ Scripts that download and verify raw data. Run once before the build pipeline.
 | `01_download_processual.py` | Downloads TSE processual docket files |
 | `02_download_candidate_data.py` | Downloads TSE candidate registry files |
 | `02_download_covariates_data.py` | Downloads vote results and detalhe_votacao files |
-| `03_download_vote_results.py` | Downloads vote count files |
+| `04_download_vote_results.py` | Downloads vote count files |
+| `05_download_census_covariates.R` | Downloads Census 2010 microdata via `censobr` and writes municipal clean covariates |
+| `06_download_municipality_crosswalk.R` | Downloads the IBGE ↔ TSE municipality crosswalk from Base dos Dados |
 
 ### `code/02_build/`
 
@@ -113,27 +116,34 @@ Sequential pipeline that transforms raw data into analysis-ready inputs. Output 
 | `01_lawsuit_panel.py` | processual + assuntos + zone lookup | `zona_lawsuit_panel.csv` |
 | `02_bartik_inputs.py` | zona_lawsuit_panel + crosswalk + consulta_cand | `municipality_bartik_components.csv`, `municipality_competition_subject_panel.csv`, `executive_shift_share_design.csv`, `legislative_shift_share_design.csv` |
 | `03_vote_outcomes.py` | executive/legislative designs + votacao files | `executive_vote_shift_share_design.csv`, `candidate_vote_panel.csv` |
-| `04_census_covariates.R` | censobr (downloads automatically) | `censo2010_municipal_ibge.csv` |
 | `05_candidate_history.py` | consulta_cand 2012–2024 | `candidate_experience_panel.csv` |
 | `06_electoral_admin.py` | detalhe_votacao_munzona 2020+2024 | `electoral_admin_outcomes.csv` |
 | `07_electoral_controls_2016.py` | votacao_candidato_munzona_2016 | `electoral_controls_2016.csv` |
 | `08_municipal_covariates.py` | censo2010 + electoral_controls + candidate_experience + electoral_admin | `municipal_covariates.csv` |
 
-### `code/03_analysis/`
+### `code/03_estimation/`
 
-Estimation and output scripts. All IV estimation is done in R via `fixest::feols()`.
+Estimation scripts. All IV estimation is done in R via `fixest::feols()`.
 
 | Script | Purpose | Output |
 |---|---|---|
 | `01_assemble_design.py` | Merges clean data into regression-ready flat file | `data/estimation/executive_margin_design.csv` |
 | `02_iv_main.R` | Main 2SLS: 6 specs × 6 outcomes via `feols()` | `output/tables/regressions/executive_margin_iv_fixest.csv` |
 | `03_heterogeneity.py` | Subgroup IV: ideology, volatility, incumbency, gender | `output/tables/regressions/extended_heterogeneity_iv.csv` |
-| `04_figures_descriptive.py` | Descriptive figures (family composition, Bartik breakdown) | `output/figures/*.png` |
-| `05_figures_causal.R` | Causal figures: binscatter, forest plot, IV histogram, choropleth | `output/figures/*.pdf` |
+### `code/04_analysis/`
+
+Descriptive diagnostics, figures, and map scripts used to interpret the shift-share design and IV results.
+
+| Script | Purpose | Output |
+|---|---|---|
+| `01_figures_descriptive.py` | Descriptive figures (family composition, Bartik breakdown) | `output/figures/*.png` |
+| `02_figures_causal.R` | Causal figures: binscatter, forest plot, IV histogram, choropleth | `output/figures/*.pdf` |
+| `03_shift_share_diagnostics.py` | Descriptive audit of the shift-share construction | `output/tables/descriptives/shift_share_*` |
+| `04_shift_share_maps.R` | Maps of the share, shift, and instrument | `output/figures/*map.pdf` |
 
 ### `code/run_all.py`
 
-Runs the full pipeline in the correct order: `01_download` → `02_build` → `03_analysis`.
+Runs the full pipeline in the correct order: `01_download` → `02_build` → `03_estimation` → `04_analysis`.
 R scripts are called via `Rscript`; Python scripts via `sys.executable`.
 
 ---
@@ -197,5 +207,5 @@ pdflatex -interaction=nonstopmode electoral_judicialization.tex
 pdflatex -interaction=nonstopmode electoral_judicialization.tex
 ```
 
-> **Note:** The first run will download raw data (~several GB).
+> **Note:** The first run will download raw data plus external reference inputs (~several GB).
 > The estimation step (`02_iv_main.R`) takes approximately 2–5 minutes.

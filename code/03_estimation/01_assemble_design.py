@@ -36,6 +36,18 @@ ADMIN_PATH         = CLEAN_DIR / "electoral_admin_outcomes.csv"
 
 # Subject code excluded from the no-RRC Bartik variant (Recursos de Reclamação)
 EXCLUDE_RRC = {"11618"}
+STANDARD_TO_LEGACY = {
+    "election_year": "ANO_ELEICAO",
+    "state": "SG_UF",
+    "electoral_zone": "zona_eleitoral",
+    "municipality_id_tse": "SG_UE",
+    "municipality_name": "NM_UE",
+    "case_class_code": "CD_CLASSE",
+    "case_class_name": "DS_CLASSE",
+    "main_subject_code": "CD_ASSUNTO_PRINCIPAL",
+    "main_subject_name": "DS_ASSUNTO_PRINCIPAL",
+}
+LEGACY_TO_STANDARD = {value: key for key, value in STANDARD_TO_LEGACY.items()}
 
 
 # ---------------------------------------------------------------------------
@@ -43,53 +55,51 @@ EXCLUDE_RRC = {"11618"}
 # ---------------------------------------------------------------------------
 
 def load_design() -> pd.DataFrame:
-    df = pd.read_csv(EXECUTIVE_PATH, dtype={"SG_UE": str}, low_memory=False)
+    df = pd.read_csv(EXECUTIVE_PATH, dtype={"municipality_id_tse": str}, low_memory=False)
+    df = df.rename(columns=STANDARD_TO_LEGACY)
     return df.drop_duplicates(subset=["SG_UF", "SG_UE"], keep="first").reset_index(drop=True)
 
 
 def load_components() -> pd.DataFrame:
     return pd.read_csv(
         COMPONENTS_PATH,
-        dtype={"SG_UE": str, "CD_ASSUNTO_PRINCIPAL": str},
+        dtype={"municipality_id_tse": str, "main_subject_code": str},
         low_memory=False,
-    )
+    ).rename(columns=STANDARD_TO_LEGACY)
 
 
 def load_subject_panel() -> pd.DataFrame:
     return pd.read_csv(
         SUBJECT_PANEL_PATH,
-        dtype={"SG_UE": str, "CD_ASSUNTO_PRINCIPAL": str},
+        dtype={"municipality_id_tse": str, "main_subject_code": str},
         low_memory=False,
-    )
+    ).rename(columns=STANDARD_TO_LEGACY)
 
 
 def load_covariates() -> pd.DataFrame:
-    cov = pd.read_csv(COVARIATES_PATH, dtype={"SG_UE": str}, low_memory=False)
+    cov = pd.read_csv(COVARIATES_PATH, dtype={"municipality_id_tse": str}, low_memory=False)
+    cov = cov.rename(columns=STANDARD_TO_LEGACY)
     cov["SG_UE"] = cov["SG_UE"].str.zfill(5)
     return cov
 
 
 def load_voter_behavior_deltas() -> pd.DataFrame:
-    adm = pd.read_csv(ADMIN_PATH, dtype={"SG_UE": str}, low_memory=False)
+    adm = pd.read_csv(ADMIN_PATH, dtype={"municipality_id_tse": str}, low_memory=False)
+    adm = adm.rename(columns=STANDARD_TO_LEGACY)
     adm["SG_UE"] = adm["SG_UE"].str.zfill(5)
     adm["ANO_ELEICAO"] = pd.to_numeric(adm["ANO_ELEICAO"], errors="coerce")
-    for col in ["turnout_rate", "null_share", "blank_share"]:
-        adm[col] = pd.to_numeric(adm[col], errors="coerce")
-    a20 = adm[adm["ANO_ELEICAO"] == 2020][
-        ["SG_UF", "SG_UE", "turnout_rate", "null_share", "blank_share"]
-    ]
-    a24 = adm[adm["ANO_ELEICAO"] == 2024][
-        ["SG_UF", "SG_UE", "turnout_rate", "null_share", "blank_share"]
-    ]
+    for col in ["turnout_rate", "null_rate", "blank_rate", "valid_vote_rate"]:
+        if col in adm.columns:
+            adm[col] = pd.to_numeric(adm[col], errors="coerce")
+    rate_cols = [c for c in ["turnout_rate", "null_rate", "blank_rate", "valid_vote_rate"]
+                 if c in adm.columns]
+    a20 = adm[adm["ANO_ELEICAO"] == 2020][["SG_UF", "SG_UE"] + rate_cols]
+    a24 = adm[adm["ANO_ELEICAO"] == 2024][["SG_UF", "SG_UE"] + rate_cols]
     m = a20.merge(a24, on=["SG_UF", "SG_UE"], suffixes=("_2020", "_2024"))
-    m["delta_turnout_rate_2024_2020"] = m["turnout_rate_2024"] - m["turnout_rate_2020"]
-    m["delta_null_share_2024_2020"]   = m["null_share_2024"]   - m["null_share_2020"]
-    m["delta_blank_share_2024_2020"]  = m["blank_share_2024"]  - m["blank_share_2020"]
-    return m[
-        ["SG_UF", "SG_UE",
-         "delta_turnout_rate_2024_2020", "delta_null_share_2024_2020",
-         "delta_blank_share_2024_2020"]
-    ]
+    for col in rate_cols:
+        m[f"delta_{col}_2024_2020"] = m[f"{col}_2024"] - m[f"{col}_2020"]
+    delta_cols = [f"delta_{col}_2024_2020" for col in rate_cols]
+    return m[["SG_UF", "SG_UE"] + delta_cols]
 
 
 # ---------------------------------------------------------------------------
@@ -121,6 +131,12 @@ def add_zone_structure(df: pd.DataFrame) -> pd.DataFrame:
 
 def add_log_controls(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    if "pop_2010" in df.columns:
+        pop = pd.to_numeric(df["pop_2010"], errors="coerce")
+        df["log_pop_2010"] = np.where(pop > 0, np.log(pop), np.nan)
+    if "income_pc_2010" in df.columns:
+        income = pd.to_numeric(df["income_pc_2010"], errors="coerce")
+        df["log_income_pc_2010"] = np.where(income >= 0, np.log1p(income), np.nan)
     for col in ["total_candidates_2020", "party_count_2020",
                 "coalition_count_2020", "total_valid_votes_2020"]:
         if col in df.columns:
@@ -201,7 +217,7 @@ ROBUSTNESS_CONTROLS = BASELINE_CONTROLS + [
     "female_vote_share_2020", "nonwhite_vote_share_2020",
     "higher_education_vote_share_2020",
     "log1p_party_count_2020", "log1p_coalition_count_2020",
-    "turnout_rate_2020", "null_share_2020",
+    "turnout_rate_2020", "null_rate_2020",
     "share_first_time_candidates_2020", "share_career_politicians_2020",
 ]
 
@@ -214,52 +230,56 @@ def main() -> None:
     print("Loading inputs...")
     design = load_design()
     design = add_zone_structure(design)
-    design = add_log_controls(design)
     design["cluster_id"] = design["principal_zone_id"]
     design = build_no_rrc_variant(design, load_components(), load_subject_panel())
 
     # Covariates (drop string/identifier columns not used in regressions)
     cov = load_covariates()
     drop_cols = {
-        "NM_UE", "winner_party_2016", "winner_sq_2016",
+        "NM_UE", "winner_party_2016", "winner_candidate_id_2016",
         "winner_name_2016", "winner_party_2020", "incumbent_ran_2024",
     }
     design = design.merge(
         cov[[c for c in cov.columns if c not in drop_cols]],
         on=["SG_UF", "SG_UE"], how="left",
     )
+    design = add_log_controls(design)
 
     # Voter-behavior deltas (turnout, null, blank share 2024 − 2020)
     design = design.merge(load_voter_behavior_deltas(), on=["SG_UF", "SG_UE"], how="left")
 
     # Baseline voter-behavior levels (2020) and registered voters (2024)
-    adm = pd.read_csv(ADMIN_PATH, dtype={"SG_UE": str}, low_memory=False)
+    adm = pd.read_csv(ADMIN_PATH, dtype={"municipality_id_tse": str}, low_memory=False)
+    adm = adm.rename(columns=STANDARD_TO_LEGACY)
     adm["SG_UE"] = adm["SG_UE"].str.zfill(5)
     adm["ANO_ELEICAO"] = pd.to_numeric(adm["ANO_ELEICAO"], errors="coerce")
 
+    level_cols_2020 = [c for c in ["turnout_rate", "null_rate", "blank_rate", "valid_vote_rate"]
+                       if c in adm.columns]
     adm_2020 = (
         adm[adm["ANO_ELEICAO"] == 2020]
-        [["SG_UF", "SG_UE", "turnout_rate", "null_share", "blank_share"]]
-        .rename(columns={
-            "turnout_rate": "turnout_rate_2020",
-            "null_share":   "null_share_2020",
-            "blank_share":  "blank_share_2020",
-        })
+        [["SG_UF", "SG_UE"] + level_cols_2020]
+        .rename(columns={c: f"{c}_2020" for c in level_cols_2020})
     )
     if "turnout_rate_2020" not in design.columns:
         design = design.merge(adm_2020, on=["SG_UF", "SG_UE"], how="left")
 
     adm_2024_aptos = (
         adm[adm["ANO_ELEICAO"] == 2024]
-        [["SG_UF", "SG_UE", "qt_aptos"]]
-        .rename(columns={"qt_aptos": "qt_aptos_2024"})
+        [["SG_UF", "SG_UE", "registered_voters"]]
+        .rename(columns={"registered_voters": "registered_voters_2024"})
     )
     design = design.merge(adm_2024_aptos, on=["SG_UF", "SG_UE"], how="left")
+
+    design = design.rename(columns={
+        "code_muni": "municipality_id_ibge",
+        "abbrev_state": "state_abbrev_ibge",
+    })
 
     print(f"Design: {len(design):,} municipalities, {len(design.columns)} columns")
 
     out_path = ESTIMATION_DIR / "executive_margin_design.csv"
-    design.to_csv(out_path, index=False, encoding="utf-8-sig")
+    design.rename(columns=LEGACY_TO_STANDARD).to_csv(out_path, index=False, encoding="utf-8-sig")
     print(f"Saved {out_path}")
 
 

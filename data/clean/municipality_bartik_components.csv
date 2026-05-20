@@ -1,4 +1,4 @@
-﻿ANO_ELEICAO,SG_UF,SG_UE,NM_UE,CD_ASSUNTO_PRINCIPAL,DS_ASSUNTO_PRINCIPAL,topic_family,n_lawsuits,baseline_share_2020,leave_uf_out_2020,leave_uf_out_2024,shock_log_growth_2020_2024,bartik_component
+﻿election_year,state,municipality_id_tse,municipality_name,main_subject_code,main_subject_name,topic_family,n_lawsuits,baseline_share_2020,leave_uf_out_2020,leave_uf_out_2024,shock_log_growth_2020_2024,bartik_component
 2020,AC,01007,BUJARI,11484,Calúnia na Propaganda Eleitoral,information_environment,1,0.005780346820809248,864.0,625.0,-0.3233791358317806,-0.001869243559721275
 2020,AC,01007,BUJARI,11617,Registro de Candidatura - Preenchimento de Vaga Remanescente,eligibility_ballot_access,1,0.005780346820809248,14371.0,8986.0,-0.469502780575036,-0.0027138889050580114
 2020,AC,01007,BUJARI,11618,Registro de Candidatura - RRC - Candidato,eligibility_ballot_access,142,0.8208092485549133,1141105.0,964734.0,-0.1678997942837075,-0.13781370397853449

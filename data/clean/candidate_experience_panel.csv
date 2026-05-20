@@ -1,4 +1,4 @@
-﻿ANO_ELEICAO,SG_UF,SG_UE,NM_UE,share_first_time_candidates,mean_prior_candidacies,share_prior_winners,share_career_politicians,n_candidates
+﻿election_year,state,municipality_id_tse,municipality_name,share_first_time_candidates,mean_prior_candidacies,share_prior_winners,share_career_politicians,n_candidates
 2012,AC,01007,BUJARI,1.0,0.0,0.0,0.0,10
 2012,AC,01015,CAPIXABA,1.0,0.0,0.0,0.0,10
 2012,AC,01023,PORTO ACRE,1.0,0.0,0.0,0.0,6

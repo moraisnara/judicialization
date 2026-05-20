@@ -1,4 +1,4 @@
-﻿ANO_ELEICAO,SG_UF,SG_UE,NM_UE,CD_ASSUNTO_PRINCIPAL,DS_ASSUNTO_PRINCIPAL,topic_family,n_lawsuits
+﻿election_year,state,municipality_id_tse,municipality_name,main_subject_code,main_subject_name,topic_family,n_lawsuits
 2020,AC,01007,BUJARI,11484,Calúnia na Propaganda Eleitoral,information_environment,1
 2020,AC,01007,BUJARI,11617,Registro de Candidatura - Preenchimento de Vaga Remanescente,eligibility_ballot_access,1
 2020,AC,01007,BUJARI,11618,Registro de Candidatura - RRC - Candidato,eligibility_ballot_access,142

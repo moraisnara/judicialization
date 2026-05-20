@@ -7,14 +7,14 @@ Aggregates zones to municipality.
 
 Output: data/clean/electoral_controls_2016.csv
 Columns:
-  SG_UF, SG_UE, NM_UE,
+  state, municipality_id_tse, municipality_name,
   n_candidates_2016        count of candidates with votes > 0
   top1_share_2016          winner vote share
   margin_2016              winner - runner-up vote share
   hhi_2016                 Herfindahl index of vote shares
   enp_2016                 effective number of parties = 1/hhi
   winner_party_2016        party abbreviation of winner
-  winner_sq_2016           SQ_CANDIDATO of winner (for incumbency matching)
+  winner_candidate_id_2016 candidate identifier of winner (for incumbency matching)
   winner_name_2016         name of winner
 """
 from __future__ import annotations
@@ -111,14 +111,14 @@ def main() -> None:
         )
 
         results.append({
-            "SG_UF": uf, "SG_UE": ue, "NM_UE": nm_ue,
+            "state": uf, "municipality_id_tse": ue, "municipality_name": nm_ue,
             "n_candidates_2016": n_cands,
             "top1_share_2016": top1_share,
             "margin_2016": margin,
             "hhi_2016": hhi,
             "enp_2016": enp,
             "winner_party_2016": top1["SG_PARTIDO"],
-            "winner_sq_2016": top1["SQ_CANDIDATO"],
+            "winner_candidate_id_2016": top1["SQ_CANDIDATO"],
             "winner_name_2016": top1["NM_CANDIDATO"],
             "winner_elected_2016": int(is_elected),
         })
