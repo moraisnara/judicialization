@@ -55,7 +55,7 @@ OUTCOMES = [
     "delta_runnerup_vote_share_2024_2020",
 ]
 SPEC    = "baseline_state_fe"
-VARIANT = "no_rrc_drap"
+VARIANT = "adversarial"
 
 
 def main() -> None:
@@ -78,7 +78,7 @@ def main() -> None:
         (fs_res["spec"] == SPEC) & (fs_res["variant"] == VARIANT)
     ]
     fs_F  = fs_row["first_stage_F"].values[0] if len(fs_row) > 0 else np.nan
-    print(f"First-stage F ({VARIANT}, {SPEC}) = {fs_F:.2f}")
+    print(f"First-stage F ({VARIANT}, {SPEC}) = {fs_F:.2f}" if not np.isnan(fs_F) else f"First-stage F ({VARIANT}, {SPEC}) = not found")
 
     # ---- 4. Exposure-robust SE for each outcome ----
     # tau_k values are in Rotemberg CSV as tau_{outcome}
@@ -178,9 +178,11 @@ def main() -> None:
     md = []
     md.append("# Exposure-Robust SE — BHJ (2024) / AKM (2019)")
     md.append("")
-    md.append(f"Adversarial-only IV (no-RRC, no-DRAP), {SPEC}.")
+    md.append(f"Adversarial IV (administrative/procedural excluded at build stage), {SPEC}.")
     md.append(f"K = {K} topics | HHI = {hhi:.4f} | K_eff (Rotemberg) = {k_eff:.2f}")
-    md.append(f"First-stage F = {fs_F:.1f} -> tF critical value (Lee et al. 2022) = {rows[0]['tF_cv']:.2f}")
+    tF_cv_display = f"{rows[0]['tF_cv']:.2f}" if rows else "—"
+    fs_F_display  = f"{fs_F:.1f}" if not np.isnan(fs_F) else "—"
+    md.append(f"First-stage F = {fs_F_display} -> tF critical value (Lee et al. 2022) = {tF_cv_display}")
     md.append("")
     md.append("**Caveat:** BHJ exposure-robust asymptotics require K_eff >> 1.")
     md.append(f"Here K_eff = {k_eff:.2f} (Rotemberg-weight HHI = {hhi:.3f}).")

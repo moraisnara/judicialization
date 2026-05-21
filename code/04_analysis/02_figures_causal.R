@@ -56,12 +56,17 @@ theme_clean <- function(...) {
 cat("Loading design...\n")
 df <- as.data.frame(fread(
   file.path(ESTIMATION, "executive_margin_design.csv"),
-  colClasses = list(character = c("SG_UF", "SG_UE", "cluster_id"))
+  colClasses = list(character = c("state", "municipality_id_tse", "cluster_id"))
 ))
+# Rename to match FE and choropleth variable names used throughout the script
+if ("state" %in% names(df) && !"SG_UF" %in% names(df))
+  names(df)[names(df) == "state"] <- "SG_UF"
+if ("municipality_id_tse" %in% names(df) && !"SG_UE" %in% names(df))
+  names(df)[names(df) == "municipality_id_tse"] <- "SG_UE"
 cat(sprintf("  N = %d municipalities\n", nrow(df)))
 
-ENDOG <- "delta_log1p_lawsuits_no_rrc_2024_2020"
-INSTR <- "bartik_iv_no_rrc"
+ENDOG <- "delta_log1p_competition_lawsuits_2024_2020"
+INSTR <- "bartik_iv_2020_2024"
 CTRLS <- c(
   "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
   "margin_2016",

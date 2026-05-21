@@ -30,23 +30,20 @@ COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_bartik_compone
 DESIGN_PATH     = PROJECT_ROOT / "data" / "estimation" / "executive_margin_design.csv"
 OUT_DIR         = PROJECT_ROOT / "output" / "tables" / "descriptives"
 
-EXCLUDE_RRC_DRAP = {"11618", "12044"}
-
-
 def main() -> None:
     # ---- 1. Load analysis sample to restrict to N=5,560 ----
     design = pd.read_csv(
         DESIGN_PATH,
         dtype={"municipality_id_tse": str},
         low_memory=False,
-        usecols=["municipality_id_tse", "bartik_iv_no_rrc_drap"],
+        usecols=["municipality_id_tse", "bartik_iv_2020_2024"],
     )
     design["municipality_id_tse"] = design["municipality_id_tse"].astype(str).str.zfill(5)
-    samp_ids = set(design.dropna(subset=["bartik_iv_no_rrc_drap"])["municipality_id_tse"])
+    samp_ids = set(design.dropna(subset=["bartik_iv_2020_2024"])["municipality_id_tse"])
     N = len(samp_ids)
     print(f"Analysis sample: {N:,} municipalities")
 
-    # ---- 2. Load components, apply exclusions, re-normalise shares ----
+    # ---- 2. Load components (adversarial filter applied at build stage) ----
     comp = pd.read_csv(
         COMPONENTS_PATH,
         dtype={"municipality_id_tse": str, "main_subject_code": str},
@@ -57,15 +54,12 @@ def main() -> None:
     # Keep only rows in sample
     comp = comp[comp["municipality_id_tse"].isin(samp_ids)].copy()
 
-    # Exclude RRC and DRAP
-    comp = comp[~comp["main_subject_code"].isin(EXCLUDE_RRC_DRAP)].copy()
-
     comp["n_lawsuits"] = pd.to_numeric(comp["n_lawsuits"], errors="coerce").fillna(0)
     comp["shock"]      = pd.to_numeric(
         comp["shock_log_growth_2020_2024"], errors="coerce"
     ).fillna(0)
 
-    # Re-normalise shares after exclusion
+    # Compute shares
     base_totals = comp.groupby("municipality_id_tse")["n_lawsuits"].transform("sum")
     comp["share"] = comp["n_lawsuits"] / base_totals.replace(0, np.nan)
 
@@ -152,7 +146,7 @@ def main() -> None:
 
     # ---- 6. Markdown output ----
     md = []
-    md.append("# Shift Descriptives — Adversarial-Only (No-RRC, No-DRAP) Bartik IV")
+    md.append("# Shift Descriptives — Adversarial Bartik IV")
     md.append("")
     md.append("BHJ (2024) checklist item 5: distribution of shifts g_k and importance weights s_k_bar.")
     md.append("")

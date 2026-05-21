@@ -55,8 +55,6 @@ def main() -> None:
     print("\n=== 04 Analysis ===")
     run_py("code/04_analysis/01_figures_descriptive.py")
     run_r("code/04_analysis/02_figures_causal.R")
-    run_py("code/04_analysis/03_shift_share_diagnostics.py")
-    run_r("code/04_analysis/04_shift_share_maps.R")
     run_py("code/04_analysis/05_rotemberg_weights.py") # GPS Rotemberg + F_k
     run_py("code/04_analysis/08_gps_balance_tests.py") # GPS share balance tests
     run_py("code/04_analysis/09_visual_iv.py")         # GPS visual IV graph

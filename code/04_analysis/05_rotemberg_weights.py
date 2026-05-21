@@ -1,6 +1,7 @@
 """
 Goldsmith-Pinkham, Sorkin & Swift (2020, AER) Rotemberg-weight decomposition
-for the adversarial-only (no-RRC, no-DRAP) Bartik shift-share IV.
+for the adversarial Bartik shift-share IV (administrative and procedural
+classes/subjects excluded at build stage).
 
 For each topic k, the Rotemberg weight alpha_k and the just-identified
 IV estimate tau_k are computed so that tau_IV = sum_k alpha_k * tau_k.
@@ -26,10 +27,8 @@ COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_bartik_compone
 OUT_DIR         = PROJECT_ROOT / "output" / "tables" / "descriptives"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-EXCLUDE_RRC_DRAP = {"11618", "12044"}
-
-ENDOGENOUS = "delta_log1p_lawsuits_no_rrc_drap_2024_2020"
-INSTRUMENT = "bartik_iv_no_rrc_drap"
+ENDOGENOUS = "delta_log1p_competition_lawsuits_2024_2020"
+INSTRUMENT = "bartik_iv_2020_2024"
 FE_COL     = "state"
 
 BASELINE_CONTROLS = [
@@ -111,16 +110,15 @@ def main() -> None:
         low_memory=False,
     )
     comp["municipality_id_tse"] = comp["municipality_id_tse"].str.zfill(5)
-    comp = comp[~comp["main_subject_code"].isin(EXCLUDE_RRC_DRAP)].copy()
 
-    # Re-normalise shares after RRC+DRAP exclusion (matches 01_assemble_design.py)
+    # Shares already reflect adversarial filter applied at build stage
     comp["n_lawsuits"] = pd.to_numeric(comp["n_lawsuits"], errors="coerce").fillna(0)
     comp["shock"]      = pd.to_numeric(
         comp["shock_log_growth_2020_2024"], errors="coerce"
     ).fillna(0)
     base_totals = comp.groupby("municipality_id_tse")["n_lawsuits"].transform("sum")
-    comp["share_no_rrc_drap"] = comp["n_lawsuits"] / base_totals.replace(0, np.nan)
-    comp["z_component"]       = comp["share_no_rrc_drap"] * comp["shock"]
+    comp["share"] = comp["n_lawsuits"] / base_totals.replace(0, np.nan)
+    comp["z_component"] = comp["share"] * comp["shock"]
 
     # Keep only municipalities in the analysis sample
     samp_ids = set(samp["municipality_id_tse"])
@@ -135,7 +133,7 @@ def main() -> None:
     )
     pivot = pivot.reindex(samp["municipality_id_tse"]).fillna(0.0)
     topic_codes = list(pivot.columns)
-    print(f"Topics in no-RRC instrument: {len(topic_codes)}")
+    print(f"Topics in adversarial instrument: {len(topic_codes)}")
 
     # ---- 4. Assemble combined frame and partial out ----
     samp_indexed = samp.set_index("municipality_id_tse")
@@ -148,14 +146,15 @@ def main() -> None:
     print("Partialling out controls and state FE …")
     resid_df = partial_out(combined, all_cols, BASELINE_CONTROLS, FE_COL)
 
-    z_tilde  = resid_df[INSTRUMENT].values          # (N,)  residualised full IV
     d_tilde  = resid_df[ENDOGENOUS].values          # (N,)  residualised endog
 
     # GPS (2020) correct alpha_k:
     # alpha_k = (z_k_tilde' d_tilde) / (Z_tilde' d_tilde)
-    # satisfies sum_k alpha_k = 1 and sum_k alpha_k * tau_k = tau_2SLS exactly,
-    # because Z_tilde = sum_k z_k_tilde (M is linear) so Z_tilde' d_tilde = sum_k z_k_tilde' d_tilde.
-    Zd = z_tilde @ d_tilde                          # denominator for weights
+    # Z_tilde = sum_k z_k_tilde (exact by linearity of M), so sum_k alpha_k = 1.
+    # Use the sum of topic columns as denominator — not the design's bartik_iv —
+    # to avoid any mismatch in share normalization between the two sources.
+    Z_sum_tilde = resid_df[topic_codes].values.sum(axis=1)  # exact by construction
+    Zd = Z_sum_tilde @ d_tilde                              # denominator for weights
 
     # ---- 5. Rotemberg weights and just-identified IV estimates ----
     topic_names = (
@@ -233,7 +232,7 @@ def main() -> None:
         top10 = top10.rename(columns={col: short})
 
     md_rows = []
-    md_rows.append(f"# Rotemberg Weights — Adversarial-Only (No-RRC, No-DRAP) Bartik IV")
+    md_rows.append(f"# Rotemberg Weights — Adversarial Bartik IV")
     md_rows.append(f"")
     md_rows.append(f"GPS (2020) decomposition: tau_IV = sum_k alpha_k * tau_k.")
     md_rows.append(f"")

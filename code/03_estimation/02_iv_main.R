@@ -2,9 +2,9 @@
 # Follows Ash, Morelli & Vannoni (2025, JPE) Stata structure.
 # Loads pre-assembled design matrix from Python pipeline, runs 2SLS via feols().
 #
-# Loops over two instrument variants:
-#   all_topics   : bartik_iv_2020_2024         / delta_log1p_competition_lawsuits_2024_2020
-#   no_rrc_drap  : bartik_iv_no_rrc_drap       / delta_log1p_lawsuits_no_rrc_drap_2024_2020
+# Single instrument variant:
+#   adversarial  : bartik_iv_2020_2024         / delta_log1p_competition_lawsuits_2024_2020
+#   (administrative and procedural classes/subjects excluded at build stage)
 #
 # fixest formula: y ~ controls | FE | endogenous ~ instrument
 # Clustering: by principal electoral zone (within-municipality; avoids spatial correlation).
@@ -66,17 +66,12 @@ cat(sprintf("Loaded design: %d municipalities\n", nrow(df)))
 
 THRESHOLD_200K <- 200000L  # Art. 29-II CF/88 — second-round eligibility
 
-# ---- Instrument variants to loop over ----
+# ---- Instrument variant ----
 VARIANTS <- list(
   list(
-    name       = "all_topics",
+    name       = "adversarial",
     instrument = "bartik_iv_2020_2024",
     endogenous = "delta_log1p_competition_lawsuits_2024_2020"
-  ),
-  list(
-    name       = "no_rrc_drap",
-    instrument = "bartik_iv_no_rrc_drap",
-    endogenous = "delta_log1p_lawsuits_no_rrc_drap_2024_2020"
   )
 )
 

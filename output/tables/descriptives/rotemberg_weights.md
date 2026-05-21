@@ -1,23 +1,23 @@
-# Rotemberg Weights — Adversarial-Only (No-RRC, No-DRAP) Bartik IV
+# Rotemberg Weights — Adversarial Bartik IV
 
 GPS (2020) decomposition: tau_IV = sum_k alpha_k * tau_k.
 
-**HHI** = 0.3804 | **Positive-weight topics** = 20 / 29
+**HHI** = 0.3356 | **Positive-weight topics** = 90 / 215
 
 ## Top 10 Topics by Rotemberg Weight
 
 | Rank | Code | Topic | alpha (%) | Cum. | F_k | winner_majority | margin_top1_top2 | winner_vote_share | blank_rate |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 11616 | Impugnação ao Registro de Candidatura | +40.3% | 0.40 | 43.4 | 0.213 | 0.078 | 0.068 | 0.002 |
-| 2 | 11679 | Propaganda Política - Propaganda Eleitoral -  | +19.4% | 0.60 | 49.0 | 0.126 | 0.109 | 0.058 | 0.005 |
-| 3 | 11619 | Registro de Candidatura - RRCI - Candidato In | +16.0% | 0.76 | 9.2 | 0.225 | 0.066 | 0.017 | 0.002 |
-| 4 | 11662 | Propaganda Política - Propaganda Eleitoral -  | +13.4% | 0.89 | 6.5 | -0.315 | 0.094 | 0.019 | -0.003 |
-| 5 | 11653 | Propaganda Política - Propaganda Eleitoral -  | +9.5% | 0.99 | 23.0 | -0.321 | -0.144 | -0.124 | 0.000 |
-| 6 | 12063 | Conduta Vedada ao Agente Público | +7.8% | 1.07 | 18.9 | -0.029 | 0.002 | 0.001 | -0.005 |
-| 7 | 12362 | Autorização de Divulgação de Publicidade Inst | +6.8% | 1.13 | 18.0 | 0.179 | -0.074 | -0.009 | -0.002 |
-| 8 | 12635 | Propaganda Política - Propaganda Eleitoral -  | +6.2% | 1.20 | 5.6 | 0.271 | -0.182 | -0.059 | -0.032 |
-| 9 | 11654 | Propaganda Política - Propaganda Eleitoral -  | +5.6% | 1.25 | 13.8 | -0.045 | -0.034 | -0.002 | 0.013 |
-| 10 | 11655 | Propaganda Política - Propaganda Eleitoral -  | +4.9% | 1.30 | 57.7 | 0.056 | -0.053 | -0.024 | 0.004 |
+| 1 | 11472 | Falsificação ou Alteração de Documento Públic | +23.5% | 0.24 | 50.9 | -0.138 | -0.184 | -0.121 | -0.033 |
+| 2 | 11593 | Direito de Resposta | +16.4% | 0.40 | 1.1 | -3.346 | -1.175 | -0.951 | -0.033 |
+| 3 | 11642 | Eleições - 1° Turno | +15.8% | 0.56 | 1.9 | -0.325 | -0.726 | -0.432 | -0.079 |
+| 4 | 11665 | Propaganda Política - Propaganda Eleitoral -  | +12.7% | 0.68 | 2.3 | 0.570 | 0.103 | 0.051 | 0.033 |
+| 5 | 10750 | Injúria | +11.6% | 0.80 | 16.8 | -0.215 | -0.155 | -0.082 | -0.008 |
+| 6 | 11662 | Propaganda Política - Propaganda Eleitoral -  | +10.7% | 0.91 | 2.5 | -1.301 | 0.410 | 0.134 | -0.004 |
+| 7 | 11596 | Inelegibilidade - Abuso do Poder Econômico ou | +10.3% | 1.01 | 1.3 | -1.520 | -0.056 | -0.132 | 0.004 |
+| 8 | 12592 | Direito Líquido e Certo | +8.6% | 1.10 | 0.6 | -1.246 | 0.379 | 0.173 | 0.023 |
+| 9 | 11654 | Propaganda Política - Propaganda Eleitoral -  | +8.4% | 1.18 | 21.6 | -0.020 | -0.165 | -0.065 | 0.004 |
+| 10 | 11678 | Propaganda Política - Propaganda Eleitoral -  | +7.9% | 1.26 | 2.9 | -0.292 | -0.313 | -0.282 | 0.028 |
 
 ## Notes
 - `alpha_k = (z_k_tilde' d_tilde) / (Z_tilde' d_tilde)`  where tilde = residual on state FE + 7 baseline controls.

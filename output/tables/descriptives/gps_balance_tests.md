@@ -9,21 +9,23 @@ High R² indicates the share correlates with observables (endogeneity concern).
 
 | Rank | Code | Topic | alpha | R² | F | p |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 11616 | Impugnação ao Registro de Candidatura | +0.403 | 0.179 | 37.7 | 0.000 |
-| 2 | 11617 | Registro de Candidatura - Preenchimento  | -0.297 | 0.199 | 42.9 | 0.000 |
-| 3 | 11679 | Propaganda Política - Propaganda Eleitor | +0.194 | 0.091 | 17.3 | 0.000 |
-| 4 | 11619 | Registro de Candidatura - RRCI - Candida | +0.160 | 0.083 | 15.7 | 0.000 |
-| 5 | 11662 | Propaganda Política - Propaganda Eleitor | +0.134 | 0.239 | 54.1 | 0.000 |
-| 6 | 11596 | Inelegibilidade - Abuso do Poder Econômi | -0.116 | 0.062 | 11.5 | 0.000 |
-| 7 | 11653 | Propaganda Política - Propaganda Eleitor | +0.095 | 0.069 | 12.8 | 0.000 |
-| 8 | 12063 | Conduta Vedada ao Agente Público | +0.078 | 0.053 | 9.7 | 0.000 |
-| 9 | 12362 | Autorização de Divulgação de Publicidade | +0.068 | 0.047 | 8.5 | 0.000 |
-| 10 | 12635 | Propaganda Política - Propaganda Eleitor | +0.062 | 0.130 | 25.7 | 0.000 |
-| 11 | 12639 | Propaganda Política - Propaganda Eleitor | +0.024 | 0.072 | 13.4 | 0.000 |
-| 12 | 12637 | Propaganda Política - Propaganda Eleitor | +0.023 | 0.104 | 20.1 | 0.000 |
-| 13 | 12638 | Propaganda Política - Propaganda Eleitor | +0.016 | 0.060 | 11.0 | 0.000 |
-| 14 | 11484 | Calúnia na Propaganda Eleitoral | +0.001 | 0.026 | 4.6 | 0.000 |
-| 15 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | — | 0.475 | 156.5 | 0.000 |
+| 1 | 11472 | Falsificação ou Alteração de Documento P | +0.235 | 0.007 | 1.2 | 0.190 |
+| 2 | 11649 | Pesquisa Eleitoral - Divulgação de Pesqu | -0.226 | 0.132 | 26.2 | 0.000 |
+| 3 | 11593 | Direito de Resposta | +0.164 | 0.072 | 13.4 | 0.000 |
+| 4 | 11642 | Eleições - 1° Turno | +0.158 | 0.047 | 8.5 | 0.000 |
+| 5 | 11518 | Subscrição de Mais de Uma Ficha de Filia | -0.154 | 0.018 | 3.2 | 0.000 |
+| 6 | 11665 | Propaganda Política - Propaganda Eleitor | +0.127 | 0.087 | 16.4 | 0.000 |
+| 7 | 11513 | Arregimentação de Eleitor ou Boca de Urn | -0.119 | 0.004 | 0.6 | 0.947 |
+| 8 | 10750 | Injúria | +0.116 | 0.022 | 3.8 | 0.000 |
+| 9 | 11662 | Propaganda Política - Propaganda Eleitor | +0.107 | 0.176 | 36.9 | 0.000 |
+| 10 | 11596 | Inelegibilidade - Abuso do Poder Econômi | +0.103 | 0.052 | 9.5 | 0.000 |
+| 11 | 12635 | Propaganda Política - Propaganda Eleitor | -0.016 | 0.133 | 26.5 | 0.000 |
+| 12 | 12638 | Propaganda Política - Propaganda Eleitor | -0.011 | 0.049 | 9.0 | 0.000 |
+| 13 | 12639 | Propaganda Política - Propaganda Eleitor | +0.009 | 0.070 | 13.0 | 0.000 |
+| 14 | 11679 | Propaganda Política - Propaganda Eleitor | -0.009 | 0.080 | 15.0 | 0.000 |
+| 15 | 12637 | Propaganda Política - Propaganda Eleitor | -0.001 | 0.098 | 18.8 | 0.000 |
+| 16 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | -0.000 | 0.011 | 1.9 | 0.001 |
+| 17 | 11484 | Calúnia na Propaganda Eleitoral | -0.000 | 0.027 | 4.7 | 0.000 |
 
 ## Test 2: Pre-trend Balance (OLS: delta_outcome_2016_2020 ~ s_ik | state FE)
 
@@ -33,61 +35,67 @@ Under share exogeneity, topic shares should not predict 2016→2020 electoral tr
 
 | Rank | Code | Topic | alpha | beta | SE | p |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 11616 | Impugnação ao Registro de Candidatura | +0.403 | +0.0000 | 0.0000 | 0.852 |
-| 2 | 11617 | Registro de Candidatura - Preenchimento  | -0.297 | -0.0000 | 0.0000 | 0.429 |
-| 3 | 11679 | Propaganda Política - Propaganda Eleitor | +0.194 | -0.0000 | 0.0000 | 0.729 |
-| 4 | 11619 | Registro de Candidatura - RRCI - Candida | +0.160 | -0.0000 | 0.0000 | 0.748 |
-| 5 | 11662 | Propaganda Política - Propaganda Eleitor | +0.134 | -0.0000 | 0.0000 | 0.893 |
-| 6 | 11596 | Inelegibilidade - Abuso do Poder Econômi | -0.116 | -0.0000 | 0.0000 | 0.619 |
-| 7 | 11653 | Propaganda Política - Propaganda Eleitor | +0.095 | -0.0000 | 0.0000 | 0.663 |
-| 8 | 12063 | Conduta Vedada ao Agente Público | +0.078 | -0.0000 | 0.0000 | 0.986 |
-| 9 | 12362 | Autorização de Divulgação de Publicidade | +0.068 | -0.0000 | 0.0000 | 0.804 |
-| 10 | 12635 | Propaganda Política - Propaganda Eleitor | +0.062 | -0.0000 | 0.0000 | 0.237 |
-| 11 | 12639 | Propaganda Política - Propaganda Eleitor | +0.024 | -0.0000 | 0.0000 | 0.516 |
-| 12 | 12637 | Propaganda Política - Propaganda Eleitor | +0.023 | -0.0000 | 0.0000 | 0.796 |
-| 13 | 12638 | Propaganda Política - Propaganda Eleitor | +0.016 | -0.0000 | 0.0000 | 0.691 |
-| 14 | 11484 | Calúnia na Propaganda Eleitoral | +0.001 | -0.0000 | 0.0000 | 0.867 |
-| 15 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | — | -0.0000 | 0.0000 | 0.828 |
+| 1 | 11472 | Falsificação ou Alteração de Documento P | +0.235 | +0.0000 | 0.0000 | 0.936 |
+| 2 | 11649 | Pesquisa Eleitoral - Divulgação de Pesqu | -0.226 | -0.0000 | 0.0000 | 0.858 |
+| 3 | 11593 | Direito de Resposta | +0.164 | -0.0000 | 0.0000 | 0.075 |
+| 4 | 11642 | Eleições - 1° Turno | +0.158 | -0.0000 | 0.0000 | 0.942 |
+| 5 | 11518 | Subscrição de Mais de Uma Ficha de Filia | -0.154 | -0.0000 | 0.0000 | 0.695 |
+| 6 | 11665 | Propaganda Política - Propaganda Eleitor | +0.127 | +0.0000 | 0.0000 | 0.972 |
+| 7 | 11513 | Arregimentação de Eleitor ou Boca de Urn | -0.119 | -0.0000 | 0.0000 | 0.781 |
+| 8 | 10750 | Injúria | +0.116 | -0.0000 | 0.0000 | 0.758 |
+| 9 | 11662 | Propaganda Política - Propaganda Eleitor | +0.107 | -0.0000 | 0.0000 | 0.943 |
+| 10 | 11596 | Inelegibilidade - Abuso do Poder Econômi | +0.103 | -0.0000 | 0.0000 | 0.771 |
+| 11 | 12635 | Propaganda Política - Propaganda Eleitor | -0.016 | -0.0000 | 0.0000 | 0.236 |
+| 12 | 12638 | Propaganda Política - Propaganda Eleitor | -0.011 | -0.0000 | 0.0000 | 0.684 |
+| 13 | 12639 | Propaganda Política - Propaganda Eleitor | +0.009 | -0.0000 | 0.0000 | 0.762 |
+| 14 | 11679 | Propaganda Política - Propaganda Eleitor | -0.009 | -0.0000 | 0.0000 | 0.841 |
+| 15 | 12637 | Propaganda Política - Propaganda Eleitor | -0.001 | -0.0000 | 0.0000 | 0.827 |
+| 16 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | -0.000 | +0.0000 | 0.0000 | 0.953 |
+| 17 | 11484 | Calúnia na Propaganda Eleitoral | -0.000 | -0.0000 | 0.0000 | 0.921 |
 
 ### Outcome: delta_top1_2020_2016
 
 | Rank | Code | Topic | alpha | beta | SE | p |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 11616 | Impugnação ao Registro de Candidatura | +0.403 | +0.0180 | 0.0074 | 0.015 * |
-| 2 | 11617 | Registro de Candidatura - Preenchimento  | -0.297 | +0.0035 | 0.0065 | 0.583 |
-| 3 | 11679 | Propaganda Política - Propaganda Eleitor | +0.194 | +0.0017 | 0.0119 | 0.890 |
-| 4 | 11619 | Registro de Candidatura - RRCI - Candida | +0.160 | -0.0076 | 0.0097 | 0.435 |
-| 5 | 11662 | Propaganda Política - Propaganda Eleitor | +0.134 | -0.0149 | 0.0138 | 0.280 |
-| 6 | 11596 | Inelegibilidade - Abuso do Poder Econômi | -0.116 | -0.0970 | 0.0294 | 0.001 * |
-| 7 | 11653 | Propaganda Política - Propaganda Eleitor | +0.095 | -0.0428 | 0.0182 | 0.019 * |
-| 8 | 12063 | Conduta Vedada ao Agente Público | +0.078 | -0.0187 | 0.0257 | 0.466 |
-| 9 | 12362 | Autorização de Divulgação de Publicidade | +0.068 | +0.0182 | 0.0310 | 0.557 |
-| 10 | 12635 | Propaganda Política - Propaganda Eleitor | +0.062 | -0.0237 | 0.0120 | 0.048 * |
-| 11 | 12639 | Propaganda Política - Propaganda Eleitor | +0.024 | +0.0181 | 0.0252 | 0.472 |
-| 12 | 12637 | Propaganda Política - Propaganda Eleitor | +0.023 | +0.0017 | 0.0120 | 0.885 |
-| 13 | 12638 | Propaganda Política - Propaganda Eleitor | +0.016 | +0.0281 | 0.0417 | 0.501 |
-| 14 | 11484 | Calúnia na Propaganda Eleitoral | +0.001 | +0.0132 | 0.0233 | 0.570 |
-| 15 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | — | -0.0637 | 0.0237 | 0.007 * |
+| 1 | 11472 | Falsificação ou Alteração de Documento P | +0.235 | -0.0511 | 0.0784 | 0.514 |
+| 2 | 11649 | Pesquisa Eleitoral - Divulgação de Pesqu | -0.226 | +0.0026 | 0.0103 | 0.798 |
+| 3 | 11593 | Direito de Resposta | +0.164 | -0.0090 | 0.0205 | 0.661 |
+| 4 | 11642 | Eleições - 1° Turno | +0.158 | +0.0015 | 0.0192 | 0.939 |
+| 5 | 11518 | Subscrição de Mais de Uma Ficha de Filia | -0.154 | +0.1043 | 0.0890 | 0.241 |
+| 6 | 11665 | Propaganda Política - Propaganda Eleitor | +0.127 | -0.0077 | 0.0319 | 0.808 |
+| 7 | 11513 | Arregimentação de Eleitor ou Boca de Urn | -0.119 | -0.0994 | 0.0446 | 0.026 * |
+| 8 | 10750 | Injúria | +0.116 | +0.0065 | 0.1287 | 0.960 |
+| 9 | 11662 | Propaganda Política - Propaganda Eleitor | +0.107 | -0.0031 | 0.0120 | 0.799 |
+| 10 | 11596 | Inelegibilidade - Abuso do Poder Econômi | +0.103 | -0.0456 | 0.0229 | 0.046 * |
+| 11 | 12635 | Propaganda Política - Propaganda Eleitor | -0.016 | -0.0082 | 0.0103 | 0.427 |
+| 12 | 12638 | Propaganda Política - Propaganda Eleitor | -0.011 | +0.0193 | 0.0347 | 0.577 |
+| 13 | 12639 | Propaganda Política - Propaganda Eleitor | +0.009 | +0.0236 | 0.0195 | 0.225 |
+| 14 | 11679 | Propaganda Política - Propaganda Eleitor | -0.009 | +0.0104 | 0.0105 | 0.325 |
+| 15 | 12637 | Propaganda Política - Propaganda Eleitor | -0.001 | +0.0148 | 0.0101 | 0.144 |
+| 16 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | -0.000 | +0.1812 | 0.5605 | 0.746 |
+| 17 | 11484 | Calúnia na Propaganda Eleitoral | -0.000 | +0.0116 | 0.0230 | 0.614 |
 
 ### Outcome: delta_ncand_2020_2016
 
 | Rank | Code | Topic | alpha | beta | SE | p |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 11616 | Impugnação ao Registro de Candidatura | +0.403 | -0.3006 | 0.1268 | 0.018 * |
-| 2 | 11617 | Registro de Candidatura - Preenchimento  | -0.297 | -0.2390 | 0.1098 | 0.030 * |
-| 3 | 11679 | Propaganda Política - Propaganda Eleitor | +0.194 | -0.1702 | 0.2023 | 0.400 |
-| 4 | 11619 | Registro de Candidatura - RRCI - Candida | +0.160 | +0.0842 | 0.1659 | 0.612 |
-| 5 | 11662 | Propaganda Política - Propaganda Eleitor | +0.134 | +0.3637 | 0.2351 | 0.122 |
-| 6 | 11596 | Inelegibilidade - Abuso do Poder Econômi | -0.116 | +1.4336 | 0.5012 | 0.004 * |
-| 7 | 11653 | Propaganda Política - Propaganda Eleitor | +0.095 | +0.8860 | 0.3100 | 0.004 * |
-| 8 | 12063 | Conduta Vedada ao Agente Público | +0.078 | +0.5049 | 0.4368 | 0.248 |
-| 9 | 12362 | Autorização de Divulgação de Publicidade | +0.068 | -0.2276 | 0.5283 | 0.667 |
-| 10 | 12635 | Propaganda Política - Propaganda Eleitor | +0.062 | +0.2646 | 0.2037 | 0.194 |
-| 11 | 12639 | Propaganda Política - Propaganda Eleitor | +0.024 | -0.2856 | 0.4290 | 0.506 |
-| 12 | 12637 | Propaganda Política - Propaganda Eleitor | +0.023 | -0.0203 | 0.2036 | 0.920 |
-| 13 | 12638 | Propaganda Política - Propaganda Eleitor | +0.016 | +0.5276 | 0.7106 | 0.458 |
-| 14 | 11484 | Calúnia na Propaganda Eleitoral | +0.001 | -0.2215 | 0.3961 | 0.576 |
-| 15 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | — | +0.8759 | 0.4044 | 0.030 * |
+| 1 | 11472 | Falsificação ou Alteração de Documento P | +0.235 | +0.8619 | 1.3353 | 0.519 |
+| 2 | 11649 | Pesquisa Eleitoral - Divulgação de Pesqu | -0.226 | +0.2072 | 0.1746 | 0.235 |
+| 3 | 11593 | Direito de Resposta | +0.164 | -0.1889 | 0.3498 | 0.589 |
+| 4 | 11642 | Eleições - 1° Turno | +0.158 | +0.3693 | 0.3261 | 0.258 |
+| 5 | 11518 | Subscrição de Mais de Uma Ficha de Filia | -0.154 | -0.7620 | 1.5158 | 0.615 |
+| 6 | 11665 | Propaganda Política - Propaganda Eleitor | +0.127 | +0.0350 | 0.5425 | 0.949 |
+| 7 | 11513 | Arregimentação de Eleitor ou Boca de Urn | -0.119 | +1.2990 | 0.7595 | 0.087 |
+| 8 | 10750 | Injúria | +0.116 | +2.4842 | 2.1904 | 0.257 |
+| 9 | 11662 | Propaganda Política - Propaganda Eleitor | +0.107 | +0.1504 | 0.2043 | 0.462 |
+| 10 | 11596 | Inelegibilidade - Abuso do Poder Econômi | +0.103 | +0.4212 | 0.3897 | 0.280 |
+| 11 | 12635 | Propaganda Política - Propaganda Eleitor | -0.016 | -0.0910 | 0.1761 | 0.605 |
+| 12 | 12638 | Propaganda Política - Propaganda Eleitor | -0.011 | +0.2650 | 0.5903 | 0.653 |
+| 13 | 12639 | Propaganda Política - Propaganda Eleitor | +0.009 | -0.5681 | 0.3312 | 0.086 |
+| 14 | 11679 | Propaganda Política - Propaganda Eleitor | -0.009 | -0.2852 | 0.1792 | 0.112 |
+| 15 | 12637 | Propaganda Política - Propaganda Eleitor | -0.001 | -0.2698 | 0.1725 | 0.118 |
+| 16 | 12044 *(DRAP)* | Registro de Candidatura - DRAP Partido/C | -0.000 | -13.8839 | 9.5412 | 0.146 |
+| 17 | 11484 | Calúnia na Propaganda Eleitoral | -0.000 | -0.4337 | 0.3908 | 0.267 |
 
 ## Information Environment Focus (all 6 topics)
 
@@ -96,12 +104,12 @@ Share exogeneity must hold for each individual topic for the family IV to be val
 
 | Code | Topic | alpha | Family | R²(cov) | p(cov) | p(margin) | p(top1) | p(ncand) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 11679 | Propaganda Política - Propaganda Eleitoral -  | +0.194 | information_environment | 0.091 | 0.000 * | 0.729 | 0.890 | 0.400 |
-| 12635 | Propaganda Política - Propaganda Eleitoral -  | +0.062 | information_environment | 0.130 | 0.000 * | 0.237 | 0.048 * | 0.194 |
-| 12639 | Propaganda Política - Propaganda Eleitoral -  | +0.024 | information_environment | 0.072 | 0.000 * | 0.516 | 0.472 | 0.506 |
-| 12637 | Propaganda Política - Propaganda Eleitoral -  | +0.023 | information_environment | 0.104 | 0.000 * | 0.796 | 0.885 | 0.920 |
-| 12638 | Propaganda Política - Propaganda Eleitoral -  | +0.016 | information_environment | 0.060 | 0.000 * | 0.691 | 0.501 | 0.458 |
-| 11484 | Calúnia na Propaganda Eleitoral | +0.001 | information_environment | 0.026 | 0.000 * | 0.867 | 0.570 | 0.576 |
+| 12635 | Propaganda Política - Propaganda Eleitoral -  | -0.016 | information_environment | 0.133 | 0.000 * | 0.236 | 0.427 | 0.605 |
+| 12638 | Propaganda Política - Propaganda Eleitoral -  | -0.011 | information_environment | 0.049 | 0.000 * | 0.684 | 0.577 | 0.653 |
+| 12639 | Propaganda Política - Propaganda Eleitoral -  | +0.009 | information_environment | 0.070 | 0.000 * | 0.762 | 0.225 | 0.086 |
+| 11679 | Propaganda Política - Propaganda Eleitoral -  | -0.009 | information_environment | 0.080 | 0.000 * | 0.841 | 0.325 | 0.112 |
+| 12637 | Propaganda Política - Propaganda Eleitoral -  | -0.001 | information_environment | 0.098 | 0.000 * | 0.827 | 0.144 | 0.118 |
+| 11484 | Calúnia na Propaganda Eleitoral | -0.000 | information_environment | 0.027 | 0.000 * | 0.921 | 0.614 | 0.267 |
 
 (*) significant at 5% — signals potential share endogeneity.
 

@@ -18,6 +18,46 @@ OVERRIDES_PATH = DERIVED_DIR / "shift_share_subject_manual_assignments.csv"
 LOOKUP_PATH = RAW_DIR / "lista-zonas-municipios-10-07-24.csv"
 
 TARGET_YEARS = [2020, 2024]
+
+# ── Adversarial filter ─────────────────────────────────────────────────────────
+# Classes to exclude: administrative and procedural/enforcement classes
+DROP_CLASSES: set[str] = {
+    # Administrative
+    "11532", "12193", "12554", "11530", "12550", "12560", "1298",
+    "12549", "12633", "12729", "386", "XXXJ", "12551", "11546",
+    "1303", "1308", "12557", "12562",
+    # Procedural / enforcement / generic
+    "156", "241", "261", "258", "278", "157", "355", "1727", "12060",
+    "12248", "12121", "1116", "193", "326", "83", "10980", "335",
+    "221", "325", "228", "1463", "11793", "333",
+}
+
+# Subjects to exclude within adversarial-class cases
+DROP_SUBJECTS: set[str] = {
+    "12366",  # enforcement (cumprimento de sentença)
+    "11778",  # generic requerimento
+    "12362",  # administrative (autorização publicidade institucional)
+    "11651",  # administrative (registro de pesquisa eleitoral)
+    "12599",  # administrative (acesso sistema pesquisas)
+    "12598",  # administrative (regularização inadimplência)
+    "11753",  # administrative (convenção partidária)
+    "11767",  # administrative (órgão de direção municipal)
+    "11579",  # administrative (inscrição eleitoral)
+    "11756",  # administrative (filiação - cancelamento)
+    "11648",  # generic (pesquisa eleitoral)
+    "11592",  # unknown (elegibilidade - quitação)
+    "11589",  # unknown (elegibilidade - filiação)
+    "11782",  # procedural (intimação)
+    "11783",  # procedural (citação)
+    "11428",  # generic (direito eleitoral)
+    "-1",     # not identified
+    # Cargo positional tags (all offices)
+    "11628", "11629", "11630", "11631", "11632", "11633", "11634",
+    "11637", "11638", "11640", "11641",
+    # Generic candidato descriptors
+    "11584", "12600", "12601",
+}
+
 STANDARD_TO_LEGACY = {
     "election_year": "ANO_ELEICAO",
     "state": "SG_UF",
@@ -31,12 +71,6 @@ STANDARD_TO_LEGACY = {
     "main_subject_name": "DS_ASSUNTO_PRINCIPAL",
 }
 LEGACY_TO_STANDARD = {value: key for key, value in STANDARD_TO_LEGACY.items()}
-MAIN_FAMILIES = {
-    "eligibility_ballot_access",
-    "abuse_misuse_office",
-    "campaign_conduct",
-    "information_environment",
-}
 OFFICE_MAP = {
     "PREFEITO": "executive",
     "VEREADOR": "legislative",
@@ -115,6 +149,10 @@ def load_zone_subject_panel(crosswalk: pd.DataFrame) -> pd.DataFrame:
     )
     panel = panel.rename(columns=STANDARD_TO_LEGACY)
     panel = panel[panel["ANO_ELEICAO"].isin(TARGET_YEARS)].copy()
+    panel = panel[
+        ~panel["CD_CLASSE"].isin(DROP_CLASSES) &
+        ~panel["CD_ASSUNTO_PRINCIPAL"].isin(DROP_SUBJECTS)
+    ].copy()
     panel = (
         panel.groupby(
             [
@@ -151,7 +189,7 @@ def build_municipality_subject_panel(
         how="left",
         validate="many_to_many",
     )
-    municipal["competition_case"] = municipal["topic_family"].isin(MAIN_FAMILIES)
+    municipal["competition_case"] = True
     return municipal
 
 
@@ -634,8 +672,8 @@ def write_setup_note(
         "## Core Choices",
         "",
         "- exposure unit: municipality, aggregated from first-instance zona-eleitoral outputs",
-        "- main treatment universe: competition-relevant subject codes only",
-        "- primary robustness specification: exclude `11618 = RRC - Candidato`",
+        "- treatment universe: adversarial lawsuits only (administrative and procedural",
+        "  classes/subjects excluded via DROP_CLASSES and DROP_SUBJECTS in 02_bartik_inputs.py)",
         "- outcome panels are separated by office sought",
         "- executive office: `PREFEITO`",
         "- legislative office: `VEREADOR`",

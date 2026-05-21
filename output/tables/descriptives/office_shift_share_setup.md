@@ -6,8 +6,8 @@ which correspond to local `zonas eleitorais`, and maps them to municipalities.
 ## Core Choices
 
 - exposure unit: municipality, aggregated from first-instance zona-eleitoral outputs
-- main treatment universe: competition-relevant subject codes only
-- primary robustness specification: exclude `11618 = RRC - Candidato`
+- treatment universe: adversarial lawsuits only (administrative and procedural
+  classes/subjects excluded via DROP_CLASSES and DROP_SUBJECTS in 02_bartik_inputs.py)
 - outcome panels are separated by office sought
 - executive office: `PREFEITO`
 - legislative office: `VEREADOR`

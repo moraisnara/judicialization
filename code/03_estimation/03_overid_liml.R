@@ -1,12 +1,13 @@
 # GPS (2020) Section V.C — Overidentification test (Sargan-Hansen J) and
-# LIML comparison, using all K=29 topic-component vectors as separate instruments.
+# LIML comparison, using all K topic-component vectors as separate instruments.
 #
 # Both strategies require an overidentified system (K instruments, one endog.
 # variable -> K-1 overidentifying restrictions).
 #
 # Method:
 #   Run feols(y ~ controls | FE | d ~ z_1 + z_2 + ... + z_K)
-#   where z_k = s_ik * g_k (topic-k Bartik component) after excluding RRC+DRAP.
+#   where z_k = s_ik * g_k (topic-k Bartik component), adversarial cases only
+#   (administrative and procedural classes/subjects excluded at build stage).
 #   Sargan-Hansen J: fitstat(fit, "sargan") in fixest.
 #   LIML: k-class estimator with k = smallest eigenvalue of (Z'X, Z'Z) system.
 #
@@ -45,7 +46,8 @@ CLEAN_DIR      <- file.path(PROJECT_ROOT, "data", "clean")
 ESTIMATES_DIR  <- file.path(PROJECT_ROOT, "output", "tables", "regressions")
 dir.create(ESTIMATES_DIR, recursive = TRUE, showWarnings = FALSE)
 
-EXCLUDE_CODES <- c("11618", "12044")   # RRC + DRAP
+# No additional exclusions: adversarial filter applied at build stage
+EXCLUDE_CODES <- character(0)
 
 BASELINE_CONTROLS <- c(
   "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
@@ -62,7 +64,7 @@ PRIMARY_OUTCOMES <- c(
   "delta_winner_majority_2024_2020"
 )
 
-ENDOGENOUS <- "delta_log1p_lawsuits_no_rrc_drap_2024_2020"
+ENDOGENOUS <- "delta_log1p_competition_lawsuits_2024_2020"
 FE_COL     <- "SG_UF"
 
 
@@ -283,7 +285,7 @@ for (y in PRIMARY_OUTCOMES) {
   se_liml <- sqrt(s2_liml * DtD_inv)
 
   # Compare to just-identified 2SLS (Bartik aggregate)
-  bartik_instr <- "bartik_iv_no_rrc_drap"
+  bartik_instr <- "bartik_iv_2020_2024"
   b_2sls_ji <- NA; se_2sls_ji <- NA
   if (bartik_instr %in% names(samp)) {
     B_tilde <- M_W(samp[[bartik_instr]])
@@ -328,13 +330,13 @@ fmt <- function(x, d=4) ifelse(is.na(x), "—", sprintf(paste0("%.", d, "f"), as
 md <- c(
   "# Overidentification Tests and LIML — GPS (2020) Section V.C",
   "",
-  "Using adversarial-only instrument (no-RRC, no-DRAP), K=29 topic components.",
+  "Using adversarial instrument (administrative/procedural excluded at build stage).",
   sprintf("Estimation sample: N=%d municipalities. State FE + 7 baseline controls.",
           nrow(samp)),
   "",
   "## Sargan-Hansen J Test (2SLS overidentified with all K=29 shares)",
   "",
-  paste0("K-1=", K-1, " over-identifying restrictions. Null = all shares are valid instruments."),
+  paste0("K=", K, " topic components; K-1=", K-1, " over-identifying restrictions. Null = all shares are valid instruments."),
   "Under GPS (share exogeneity), J test should NOT reject.",
   "",
   "| Outcome | 2SLS coef | SE | J stat | df | p(J) |",
