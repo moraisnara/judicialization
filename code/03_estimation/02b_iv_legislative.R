@@ -51,8 +51,13 @@ cat(sprintf("Loaded legislative design: %d municipalities\n", nrow(df)))
 # 2. VARIABLE DEFINITIONS
 # ============================================================
 
-INSTRUMENT <- "bartik_iv_2020_2024"
-ENDOGENOUS <- "delta_log1p_competition_lawsuits_2024_2020"
+VARIANTS <- list(
+  list(
+    name       = "adversarial",
+    instrument = "bartik_iv_2020_2024",
+    endogenous = "delta_log1p_competition_lawsuits_2024_2020"
+  )
+)
 
 # Candidate pool — who chooses to run
 CANDIDATE_POOL_OUTCOMES <- c(
@@ -108,11 +113,11 @@ build_sample <- function(data, controls, outcomes, fe_col, instrument, endogenou
   req   <- unique(c(instrument, endogenous, "cluster_id", fe_col, ctrls))
   req   <- req[req %in% names(data)]
   samp  <- data[complete.cases(data[, req, drop = FALSE]), ]
+  if (single_zone && "n_zones_in_municipality" %in% names(samp))
+    samp <- samp[samp$n_zones_in_municipality == 1L, ]
   if (!is.null(aptos_filter) && "log1p_total_valid_votes_2020" %in% names(samp)) {
-    # Use log electorate as proxy for size threshold (log(200001) ≈ 12.21)
     thresh <- log1p(THRESHOLD_200K)
     if (aptos_filter == "le200k") samp <- samp[samp$log1p_total_valid_votes_2020 <= thresh, ]
-    if (aptos_filter == "gt200k") samp <- samp[samp$log1p_total_valid_votes_2020 >  thresh, ]
   }
   rownames(samp) <- NULL
   samp
@@ -134,24 +139,24 @@ run_iv <- function(samp, outcome, controls, fe_col, instrument, endogenous) {
   feols(fml, data = samp, cluster = ~cluster_id, warn = FALSE, notes = FALSE)
 }
 
-extract_fs_row <- function(fit, spec, n_obs, n_cl, instrument) {
+extract_fs_row <- function(fit, variant, spec, n_obs, n_cl, instrument) {
   b  <- coef(fit)[instrument]
   se <- se(fit)[instrument]
   t  <- tstat(fit)[instrument]
   p  <- pvalue(fit)[instrument]
-  data.frame(spec = spec, coef = b, se = se, t = t, p = p,
+  data.frame(variant = variant, spec = spec, coef = b, se = se, t = t, p = p,
              first_stage_F = t^2, nobs = n_obs, n_clusters = n_cl,
              stringsAsFactors = FALSE)
 }
 
-extract_iv_row <- function(fit, spec, family, outcome, n_obs, n_cl, endogenous) {
+extract_iv_row <- function(fit, variant, spec, family, outcome, n_obs, n_cl, endogenous) {
   iv_name <- paste0("fit_", endogenous)
   b  <- unname(coef(fit)[iv_name])
   se <- unname(se(fit)[iv_name])
   t  <- unname(tstat(fit)[iv_name])
   p  <- unname(pvalue(fit)[iv_name])
   fstat <- tryCatch(fitstat(fit, type = "ivf")[[1]]$stat, error = function(e) NA_real_)
-  data.frame(spec = spec, family = family, outcome = outcome,
+  data.frame(variant = variant, spec = spec, family = family, outcome = outcome,
              coef = b, se = se, t = t, p = p, ivf = fstat,
              nobs = n_obs, n_clusters = n_cl, stringsAsFactors = FALSE)
 }
@@ -161,17 +166,19 @@ extract_iv_row <- function(fit, spec, family, outcome, n_obs, n_cl, endogenous) 
 # 4. SPECIFICATION LIST
 # ============================================================
 
+# Each entry: list(name, controls, fe_col, single_zone, aptos_filter)
 specs <- list(
-  list("baseline_state_fe",        BASELINE_CONTROLS, "SG_UF", NULL),
+  list("baseline_state_fe",        BASELINE_CONTROLS,                              "SG_UF", FALSE, NULL),
+  list("baseline_state_fe_sz",     BASELINE_CONTROLS,                              "SG_UF", TRUE,  NULL),
   list("robustness_full_controls", c(BASELINE_CONTROLS,
     "female_share_2020", "nonwhite_share_2020",
     "incumbent_candidate_share_2020", "new_candidate_share_2020"
-  ), "SG_UF", NULL),
-  list("subsample_le200k", BASELINE_CONTROLS, "SG_UF", "le200k"),
-  list("subsample_gt200k", BASELINE_CONTROLS, "SG_UF", "gt200k")
+  ),                                                                                "SG_UF", FALSE, NULL),
+  list("subsample_le200k",         BASELINE_CONTROLS,                              "SG_UF", FALSE, "le200k")
 )
 
-cat(sprintf("Running %d specs x %d outcomes\n\n", length(specs), length(ALL_OUTCOMES)))
+cat(sprintf("Running %d variants x %d specs x %d outcomes\n\n",
+    length(VARIANTS), length(specs), length(ALL_OUTCOMES)))
 
 
 # ============================================================
@@ -181,43 +188,56 @@ cat(sprintf("Running %d specs x %d outcomes\n\n", length(specs), length(ALL_OUTC
 fs_rows <- list()
 iv_rows <- list()
 
-if (!(INSTRUMENT %in% names(df))) stop(sprintf("Instrument '%s' not found.", INSTRUMENT))
-if (!(ENDOGENOUS %in% names(df))) stop(sprintf("Endogenous '%s' not found.", ENDOGENOUS))
+for (vr in VARIANTS) {
+  var_name   <- vr$name
+  instrument <- vr$instrument
+  endogenous <- vr$endogenous
 
-for (sp in specs) {
-  spec_name    <- sp[[1]]
-  controls     <- sp[[2]]
-  fe_col       <- sp[[3]]
-  aptos_filter <- sp[[4]]
+  cat(sprintf("\n=== Variant: %s ===\n", var_name))
 
-  samp  <- build_sample(df, controls, ALL_OUTCOMES, fe_col, INSTRUMENT, ENDOGENOUS,
-                        aptos_filter = aptos_filter)
-  n_obs <- nrow(samp)
-  n_cl  <- length(unique(samp$cluster_id))
-  cat(sprintf("  %s: N=%d, clusters=%d\n", spec_name, n_obs, n_cl))
+  if (!(instrument %in% names(df))) {
+    cat(sprintf("  SKIP: column '%s' not found in design.\n", instrument)); next
+  }
+  if (!(endogenous %in% names(df))) {
+    cat(sprintf("  SKIP: column '%s' not found in design.\n", endogenous)); next
+  }
 
-  # First stage
-  tryCatch({
-    fs_fit <- run_first_stage(samp, controls, fe_col, INSTRUMENT, ENDOGENOUS)
-    fs_rows[[length(fs_rows) + 1]] <- extract_fs_row(fs_fit, spec_name, n_obs, n_cl, INSTRUMENT)
-    cat(sprintf("    First stage F = %.1f\n",
-        coef(fs_fit)[INSTRUMENT]^2 / se(fs_fit)[INSTRUMENT]^2))
-  }, error = function(e) message("  FS error [", spec_name, "]: ", conditionMessage(e)))
+  for (sp in specs) {
+    spec_name   <- sp[[1]]
+    controls    <- sp[[2]]
+    fe_col      <- sp[[3]]
+    single_zone <- sp[[4]]
+    aptos_filter <- sp[[5]]
 
-  # 2SLS for each outcome
-  for (y in ALL_OUTCOMES) {
-    if (!(y %in% names(samp))) next
-    if (sum(!is.na(samp[[y]])) < 20L) next
-    family <- if (y %in% CANDIDATE_POOL_OUTCOMES) "candidate_pool"
-              else if (y %in% ELECTED_COMP_OUTCOMES) "elected_comp"
-              else "party_comp"
+    samp  <- build_sample(df, controls, ALL_OUTCOMES, fe_col, instrument, endogenous,
+                          single_zone = single_zone, aptos_filter = aptos_filter)
+    n_obs <- nrow(samp)
+    n_cl  <- length(unique(samp$cluster_id))
+    cat(sprintf("  %s: N=%d, clusters=%d\n", spec_name, n_obs, n_cl))
+
+    # First stage
     tryCatch({
-      iv_fit <- run_iv(samp, y, controls, fe_col, INSTRUMENT, ENDOGENOUS)
-      iv_rows[[length(iv_rows) + 1]] <- extract_iv_row(
-        iv_fit, spec_name, family, y, n_obs, n_cl, ENDOGENOUS
-      )
-    }, error = function(e)
-      message("  IV error [", spec_name, ", ", y, "]: ", conditionMessage(e)))
+      fs_fit <- run_first_stage(samp, controls, fe_col, instrument, endogenous)
+      fs_rows[[length(fs_rows) + 1]] <- extract_fs_row(
+        fs_fit, var_name, spec_name, n_obs, n_cl, instrument)
+      cat(sprintf("    First stage F = %.1f\n",
+          coef(fs_fit)[instrument]^2 / se(fs_fit)[instrument]^2))
+    }, error = function(e) message("  FS error [", spec_name, "]: ", conditionMessage(e)))
+
+    # 2SLS for each outcome
+    for (y in ALL_OUTCOMES) {
+      if (!(y %in% names(samp))) next
+      if (sum(!is.na(samp[[y]])) < 20L) next
+      family <- if (y %in% CANDIDATE_POOL_OUTCOMES) "candidate_pool"
+                else if (y %in% ELECTED_COMP_OUTCOMES) "elected_comp"
+                else "party_comp"
+      tryCatch({
+        iv_fit <- run_iv(samp, y, controls, fe_col, instrument, endogenous)
+        iv_rows[[length(iv_rows) + 1]] <- extract_iv_row(
+          iv_fit, var_name, spec_name, family, y, n_obs, n_cl, endogenous)
+      }, error = function(e)
+        message("  IV error [", spec_name, ", ", y, "]: ", conditionMessage(e)))
+    }
   }
 }
 
@@ -242,12 +262,17 @@ get_tF_cv <- function(f) {
   approx(tF_lookup$F_val, tF_lookup$tF_cv, xout = f, rule = 2)$y
 }
 
-fs_F_map <- stats::setNames(first_stage$first_stage_F, first_stage$spec)
-iv_results$first_stage_F_lookup <- fs_F_map[iv_results$spec]
-iv_results$tF_cv                <- sapply(iv_results$first_stage_F_lookup, get_tF_cv)
-iv_results$ci95_low_tF          <- iv_results$coef - iv_results$tF_cv * iv_results$se
-iv_results$ci95_high_tF         <- iv_results$coef + iv_results$tF_cv * iv_results$se
-iv_results$reject_tF_5pct       <- abs(iv_results$t) > iv_results$tF_cv
+fs_F_map <- stats::setNames(
+  first_stage$first_stage_F,
+  paste(first_stage$variant, first_stage$spec, sep = ":::")
+)
+iv_results$first_stage_F_lookup <- fs_F_map[
+  paste(iv_results$variant, iv_results$spec, sep = ":::")
+]
+iv_results$tF_cv          <- sapply(iv_results$first_stage_F_lookup, get_tF_cv)
+iv_results$ci95_low_tF    <- iv_results$coef - iv_results$tF_cv * iv_results$se
+iv_results$ci95_high_tF   <- iv_results$coef + iv_results$tF_cv * iv_results$se
+iv_results$reject_tF_5pct <- abs(iv_results$t) > iv_results$tF_cv
 
 first_stage$tF_cv <- sapply(first_stage$first_stage_F, get_tF_cv)
 

@@ -67,6 +67,9 @@ cat(sprintf("Loaded design: %d municipalities\n", nrow(df)))
 THRESHOLD_200K <- 200000L  # Art. 29-II CF/88 — second-round eligibility
 
 # ---- Instrument variant ----
+# bartik_iv_2020_2024 is built with the adversarial filter applied at the
+# build stage (DROP_CLASSES + DROP_SUBJECTS in 02_bartik_inputs.py).
+# It is the single coherent instrument for this pipeline.
 VARIANTS <- list(
   list(
     name       = "adversarial",
@@ -222,8 +225,7 @@ specs <- list(
   list("baseline_state_fe_sz",      BASELINE_CONTROLS,   "SG_UF",      TRUE,  NULL),
   list("robustness_full_controls",  ROBUSTNESS_CONTROLS, "SG_UF",      FALSE, NULL),
   list("robustness_microregion_fe", BASELINE_CONTROLS,   "code_micro", FALSE, NULL),
-  list("subsample_le200k",          BASELINE_CONTROLS,   "SG_UF",      FALSE, "le200k"),
-  list("subsample_gt200k",          BASELINE_CONTROLS,   "SG_UF",      FALSE, "gt200k")
+  list("subsample_le200k",          BASELINE_CONTROLS,   "SG_UF",      FALSE, "le200k")
 )
 
 if (n_micro < 10) {
@@ -433,16 +435,12 @@ first_stage$tF_cv <- sapply(first_stage$first_stage_F, get_tF_cv)
 
 cat("\ntF correction summary (baseline_state_fe):\n")
 tF_summary <- iv_results[iv_results$spec == "baseline_state_fe", ]
-cat(sprintf("  Variant no_rrc_drap: F=%.1f -> tF_cv=%.2f (standard normal=1.96)\n",
-  mean(first_stage$first_stage_F[first_stage$spec == "baseline_state_fe" &
-                                 first_stage$variant == "no_rrc_drap"], na.rm = TRUE),
-  mean(tF_summary$tF_cv[tF_summary$variant == "no_rrc_drap"], na.rm = TRUE)
-))
-cat(sprintf("  Variant all_topics:  F=%.1f -> tF_cv=%.2f\n",
-  mean(first_stage$first_stage_F[first_stage$spec == "baseline_state_fe" &
-                                 first_stage$variant == "all_topics"], na.rm = TRUE),
-  mean(tF_summary$tF_cv[tF_summary$variant == "all_topics"], na.rm = TRUE)
-))
+for (vn in sapply(VARIANTS, `[[`, "name")) {
+  f_val <- mean(first_stage$first_stage_F[first_stage$spec == "baseline_state_fe" &
+                                          first_stage$variant == vn], na.rm = TRUE)
+  cv    <- mean(tF_summary$tF_cv[tF_summary$variant == vn], na.rm = TRUE)
+  cat(sprintf("  Variant %-20s: F=%4.1f -> tF_cv=%.2f\n", vn, f_val, cv))
+}
 
 # Re-save IV results with tF columns
 fwrite(iv_results,  file.path(ESTIMATES_DIR, "executive_margin_iv_fixest.csv"))

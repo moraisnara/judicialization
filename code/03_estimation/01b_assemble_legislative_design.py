@@ -89,11 +89,18 @@ def main() -> None:
     exe_cols = [
         "municipality_id_tse", "cluster_id",
         "bartik_iv_2020_2024",
+        "bartik_iv_no_rrc_drap",
         "delta_log1p_competition_lawsuits_2024_2020",
+        "delta_log1p_lawsuits_no_rrc_drap_2024_2020",
+        "n_zones_in_municipality",
         "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
         "margin_2016",
         "log1p_total_valid_votes_2020",  # electorate size baseline
     ]
+    # Only request columns that actually exist in the executive design
+    exe_available = pd.read_csv(EXE_PATH, nrows=0).columns.tolist()
+    exe_cols = [c for c in exe_cols if c in exe_available]
+
     exe = pd.read_csv(
         EXE_PATH,
         dtype={"municipality_id_tse": str, "cluster_id": str},
@@ -102,9 +109,9 @@ def main() -> None:
     )
     exe["municipality_id_tse"] = exe["municipality_id_tse"].astype(str).str.zfill(5)
 
-    # Drop the raw legislative versions of instrument/endogenous before merging
-    for drop_col in ["bartik_iv_2020_2024", "delta_log1p_competition_lawsuits_2024_2020"]:
-        if drop_col in leg.columns:
+    # Drop raw legislative versions of any column we're taking from the executive design
+    for drop_col in exe_cols:
+        if drop_col != "municipality_id_tse" and drop_col in leg.columns:
             leg = leg.drop(columns=[drop_col])
 
     leg = leg.merge(exe, on="municipality_id_tse", how="left")
@@ -117,6 +124,7 @@ def main() -> None:
         "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
         "margin_2016", "cluster_id",
     ]
+    req = [c for c in req if c in leg.columns]
     before = len(leg)
     leg = leg.dropna(subset=req).reset_index(drop=True)
     print(f"Estimation sample: {len(leg):,} municipalities (dropped {before - len(leg):,} for missing controls/IV)")
