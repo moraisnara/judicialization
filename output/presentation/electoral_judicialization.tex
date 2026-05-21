@@ -1470,6 +1470,108 @@ If real: adversarial litigation waves \emph{may} disadvantage female candidates 
 
 
 % ============================================================
+\section{Results: Legislative Outcomes}
+% ============================================================
+
+\begin{frame}{Legislative Analysis --- City Council Elections (Vereadores)}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Same instrument, different electoral arena:}
+\begin{itemize}
+  \item Brazil's city councils (\emph{C\^{a}maras Municipais}) elect 9--55 \emph{vereadores} depending on population (CF/88, Art.~29-IV)
+  \item Pre-election judicial challenges also target legislative candidates
+  \item Outcome families:
+    \begin{enumerate}
+      \item \textbf{Candidate pool} — who runs: count, gender, race, party diversity
+      \item \textbf{Elected composition} — who wins: gender, race, education, reelection
+      \item \textbf{Party competition} — party count, coalition count
+    \end{enumerate}
+\end{itemize}
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Instrument Validity}
+  \footnotesize
+  Bartik IV for legislative analysis = \textbf{same instrument} as executive (broad variant, F\,$\approx$\,19.4).\\[4pt]
+  Identification: municipality's 2020 topic mix $\times$ state-level topic growth 2020$\to$2024. The shift in adversarial litigation waves applies equally to executive and legislative candidates in the same municipality.
+\end{block}
+\medskip
+\begin{block}{Design}
+  \footnotesize
+  $N = 5{,}560$ municipalities; clusters\,=\,2,187.\\
+  7 baseline controls. State FE.\\
+  Endogenous: same $\Delta\log(1+\text{lawsuits})$.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Legislative IV Results --- Candidate Pool and Composition}
+\footnotesize
+\textit{Baseline specification. N\,=\,5,560, clusters\,=\,2,187. State FE + 7 controls.}
+\smallskip
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{L{4.8cm}rrrr}
+  \toprule
+  Outcome & Coef. & SE & $p$ & Sig. \\
+  \midrule
+  \multicolumn{5}{l}{\textit{Candidate pool (who runs)}} \\
+  $\Delta$ Log total candidates   & $-$0.075 & 0.041 & 0.066 & $*$ \\
+  $\Delta$ Female candidate share & $-$0.006 & 0.006 & 0.370 & \\
+  $\Delta$ Nonwhite candidate share & $-$0.018 & 0.019 & 0.346 & \\
+  $\Delta$ New candidate share    & $-$0.020 & 0.016 & 0.217 & \\
+  $\Delta$ Eff.\ party count (candidates) & $-$0.264 & 0.301 & 0.381 & \\[3pt]
+  \multicolumn{5}{l}{\textit{Elected composition (who wins)}} \\
+  $\Delta$ Elected female share   & $+$0.013 & 0.022 & 0.554 & \\
+  $\Delta$ Elected nonwhite share & $-$0.027 & 0.026 & 0.288 & \\
+  $\Delta$ Incumbent reelected share & $+$0.006 & 0.025 & 0.797 & \\[3pt]
+  \multicolumn{5}{l}{\textit{Party competition}} \\
+  $\Delta$ Party count            & $-$0.260 & 0.354 & 0.463 & \\
+  $\Delta$ Coalition count        & $+$0.074 & 0.066 & 0.266 & \\
+  \midrule
+  \multicolumn{5}{l}{\footnotesize First-stage F\,=\,19.4. SE clustered by principal electoral zone.} \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\end{frame}
+
+
+\begin{frame}{Executive vs.\ Legislative: Comparing Effects}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Same instrument (F\,$\approx$\,19--20), two electoral arenas:}
+\bigskip
+\renewcommand{\arraystretch}{1.3}
+\footnotesize
+\begin{tabular}{L{3.2cm}cc}
+  \toprule
+  Outcome & Executive & Legislative \\
+  \midrule
+  $\Delta$ Log candidates & $-$0.066$^\dagger$ & $-$0.075$^*$ \\
+  Winner consolidation & directional & — \\
+  Female share & $-$0.093$^\dagger$ & $-$0.006 \\
+  New entrant wins & $+$0.182$^*$ & — \\
+  Composition (elected) & null & null \\
+  \bottomrule
+  \multicolumn{3}{l}{\scriptsize $^\dagger p < 0.10$, $^* p < 0.10$. Broad spec (executive); baseline (legislative).}
+\end{tabular}
+\normalsize
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Interpretation}
+  \footnotesize
+  \textbf{Both arenas:} more judicialization reduces the candidate pool --- the entry deterrence channel is consistent across executive (p\,=\,0.09) and legislative (p\,=\,0.07).
+  \medskip\\
+  \textbf{Executive only:} winner consolidation, new-entrant advantage, gender effects --- these mechanisms operate through competition dynamics specific to the single-winner mayoral race.
+  \medskip\\
+  \textbf{Legislative:} no effect on who wins seats or on party competition --- the multi-seat proportional allocation dampens the competitive displacement effects visible in executive races.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ============================================================
 \section{Robustness}
 % ============================================================
 
