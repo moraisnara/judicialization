@@ -12,6 +12,7 @@ SE clustered by principal electoral zone.
 | adversarial | baseline_state_fe_sz | 1.7893 | 0.4211 | 4.25 | 0.0000 | 18.06 | 5371 | 2049 | 2.237753 |
 | adversarial | robustness_full_controls | 1.7584 | 0.3997 | 4.40 | 0.0000 | 19.36 | 5560 | 2187 | 2.189239 |
 | adversarial | subsample_le200k | 1.7844 | 0.4069 | 4.38 | 0.0000 | 19.23 | 5509 | 2140 | 2.193166 |
+| adversarial | robustness_broader_lawsuits | 1.7757 | 0.4033 | 4.40 | 0.0000 | 19.38 | 5560 | 2187 | 2.188465 |
 
 ## IV Results
 
@@ -73,3 +74,17 @@ SE clustered by principal electoral zone.
 | adversarial | subsample_le200k | elected_comp | delta_incumbent_reelected_share_2024_2020 | 0.0036 | 0.0250 | 0.14 | 0.8865 | 237.58 | 5509 | 2140 | 19.22779 | 2.193166 | -0.05127208 | 0.058414407 | FALSE |
 | adversarial | subsample_le200k | party_comp | delta_party_count_2024_2020 | -0.2913 | 0.3511 | -0.83 | 0.4068 | 237.58 | 5509 | 2140 | 19.22779 | 2.193166 | -1.06140378 | 0.478782071 | FALSE |
 | adversarial | subsample_le200k | party_comp | delta_coalition_count_2024_2020 | 0.0702 | 0.0669 | 1.05 | 0.2943 | 237.58 | 5509 | 2140 | 19.22779 | 2.193166 | -0.07654612 | 0.216889030 | FALSE |
+| adversarial | robustness_broader_lawsuits | candidate_pool | delta_log1p_total_candidates_2024_2020 | -0.0752 | 0.0410 | -1.84 | 0.0664 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.16486076 | 0.014405283 | FALSE |
+| adversarial | robustness_broader_lawsuits | candidate_pool | delta_female_share_2024_2020 | -0.0056 | 0.0063 | -0.90 | 0.3702 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.01929989 | 0.008083841 | FALSE |
+| adversarial | robustness_broader_lawsuits | candidate_pool | delta_nonwhite_share_2024_2020 | -0.0177 | 0.0187 | -0.94 | 0.3463 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.05868478 | 0.023365338 | FALSE |
+| adversarial | robustness_broader_lawsuits | candidate_pool | delta_new_candidate_share_2024_2020 | -0.0195 | 0.0158 | -1.24 | 0.2166 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.05407873 | 0.015041540 | FALSE |
+| adversarial | robustness_broader_lawsuits | candidate_pool | delta_incumbent_candidate_share_2024_2020 | -0.0085 | 0.0104 | -0.82 | 0.4145 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.03110969 | 0.014209336 | FALSE |
+| adversarial | robustness_broader_lawsuits | candidate_pool | delta_effective_party_count_candidates_2024_2020 | -0.2637 | 0.3011 | -0.88 | 0.3812 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.92264233 | 0.395177487 | FALSE |
+| adversarial | robustness_broader_lawsuits | candidate_pool | delta_candidate_hhi_party_2024_2020 | 0.0109 | 0.0115 | 0.95 | 0.3441 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.01433118 | 0.036170339 | FALSE |
+| adversarial | robustness_broader_lawsuits | elected_comp | delta_elected_female_share_2024_2020 | 0.0131 | 0.0221 | 0.59 | 0.5542 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.03530478 | 0.061466260 | FALSE |
+| adversarial | robustness_broader_lawsuits | elected_comp | delta_elected_nonwhite_share_2024_2020 | -0.0274 | 0.0258 | -1.06 | 0.2884 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.08395053 | 0.029094967 | FALSE |
+| adversarial | robustness_broader_lawsuits | elected_comp | delta_elected_higher_ed_share_2024_2020 | 0.0065 | 0.0258 | 0.25 | 0.8025 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.05001694 | 0.062930171 | FALSE |
+| adversarial | robustness_broader_lawsuits | elected_comp | delta_elected_mean_age_2024_2020 | 0.0392 | 0.5761 | 0.07 | 0.9457 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -1.22154407 | 1.299999347 | FALSE |
+| adversarial | robustness_broader_lawsuits | elected_comp | delta_incumbent_reelected_share_2024_2020 | 0.0064 | 0.0249 | 0.26 | 0.7975 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.04818877 | 0.060993800 | FALSE |
+| adversarial | robustness_broader_lawsuits | party_comp | delta_party_count_2024_2020 | -0.2599 | 0.3542 | -0.73 | 0.4632 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -1.03505746 | 0.515316986 | FALSE |
+| adversarial | robustness_broader_lawsuits | party_comp | delta_coalition_count_2024_2020 | 0.0739 | 0.0665 | 1.11 | 0.2663 | 235.76 | 5560 | 2187 | 19.38449 | 2.188465 | -0.07154813 | 0.219320706 | FALSE |

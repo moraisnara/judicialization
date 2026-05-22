@@ -49,8 +49,11 @@ def main() -> None:
 
     print("\n=== 03 Estimation ===")
     run_py("code/03_estimation/01_assemble_design.py")
-    run_r("code/03_estimation/02_iv_main.R")           # 2SLS + tF correction
-    run_r("code/03_estimation/03_overid_liml.R")       # GPS J test + LIML
+    run_py("code/03_estimation/01b_assemble_legislative_design.py")
+    run_py("code/03_estimation/05_patch_family_ivs.py")
+    run_r("code/03_estimation/02_iv_main.R")
+    run_r("code/03_estimation/02b_iv_legislative.R")
+    run_r("code/03_estimation/04_family_iv_inference.R")
 
     print("\n=== 04 Analysis ===")
     run_py("code/04_analysis/01_figures_descriptive.py")

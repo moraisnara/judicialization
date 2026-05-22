@@ -95,7 +95,8 @@ def main() -> None:
         "n_zones_in_municipality",
         "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
         "margin_2016",
-        "log1p_total_valid_votes_2020",  # electorate size baseline
+        "log1p_total_valid_votes_2020",   # electorate size baseline
+        "log1p_lawsuits_no_rrc_2020",     # broader competition count (excl. RRC only)
     ]
     # Only request columns that actually exist in the executive design
     exe_available = pd.read_csv(EXE_PATH, nrows=0).columns.tolist()

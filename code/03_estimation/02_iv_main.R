@@ -96,6 +96,12 @@ COMPOSITION_OUTCOMES <- c(
   "delta_winner_is_female_2024_2020",
   "delta_winner_is_new_vs_2020_2024_2020"
 )
+# Entry typology outcomes: change in share of each entrant type in the candidate pool
+ENTRY_OUTCOMES <- c(
+  "delta_share_first_time_candidates_2024_2020",
+  "delta_share_serial_challenger_2024_2020",
+  "delta_share_cross_cycle_returner_2024_2020"
+)
 VOTER_BEHAVIOR_OUTCOMES <- c(
   "delta_turnout_rate_2024_2020",
   "delta_null_rate_2024_2020",
@@ -103,7 +109,7 @@ VOTER_BEHAVIOR_OUTCOMES <- c(
   "delta_valid_vote_rate_2024_2020"
 )
 ALL_OUTCOMES <- c(PRIMARY_OUTCOMES, SECONDARY_OUTCOMES,
-                  COMPOSITION_OUTCOMES, VOTER_BEHAVIOR_OUTCOMES)
+                  COMPOSITION_OUTCOMES, VOTER_BEHAVIOR_OUTCOMES, ENTRY_OUTCOMES)
 
 BASELINE_CONTROLS <- c(
   "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
@@ -119,6 +125,14 @@ ROBUSTNESS_CONTROLS <- c(
   "log1p_party_count_2020", "log1p_coalition_count_2020",
   "turnout_rate_2020", "null_rate_2020",
   "share_first_time_candidates_2020", "share_career_politicians_2020"
+)
+
+# Top-4 Rotemberg-weight topic shares (s_ik for topics with |alpha_k| >= 10%)
+# Added by 05_patch_family_ivs.py; avail() drops any missing columns gracefully.
+# 11616 alpha=+40%, 11617 alpha=-30%, 11679 alpha=+19%, 11662 alpha=+13%
+TOPIC_SHARE_CONTROLS <- c(
+  "share_11616_2020", "share_11617_2020",
+  "share_11679_2020", "share_11662_2020"
 )
 
 
@@ -137,9 +151,15 @@ build_sample <- function(data, controls, outcomes, fe_col, instrument, endogenou
   samp  <- data[complete.cases(data[, req, drop = FALSE]), ]
   if (single_zone && "n_zones_in_municipality" %in% names(samp))
     samp <- samp[samp$n_zones_in_municipality == 1L, ]
-  if (!is.null(aptos_filter) && "registered_voters_2024" %in% names(samp)) {
-    if (aptos_filter == "le200k") samp <- samp[samp$registered_voters_2024 <= THRESHOLD_200K, ]
-    if (aptos_filter == "gt200k") samp <- samp[samp$registered_voters_2024 >  THRESHOLD_200K, ]
+  if (!is.null(aptos_filter)) {
+    if (aptos_filter == "le200k" && "registered_voters_2024" %in% names(samp))
+      samp <- samp[samp$registered_voters_2024 <= THRESHOLD_200K, ]
+    if (aptos_filter == "gt200k" && "registered_voters_2024" %in% names(samp))
+      samp <- samp[samp$registered_voters_2024 >  THRESHOLD_200K, ]
+    if (aptos_filter == "open_seat" && "open_seat_2024" %in% names(samp))
+      samp <- samp[!is.na(samp$open_seat_2024) & samp$open_seat_2024 == 1L, ]
+    if (aptos_filter == "no_open_seat" && "open_seat_2024" %in% names(samp))
+      samp <- samp[!is.na(samp$open_seat_2024) & samp$open_seat_2024 == 0L, ]
   }
   rownames(samp) <- NULL
   samp
@@ -184,7 +204,8 @@ extract_fs_row <- function(fit, variant, spec, n_obs, n_cl, instrument) {
   )
 }
 
-extract_iv_row <- function(fit, variant, spec, family, outcome, n_obs, n_cl, endogenous) {
+extract_iv_row <- function(fit, variant, spec, family, outcome, n_obs, n_cl, endogenous,
+                           estimator = "2sls") {
   # fixest prefixes the endogenous variable with "fit_" in IV output
   iv_name <- paste0("fit_", endogenous)
   b  <- unname(coef(fit)[iv_name])
@@ -198,6 +219,7 @@ extract_iv_row <- function(fit, variant, spec, family, outcome, n_obs, n_cl, end
   data.frame(
     variant    = variant,
     spec       = spec,
+    estimator  = estimator,
     family     = family,
     outcome    = outcome,
     coef       = b,
@@ -221,11 +243,15 @@ n_micro <- if ("code_micro" %in% names(df))
              length(unique(df$code_micro[!is.na(df$code_micro)])) else 0L
 
 specs <- list(
-  list("baseline_state_fe",         BASELINE_CONTROLS,   "SG_UF",      FALSE, NULL),
-  list("baseline_state_fe_sz",      BASELINE_CONTROLS,   "SG_UF",      TRUE,  NULL),
-  list("robustness_full_controls",  ROBUSTNESS_CONTROLS, "SG_UF",      FALSE, NULL),
-  list("robustness_microregion_fe", BASELINE_CONTROLS,   "code_micro", FALSE, NULL),
-  list("subsample_le200k",          BASELINE_CONTROLS,   "SG_UF",      FALSE, "le200k")
+  list("baseline_state_fe",           BASELINE_CONTROLS,                            "SG_UF",      FALSE, NULL),
+  list("baseline_state_fe_sz",        BASELINE_CONTROLS,                            "SG_UF",      TRUE,  NULL),
+  list("robustness_full_controls",    ROBUSTNESS_CONTROLS,                          "SG_UF",      FALSE, NULL),
+  list("robustness_microregion_fe",   BASELINE_CONTROLS,                            "code_micro", FALSE, NULL),
+  list("subsample_le200k",            BASELINE_CONTROLS,                            "SG_UF",      FALSE, "le200k"),
+  list("subsample_open_seat",         BASELINE_CONTROLS,                            "SG_UF",      FALSE, "open_seat"),
+  list("subsample_contested_seat",    BASELINE_CONTROLS,                            "SG_UF",      FALSE, "no_open_seat"),
+  list("robustness_topic_shares",     c(BASELINE_CONTROLS, TOPIC_SHARE_CONTROLS),   "SG_UF",      FALSE, NULL),
+  list("robustness_broader_lawsuits", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"), "SG_UF", FALSE, NULL)
 )
 
 if (n_micro < 10) {
@@ -241,8 +267,9 @@ cat(sprintf("Running %d variants x %d specifications x %d outcomes\n\n",
 # 5. ESTIMATION LOOP (outer: variants; inner: specs x outcomes)
 # ============================================================
 
-fs_rows <- list()
-iv_rows <- list()
+fs_rows   <- list()
+iv_rows   <- list()
+liml_rows <- list()
 
 for (vr in VARIANTS) {
   var_name   <- vr$name
@@ -290,6 +317,7 @@ for (vr in VARIANTS) {
       family <- if (y %in% PRIMARY_OUTCOMES)          "primary"
                 else if (y %in% SECONDARY_OUTCOMES)  "secondary"
                 else if (y %in% COMPOSITION_OUTCOMES) "composition"
+                else if (y %in% ENTRY_OUTCOMES)       "entry"
                 else                                  "voter_behavior"
       tryCatch({
         iv_fit <- run_iv(samp, y, controls, fe_col, instrument, endogenous)
@@ -298,6 +326,33 @@ for (vr in VARIANTS) {
         )
       }, error = function(e)
         message("  IV error [", spec_name, ", ", y, "]: ", conditionMessage(e)))
+    }
+
+    # LIML for baseline spec (K=1 instrument — no eigenvalue issue)
+    if (spec_name == "baseline_state_fe") {
+      for (y in ALL_OUTCOMES) {
+        if (!(y %in% names(samp))) next
+        if (sum(!is.na(samp[[y]])) < 20L) next
+        family <- if (y %in% PRIMARY_OUTCOMES)          "primary"
+                  else if (y %in% SECONDARY_OUTCOMES)  "secondary"
+                  else if (y %in% COMPOSITION_OUTCOMES) "composition"
+                  else if (y %in% ENTRY_OUTCOMES)       "entry"
+                  else                                  "voter_behavior"
+        tryCatch({
+          ctrls_l    <- avail(controls, samp)
+          ctrl_rhs_l <- if (length(ctrls_l) > 0) paste(ctrls_l, collapse = " + ") else "1"
+          fml_l      <- as.formula(sprintf(
+            "%s ~ %s | %s | %s ~ %s", y, ctrl_rhs_l, fe_col, endogenous, instrument
+          ))
+          liml_fit <- feols(fml_l, data = samp, cluster = ~cluster_id,
+                            estimator = "liml", warn = FALSE, notes = FALSE)
+          liml_rows[[length(liml_rows) + 1]] <- extract_iv_row(
+            liml_fit, var_name, spec_name, family, y, n_obs, n_cl, endogenous,
+            estimator = "liml"
+          )
+        }, error = function(e)
+          message("  LIML error [", y, "]: ", conditionMessage(e)))
+      }
     }
   }
 }
@@ -342,17 +397,18 @@ report <- c(
   "Formula: `y ~ controls | FE | Δlog(lawsuits) ~ Bartik_IV`.",
   "SE clustered by principal electoral zone.",
   "",
-  "## Variants",
-  "- **all_topics**  : bartik_iv_2020_2024 / delta_log1p_competition_lawsuits_2024_2020",
-  "- **no_rrc_drap** : bartik_iv_no_rrc_drap / delta_log1p_lawsuits_no_rrc_drap_2024_2020",
+  "## Instrument",
+  "- **adversarial** : bartik_iv_2020_2024 / delta_log1p_competition_lawsuits_2024_2020",
+  "  (adversarial class/subject filter applied at build stage in 02_bartik_inputs.py)",
   "",
   "## Specifications",
-  "1. **baseline_state_fe** — 7 baseline controls + state FE, all municipalities",
+  "1. **baseline_state_fe** — 7 baseline controls + state FE",
   "2. **baseline_state_fe_sz** — same, single-zone municipalities only",
   "3. **robustness_full_controls** — 14 controls + state FE",
-  "4. **robustness_microregion_fe** — 7 baseline controls + microregion FE (~558 cells)",
+  "4. **robustness_microregion_fe** — 7 baseline controls + microregion FE",
   "5. **subsample_le200k** — baseline + state FE, ≤200k registered voters",
-  "6. **subsample_gt200k** — baseline + state FE, >200k registered voters",
+  "6. **robustness_topic_shares** — baseline + top-4 Rotemberg topic shares",
+  "7. **robustness_broader_lawsuits** — baseline + log1p_lawsuits_no_rrc_2020",
   "",
   "## First Stage",
   "",
@@ -446,3 +502,47 @@ for (vn in sapply(VARIANTS, `[[`, "name")) {
 fwrite(iv_results,  file.path(ESTIMATES_DIR, "executive_margin_iv_fixest.csv"))
 fwrite(first_stage, file.path(ESTIMATES_DIR, "executive_margin_first_stage_fixest.csv"))
 cat("  (Re-saved with tF correction columns)\n")
+
+
+# ============================================================
+# 8. LIML vs 2SLS COMPARISON  (baseline_state_fe spec only)
+# ============================================================
+# With K=1 instrument, LIML is numerically identical to 2SLS (no eigenvalue issue).
+# A large LIML–2SLS divergence would signal many-instrument or weak-instrument bias.
+
+if (length(liml_rows) > 0) {
+  liml_results <- do.call(rbind, liml_rows)
+
+  # Add tF correction
+  liml_results$first_stage_F_lookup <- fs_F_map[
+    paste(liml_results$variant, liml_results$spec, sep = ":::")
+  ]
+  liml_results$tF_cv          <- sapply(liml_results$first_stage_F_lookup, get_tF_cv)
+  liml_results$ci95_low_tF    <- liml_results$coef - liml_results$tF_cv * liml_results$se
+  liml_results$ci95_high_tF   <- liml_results$coef + liml_results$tF_cv * liml_results$se
+  liml_results$reject_tF_5pct <- abs(liml_results$t) > liml_results$tF_cv
+
+  # Side-by-side comparison for primary/secondary outcomes
+  iv_base  <- iv_results[iv_results$spec == "baseline_state_fe" &
+                         iv_results$family %in% c("primary", "secondary"),
+                         c("outcome", "coef", "se", "p", "ivf")]
+  names(iv_base)[2:5] <- paste0(names(iv_base)[2:5], "_2sls")
+
+  liml_base <- liml_results[liml_results$family %in% c("primary", "secondary"),
+                             c("outcome", "coef", "se", "p")]
+  names(liml_base)[2:4] <- paste0(names(liml_base)[2:4], "_liml")
+  liml_base$p_liml <- liml_base$p_liml  # already renamed
+
+  comparison <- merge(iv_base, liml_base, on = "outcome", all = TRUE)
+
+  fwrite(liml_results,  file.path(ESTIMATES_DIR, "liml_single_iv.csv"))
+  fwrite(comparison,    file.path(ESTIMATES_DIR, "liml_comparison.csv"))
+  cat("\nLIML results saved:\n")
+  cat("  ", file.path(ESTIMATES_DIR, "liml_single_iv.csv"), "\n")
+  cat("  ", file.path(ESTIMATES_DIR, "liml_comparison.csv"), "\n")
+
+  max_div <- max(abs(comparison$coef_2sls - comparison$coef_liml), na.rm = TRUE)
+  cat(sprintf("  Max |2SLS - LIML| across primary/secondary outcomes: %.4f\n", max_div))
+} else {
+  cat("\nNo LIML results collected.\n")
+}

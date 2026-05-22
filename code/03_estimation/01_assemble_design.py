@@ -33,6 +33,7 @@ COMPONENTS_PATH    = CLEAN_DIR / "municipality_bartik_components.csv"
 SUBJECT_PANEL_PATH = CLEAN_DIR / "municipality_competition_subject_panel.csv"
 COVARIATES_PATH    = CLEAN_DIR / "municipal_covariates.csv"
 ADMIN_PATH         = CLEAN_DIR / "electoral_admin_outcomes.csv"
+EXPERIENCE_PATH    = CLEAN_DIR / "candidate_experience_panel.csv"
 
 # Subject code excluded from the no-RRC Bartik variant (Recursos de Reclamação)
 EXCLUDE_RRC = {"11618"}
@@ -275,6 +276,60 @@ def main() -> None:
         "code_muni": "municipality_id_ibge",
         "abbrev_state": "state_abbrev_ibge",
     })
+
+    # ---- Candidate entrant-typology outcomes (2024 wave) and open-seat indicator ----
+    # NOTE: design uses legacy column SG_UE internally; renamed to municipality_id_tse on save.
+    if EXPERIENCE_PATH.exists():
+        cexp = pd.read_csv(EXPERIENCE_PATH, dtype={"municipality_id_tse": str}, low_memory=False)
+        cexp["municipality_id_tse"] = cexp["municipality_id_tse"].str.strip().str.zfill(5)
+        cexp["election_year"] = pd.to_numeric(cexp["election_year"], errors="coerce")
+        cexp = cexp.rename(columns={"municipality_id_tse": "SG_UE"})
+
+        # 2024 wave: outcome columns
+        exp_cols_2024 = ["share_first_time_candidates", "share_serial_challenger",
+                         "share_cross_cycle_returner", "open_seat"]
+        cexp_2024 = cexp[cexp["election_year"] == 2024].copy()
+        for col in exp_cols_2024:
+            if col in cexp_2024.columns:
+                cexp_2024[col] = pd.to_numeric(cexp_2024[col], errors="coerce")
+        rename_24 = {c: f"{c}_2024" for c in exp_cols_2024 if c in cexp_2024.columns}
+        cexp_2024 = cexp_2024.rename(columns=rename_24)
+        keep_24 = ["SG_UE"] + list(rename_24.values())
+        design = design.merge(
+            cexp_2024[[c for c in keep_24 if c in cexp_2024.columns]],
+            on="SG_UE", how="left",
+        )
+
+        # 2020 wave: add serial_challenger and cross_cycle_returner (not in covariates yet)
+        exp_extra_2020 = ["share_serial_challenger", "share_cross_cycle_returner"]
+        cexp_2020 = cexp[cexp["election_year"] == 2020].copy()
+        for col in exp_extra_2020:
+            if col in cexp_2020.columns:
+                cexp_2020[col] = pd.to_numeric(cexp_2020[col], errors="coerce")
+        rename_20 = {c: f"{c}_2020" for c in exp_extra_2020 if c in cexp_2020.columns}
+        cexp_2020 = cexp_2020.rename(columns=rename_20)
+        new_20 = [v for v in rename_20.values() if v not in design.columns]
+        if new_20:
+            design = design.merge(
+                cexp_2020[["SG_UE"] + new_20],
+                on="SG_UE", how="left",
+            )
+
+        # Delta outcomes
+        delta_pairs = [
+            ("share_first_time_candidates_2024", "share_first_time_candidates_2020"),
+            ("share_serial_challenger_2024",     "share_serial_challenger_2020"),
+            ("share_cross_cycle_returner_2024",  "share_cross_cycle_returner_2020"),
+        ]
+        for col24, col20 in delta_pairs:
+            if col24 in design.columns and col20 in design.columns:
+                delta_name = "delta_" + col24.replace("_2024", "_2024_2020")
+                design[delta_name] = design[col24] - design[col20]
+
+        n_open = int(design["open_seat_2024"].sum()) if "open_seat_2024" in design.columns else 0
+        print(f"  open_seat_2024: {n_open:,} municipalities")
+    else:
+        print("  WARNING: candidate_experience_panel.csv not found; entrant typology skipped.")
 
     print(f"Design: {len(design):,} municipalities, {len(design.columns)} columns")
 

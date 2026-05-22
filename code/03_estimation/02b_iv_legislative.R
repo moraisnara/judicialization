@@ -168,13 +168,14 @@ extract_iv_row <- function(fit, variant, spec, family, outcome, n_obs, n_cl, end
 
 # Each entry: list(name, controls, fe_col, single_zone, aptos_filter)
 specs <- list(
-  list("baseline_state_fe",        BASELINE_CONTROLS,                              "SG_UF", FALSE, NULL),
-  list("baseline_state_fe_sz",     BASELINE_CONTROLS,                              "SG_UF", TRUE,  NULL),
-  list("robustness_full_controls", c(BASELINE_CONTROLS,
+  list("baseline_state_fe",           BASELINE_CONTROLS,                              "SG_UF", FALSE, NULL),
+  list("baseline_state_fe_sz",        BASELINE_CONTROLS,                              "SG_UF", TRUE,  NULL),
+  list("robustness_full_controls",    c(BASELINE_CONTROLS,
     "female_share_2020", "nonwhite_share_2020",
     "incumbent_candidate_share_2020", "new_candidate_share_2020"
-  ),                                                                                "SG_UF", FALSE, NULL),
-  list("subsample_le200k",         BASELINE_CONTROLS,                              "SG_UF", FALSE, "le200k")
+  ),                                                                                  "SG_UF", FALSE, NULL),
+  list("subsample_le200k",            BASELINE_CONTROLS,                              "SG_UF", FALSE, "le200k"),
+  list("robustness_broader_lawsuits", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"), "SG_UF", FALSE, NULL)
 )
 
 cat(sprintf("Running %d variants x %d specs x %d outcomes\n\n",

@@ -7,8 +7,14 @@ municipality × year level for use as controls (2020) and outcomes (2024).
 
 Output: data/clean/candidate_experience_panel.csv
 Columns: election_year, state, municipality_id_tse, municipality_name,
-         share_first_time_candidates, mean_prior_candidacies,
-         share_prior_winners, share_career_politicians
+         share_first_time_candidates  — never ran for prefeito anywhere before
+         mean_prior_candidacies       — mean number of prior runs
+         share_prior_winners          — share who previously won somewhere
+         share_career_politicians     — share with 3+ prior runs
+         share_serial_challenger      — ran in same muni last cycle, lost
+         share_cross_cycle_returner   — has prior history but sat out last cycle
+         open_seat                    — 1 if prior-cycle winner served 2 consecutive
+                                        terms and is constitutionally term-limited
 """
 from __future__ import annotations
 
@@ -146,18 +152,107 @@ def main() -> None:
 
     all_with_history = pd.concat(results, ignore_index=True)
 
-    print("\n[3] Aggregating to municipality × year", flush=True)
+    # ------------------------------------------------------------------ #
+    # [3] Open seat: municipality where winner served two consecutive terms
+    #     (term-limited in the following election cycle)
+    # ------------------------------------------------------------------ #
+    print("\n[3] Computing open-seat and entrant typology flags", flush=True)
+
+    open_seat_rows = []
+    for yr in YEARS:
+        prev_yr      = yr - 4
+        prev_prev_yr = yr - 8
+        munis_yr = (
+            all_cands[all_cands["election_year"] == yr][["municipality_id_tse"]]
+            .drop_duplicates()
+            .copy()
+        )
+        if prev_yr not in YEARS or prev_prev_yr not in YEARS:
+            munis_yr["open_seat"] = 0
+        else:
+            w_prev = (
+                all_cands[(all_cands["election_year"] == prev_yr) & (all_cands["is_elected"] == 1)]
+                [["municipality_id_tse", "person_key"]]
+            )
+            w_prev_prev = (
+                all_cands[(all_cands["election_year"] == prev_prev_yr) & (all_cands["is_elected"] == 1)]
+                [["municipality_id_tse", "person_key"]]
+            )
+            consec = w_prev.merge(w_prev_prev, on=["municipality_id_tse", "person_key"], how="inner")
+            open_munis = set(consec["municipality_id_tse"])
+            munis_yr["open_seat"] = munis_yr["municipality_id_tse"].isin(open_munis).astype(int)
+        munis_yr["election_year"] = yr
+        open_seat_rows.append(munis_yr)
+
+    open_seat_df = pd.concat(open_seat_rows, ignore_index=True)
+
+    # Per-year summary
+    for yr in YEARS:
+        sub = open_seat_df[open_seat_df["election_year"] == yr]
+        if not sub.empty:
+            print(f"  {yr}: open_seat rate={sub['open_seat'].mean():.3f} "
+                  f"({sub['open_seat'].sum()} municipalities)", flush=True)
+
+    # ------------------------------------------------------------------ #
+    # [4] Serial challenger and cross-cycle returner flags (per candidate)
+    # ------------------------------------------------------------------ #
+    flagged_results = []
+    for yr in YEARS:
+        current = all_with_history[all_with_history["election_year"] == yr].copy()
+        prev_yr = yr - 4
+
+        # Serial challenger: ran in same municipality in yr-4, lost
+        if prev_yr in YEARS:
+            prev_cycle = (
+                all_cands[all_cands["election_year"] == prev_yr]
+                [["municipality_id_tse", "person_key", "is_elected"]]
+                .rename(columns={"is_elected": "_prev_elected"})
+            )
+            current = current.merge(
+                prev_cycle, on=["municipality_id_tse", "person_key"], how="left"
+            )
+            current["is_serial_challenger"] = (
+                current["_prev_elected"].notna() & (current["_prev_elected"] == 0)
+            ).astype(int)
+            current = current.drop(columns=["_prev_elected"])
+        else:
+            current["is_serial_challenger"] = 0
+
+        # Cross-cycle returner: has any prior candidacy but did NOT run in yr-4 (anywhere)
+        if prev_yr in YEARS:
+            ran_prev = set(all_cands[all_cands["election_year"] == prev_yr]["person_key"].dropna())
+        else:
+            ran_prev = set()
+        current["is_cross_cycle_returner"] = (
+            (current["n_prior_candidacies"] > 0) &
+            (~current["person_key"].isin(ran_prev))
+        ).astype(int)
+
+        flagged_results.append(current)
+
+    all_with_flags = pd.concat(flagged_results, ignore_index=True)
+
+    print("\n[5] Aggregating to municipality × year", flush=True)
     panel = (
-        all_with_history
+        all_with_flags
         .groupby(["election_year", "state", "municipality_id_tse", "municipality_name"], as_index=False)
         .agg(
             share_first_time_candidates=("is_first_time", "mean"),
             mean_prior_candidacies=("n_prior_candidacies", "mean"),
             share_prior_winners=("n_prior_wins", lambda s: (s > 0).mean()),
             share_career_politicians=("is_career", "mean"),
+            share_serial_challenger=("is_serial_challenger", "mean"),
+            share_cross_cycle_returner=("is_cross_cycle_returner", "mean"),
             n_candidates=("person_key", "count"),
         )
     )
+
+    panel = panel.merge(
+        open_seat_df[["municipality_id_tse", "election_year", "open_seat"]],
+        on=["municipality_id_tse", "election_year"],
+        how="left",
+    )
+    panel["open_seat"] = panel["open_seat"].fillna(0).astype(int)
 
     out = DERIVED_DIR / "candidate_experience_panel.csv"
     panel.to_csv(out, index=False, encoding="utf-8-sig")
@@ -168,7 +263,10 @@ def main() -> None:
         sub = panel[panel["election_year"] == yr]
         if not sub.empty:
             print(f"  {yr}: {len(sub):,} municipalities, "
-                  f"mean first-timers={sub['share_first_time_candidates'].mean():.2f}")
+                  f"first-timers={sub['share_first_time_candidates'].mean():.2f}, "
+                  f"serial_challengers={sub['share_serial_challenger'].mean():.2f}, "
+                  f"cross_cycle_returners={sub['share_cross_cycle_returner'].mean():.2f}, "
+                  f"open_seat={sub['open_seat'].mean():.2f}")
 
 
 if __name__ == "__main__":

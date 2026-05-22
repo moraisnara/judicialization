@@ -162,16 +162,24 @@ def main() -> None:
     cexp["election_year"] = pd.to_numeric(cexp["election_year"], errors="coerce")
     cexp_2020 = cexp[cexp["election_year"] == 2020].copy()
     cexp_2020["municipality_id_tse"] = cexp_2020["municipality_id_tse"].str.zfill(5)
-    for col in ["share_first_time_candidates", "mean_prior_candidacies",
-                "share_prior_winners", "share_career_politicians", "n_candidates"]:
-        cexp_2020[col] = pd.to_numeric(cexp_2020[col], errors="coerce")
-    cexp_2020 = cexp_2020.rename(columns={
+    exp_cols = ["share_first_time_candidates", "mean_prior_candidacies",
+                "share_prior_winners", "share_career_politicians",
+                "share_serial_challenger", "share_cross_cycle_returner",
+                "open_seat", "n_candidates"]
+    for col in exp_cols:
+        if col in cexp_2020.columns:
+            cexp_2020[col] = pd.to_numeric(cexp_2020[col], errors="coerce")
+    rename_exp = {
         "share_first_time_candidates": "share_first_time_candidates_2020",
         "mean_prior_candidacies":      "mean_prior_candidacies_2020",
         "share_prior_winners":         "share_prior_winners_2020",
         "share_career_politicians":    "share_career_politicians_2020",
+        "share_serial_challenger":     "share_serial_challenger_2020",
+        "share_cross_cycle_returner":  "share_cross_cycle_returner_2020",
+        "open_seat":                   "open_seat_2020",
         "n_candidates":                "n_candidates_experience_2020",
-    })
+    }
+    cexp_2020 = cexp_2020.rename(columns={k: v for k, v in rename_exp.items() if k in cexp_2020.columns})
     print(f"    {len(cexp_2020):,} municipalities", flush=True)
 
     # ------------------------------------------------------------------ #
@@ -182,13 +190,14 @@ def main() -> None:
     adm["election_year"] = pd.to_numeric(adm["election_year"], errors="coerce")
     adm_2020 = adm[adm["election_year"] == 2020].copy()
     adm_2020["municipality_id_tse"] = adm_2020["municipality_id_tse"].str.zfill(5)
-    for col in ["turnout_rate", "abstention_rate", "blank_share", "null_share"]:
-        adm_2020[col] = pd.to_numeric(adm_2020[col], errors="coerce")
+    for col in ["turnout_rate", "abstention_rate", "blank_rate", "null_rate"]:
+        if col in adm_2020.columns:
+            adm_2020[col] = pd.to_numeric(adm_2020[col], errors="coerce")
     adm_2020 = adm_2020.rename(columns={
         "turnout_rate":    "turnout_rate_2020",
         "abstention_rate": "abstention_rate_2020",
-        "blank_share":     "blank_share_2020",
-        "null_share":      "null_share_2020",
+        "blank_rate":      "blank_rate_2020",
+        "null_rate":       "null_rate_2020",
     })
     print(f"    {len(adm_2020):,} municipalities", flush=True)
 
@@ -311,17 +320,19 @@ def main() -> None:
     print(f"  Census matched: {n_matched:,}/{len(base):,} municipalities "
           f"({100*n_matched/len(base):.1f}%)", flush=True)
 
-    base = merge_on_ue(base, cexp_2020[[
-        "state", "municipality_id_tse",
-        "share_first_time_candidates_2020", "mean_prior_candidacies_2020",
-        "share_prior_winners_2020", "share_career_politicians_2020",
-    ]])
+    exp_merge_cols = ["state", "municipality_id_tse",
+                      "share_first_time_candidates_2020", "mean_prior_candidacies_2020",
+                      "share_prior_winners_2020", "share_career_politicians_2020"]
+    for extra in ["share_serial_challenger_2020", "share_cross_cycle_returner_2020", "open_seat_2020"]:
+        if extra in cexp_2020.columns:
+            exp_merge_cols.append(extra)
+    base = merge_on_ue(base, cexp_2020[exp_merge_cols])
 
-    base = merge_on_ue(base, adm_2020[[
-        "state", "municipality_id_tse",
-        "turnout_rate_2020", "abstention_rate_2020",
-        "blank_share_2020", "null_share_2020",
-    ]])
+    adm_merge_cols = ["state", "municipality_id_tse", "turnout_rate_2020", "abstention_rate_2020"]
+    for col in ["blank_rate_2020", "null_rate_2020"]:
+        if col in adm_2020.columns:
+            adm_merge_cols.append(col)
+    base = merge_on_ue(base, adm_2020[[c for c in adm_merge_cols if c in adm_2020.columns]])
 
     if not incumbency.empty:
         base = merge_on_ue(base, incumbency)
