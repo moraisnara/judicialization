@@ -56,6 +56,7 @@ def main() -> None:
     run_r("code/03_estimation/04_family_iv_inference.R")
 
     print("\n=== 04 Analysis ===")
+    run_py("code/04_analysis/00_candidate_descriptives.py")
     run_py("code/04_analysis/01_figures_descriptive.py")
     run_r("code/04_analysis/02_figures_causal.R")
     run_py("code/04_analysis/05_rotemberg_weights.py") # GPS Rotemberg + F_k

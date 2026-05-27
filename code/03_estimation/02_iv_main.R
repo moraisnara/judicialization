@@ -271,6 +271,21 @@ fs_rows   <- list()
 iv_rows   <- list()
 liml_rows <- list()
 
+# Model objects stored for etable() LaTeX generation (Section 9)
+FS_TEX_SPECS <- c("baseline_state_fe", "baseline_state_fe_sz",
+                  "robustness_full_controls", "subsample_le200k",
+                  "robustness_broader_lawsuits")
+ROBUSTNESS_TEX_SPECS <- c("baseline_state_fe", "baseline_state_fe_sz",
+                           "robustness_full_controls", "subsample_le200k",
+                           "robustness_broader_lawsuits")
+BLANK_SUBGROUP_SPECS <- c("baseline_state_fe", "subsample_open_seat",
+                           "subsample_contested_seat")
+
+tex_fs_fits       <- list()   # [spec_name] = feols (first stage)
+tex_base_iv_fits  <- list()   # [outcome]   = feols (baseline IV)
+tex_robust_iv_fits <- list()  # [spec_name] = feols (winner majority, robustness specs)
+tex_blank_sub_fits <- list()  # [spec_name] = feols (blank rate, subgroup specs)
+
 for (vr in VARIANTS) {
   var_name   <- vr$name
   instrument <- vr$instrument
@@ -303,11 +318,14 @@ for (vr in VARIANTS) {
     cat(sprintf("  %s: N=%d, clusters=%d\n", spec_name, n_obs, n_cl))
 
     # First stage
+    fs_fit <- NULL
     tryCatch({
       fs_fit <- run_first_stage(samp, controls, fe_col, instrument, endogenous)
       fs_rows[[length(fs_rows) + 1]] <- extract_fs_row(
         fs_fit, var_name, spec_name, n_obs, n_cl, instrument
       )
+      if (spec_name %in% FS_TEX_SPECS)
+        tex_fs_fits[[spec_name]] <- fs_fit
     }, error = function(e) message("  FS error [", spec_name, "]: ", conditionMessage(e)))
 
     # 2SLS for each outcome
@@ -324,6 +342,13 @@ for (vr in VARIANTS) {
         iv_rows[[length(iv_rows) + 1]] <- extract_iv_row(
           iv_fit, var_name, spec_name, family, y, n_obs, n_cl, endogenous
         )
+        # Store model objects for tex generation
+        if (spec_name == "baseline_state_fe")
+          tex_base_iv_fits[[y]] <- iv_fit
+        if (y == "delta_winner_majority_2024_2020" && spec_name %in% ROBUSTNESS_TEX_SPECS)
+          tex_robust_iv_fits[[spec_name]] <- iv_fit
+        if (y == "delta_blank_rate_2024_2020" && spec_name %in% BLANK_SUBGROUP_SPECS)
+          tex_blank_sub_fits[[spec_name]] <- iv_fit
       }, error = function(e)
         message("  IV error [", spec_name, ", ", y, "]: ", conditionMessage(e)))
     }
@@ -421,30 +446,11 @@ report <- c(
 
 writeLines(report, file.path(ESTIMATES_DIR, "executive_margin_fixest.md"))
 
-# ---- Compact comparison table: first stage by variant x spec ----
-if (nrow(first_stage) > 0) {
-  fs_wide <- reshape(
-    first_stage[, c("variant", "spec", "coef", "se", "first_stage_F", "nobs")],
-    idvar = "spec", timevar = "variant", direction = "wide"
-  )
-  fwrite(fs_wide, file.path(ESTIMATES_DIR, "first_stage_variant_comparison.csv"))
-}
-
-# ---- Compact IV comparison: primary outcomes, baseline spec, both variants ----
-if (nrow(iv_results) > 0) {
-  prim_comp <- iv_results[
-    iv_results$spec == "baseline_state_fe" &
-    iv_results$family %in% c("primary", "secondary"),
-  ]
-  fwrite(prim_comp, file.path(ESTIMATES_DIR, "iv_variant_comparison_primary.csv"))
-}
 
 cat("\nResults saved to:\n")
 cat("  ", file.path(ESTIMATES_DIR, "executive_margin_first_stage_fixest.csv"), "\n")
 cat("  ", file.path(ESTIMATES_DIR, "executive_margin_iv_fixest.csv"), "\n")
 cat("  ", file.path(ESTIMATES_DIR, "executive_margin_fixest.md"), "\n")
-cat("  ", file.path(ESTIMATES_DIR, "first_stage_variant_comparison.csv"), "\n")
-cat("  ", file.path(ESTIMATES_DIR, "iv_variant_comparison_primary.csv"), "\n")
 
 
 # ============================================================
@@ -535,10 +541,8 @@ if (length(liml_rows) > 0) {
 
   comparison <- merge(iv_base, liml_base, on = "outcome", all = TRUE)
 
-  fwrite(liml_results,  file.path(ESTIMATES_DIR, "liml_single_iv.csv"))
   fwrite(comparison,    file.path(ESTIMATES_DIR, "liml_comparison.csv"))
   cat("\nLIML results saved:\n")
-  cat("  ", file.path(ESTIMATES_DIR, "liml_single_iv.csv"), "\n")
   cat("  ", file.path(ESTIMATES_DIR, "liml_comparison.csv"), "\n")
 
   max_div <- max(abs(comparison$coef_2sls - comparison$coef_liml), na.rm = TRUE)
@@ -546,3 +550,183 @@ if (length(liml_rows) > 0) {
 } else {
   cat("\nNo LIML results collected.\n")
 }
+
+
+# ============================================================
+# 9. LaTeX TABLE FRAGMENTS via etable()  (output/tables/tex/)
+# ============================================================
+
+TEX_DIR <- file.path(PROJECT_ROOT, "output", "tables", "tex")
+dir.create(TEX_DIR, recursive = TRUE, showWarnings = FALSE)
+
+OUTCOME_LABELS <- c(
+  delta_runnerup_vote_share_2024_2020               = "$\\Delta$ Runner-up vote share",
+  delta_margin_top1_top2_2024_2020                  = "$\\Delta$ Margin (W$-$RU)",
+  delta_winner_vote_share_2024_2020                 = "$\\Delta$ Winner vote share",
+  delta_winner_majority_2024_2020                   = "$\\Delta$ Winner majority (P50)",
+  delta_log1p_n_candidates_with_votes_2024_2020     = "$\\Delta$ Log n candidates",
+  delta_female_vote_share_2024_2020                 = "$\\Delta$ Female vote share",
+  delta_nonwhite_vote_share_2024_2020               = "$\\Delta$ Nonwhite vote share",
+  delta_new_candidate_vote_share_2024_2020          = "$\\Delta$ New-cand.\\ vote share",
+  delta_incumbent_candidate_vote_share_2024_2020    = "$\\Delta$ Incumbent vote share",
+  delta_winner_is_female_2024_2020                  = "$\\Delta$ Winner is female",
+  delta_winner_is_new_vs_2020_2024_2020             = "$\\Delta$ Winner is new entrant",
+  delta_turnout_rate_2024_2020                      = "$\\Delta$ Turnout rate",
+  delta_null_rate_2024_2020                         = "$\\Delta$ Null vote rate",
+  delta_blank_rate_2024_2020                        = "$\\Delta$ Blank vote rate",
+  delta_valid_vote_rate_2024_2020                   = "$\\Delta$ Valid vote rate",
+  delta_share_first_time_candidates_2024_2020       = "$\\Delta$ New entrant share",
+  delta_share_serial_challenger_2024_2020           = "$\\Delta$ Serial challenger",
+  delta_share_cross_cycle_returner_2024_2020        = "$\\Delta$ Cross-cycle returner"
+)
+
+SPEC_LABELS <- c(
+  baseline_state_fe           = "Baseline (state FE)",
+  baseline_state_fe_sz        = "Baseline, single-zone",
+  robustness_full_controls    = "Full controls",
+  subsample_le200k            = "$\\leq$200k voters",
+  robustness_broader_lawsuits = "Broader lawsuits ctrl"
+)
+
+# etable() dict: original fixest coef name -> display label
+ETABLE_DICT <- c(
+  "fit_delta_log1p_competition_lawsuits_2024_2020" = "$\\Delta$ Log(lawsuits)",
+  "bartik_iv_2020_2024"                            = "Bartik IV"
+)
+
+ETABLE_SIGNIF <- c("**" = .01, "*" = .05, "\\dagger" = .10)
+
+# Write just the \begin{tabular}...\end{tabular} block from etable(tex=TRUE) output
+write_etable_frag <- function(out, path) {
+  if (length(out) == 1L) out <- strsplit(out, "\n", fixed = TRUE)[[1]]
+  i1 <- which(grepl("\\begin{tabular}", out, fixed = TRUE))
+  i2 <- which(grepl("\\end{tabular}",   out, fixed = TRUE))
+  frag <- if (length(i1) && length(i2)) out[i1[1L]:i2[length(i2)]] else out
+  dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
+  writeLines(c(
+    "% Auto-generated by code/03_estimation/02_iv_main.R",
+    "% Do not edit manually -- rerun the generating script to update",
+    "",
+    frag
+  ), con = path)
+  cat("  Wrote:", path, "\n")
+}
+
+# Shared etable() options (overridable per-table)
+etab_base <- list(
+  tex          = TRUE,
+  dict         = ETABLE_DICT,
+  signif.code  = ETABLE_SIGNIF,
+  digits       = 3,
+  digits.stats = 1,
+  notes        = "SE clustered by electoral zone.",
+  style.tex    = style.tex(arraystretch = 1.2)
+)
+
+# Convenience: filter NULLs and apply spec/outcome labels to a model sub-list
+label_mods <- function(store, keys, labels) {
+  mods <- Filter(Negate(is.null), store[keys])
+  setNames(mods, labels[names(mods)])
+}
+
+# ---- 9a. First Stage (cols = specs) ----
+{
+  # Use original spec keys to compute extra rows before renaming
+  valid_fs <- intersect(FS_TEX_SPECS, names(Filter(Negate(is.null), tex_fs_fits)))
+  fs_F_row  <- unname(sapply(valid_fs, function(s)
+    sprintf("%.1f", tstat(tex_fs_fits[[s]])[instrument]^2)))
+  fs_tF_row <- unname(sapply(valid_fs, function(s)
+    sprintf("%.2f", get_tF_cv(tstat(tex_fs_fits[[s]])[instrument]^2))))
+  fs_N_row  <- unname(sapply(valid_fs, function(s)
+    formatC(nobs(tex_fs_fits[[s]]), format = "d", big.mark = ",")))
+  mods <- setNames(tex_fs_fits[valid_fs], SPEC_LABELS[valid_fs])
+  out <- do.call(etable, c(list(
+    mods,
+    keep       = paste0("^", instrument, "$"),
+    fitstat    = ~ -all,
+    extralines = list(
+      "First-stage $F$"          = fs_F_row,
+      "tF$_{\\text{cv}}$ (5\\%)" = fs_tF_row,
+      "$N$"                      = fs_N_row
+    )
+  ), etab_base))
+  write_etable_frag(out, file.path(TEX_DIR, "first_stage.tex"))
+}
+
+# IV coef name as stored by fixest (fit_<endogenous>)
+iv_keep <- paste0("^fit_", endogenous, "$")
+
+# ---- 9b. Electoral Competition (cols = outcomes, baseline spec) ----
+{
+  outs <- c(
+    "delta_runnerup_vote_share_2024_2020",
+    "delta_margin_top1_top2_2024_2020",
+    "delta_winner_vote_share_2024_2020",
+    "delta_winner_majority_2024_2020",
+    "delta_log1p_n_candidates_with_votes_2024_2020"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  write_etable_frag(out, file.path(TEX_DIR, "executive_iv_competition.tex"))
+}
+
+# ---- 9c. Voter Behavior (cols = outcomes) ----
+{
+  outs <- c(
+    "delta_turnout_rate_2024_2020",
+    "delta_null_rate_2024_2020",
+    "delta_blank_rate_2024_2020",
+    "delta_valid_vote_rate_2024_2020"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  write_etable_frag(out, file.path(TEX_DIR, "executive_iv_voter_behavior.tex"))
+}
+
+# ---- 9d. Composition (cols = outcomes) ----
+{
+  outs <- c(
+    "delta_female_vote_share_2024_2020",
+    "delta_nonwhite_vote_share_2024_2020",
+    "delta_new_candidate_vote_share_2024_2020",
+    "delta_incumbent_candidate_vote_share_2024_2020",
+    "delta_winner_is_female_2024_2020",
+    "delta_winner_is_new_vs_2020_2024_2020"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  write_etable_frag(out, file.path(TEX_DIR, "executive_iv_composition.tex"))
+}
+
+# ---- 9e. Entrant Typology (cols = outcomes) ----
+{
+  outs <- c(
+    "delta_share_first_time_candidates_2024_2020",
+    "delta_share_serial_challenger_2024_2020",
+    "delta_share_cross_cycle_returner_2024_2020"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  write_etable_frag(out, file.path(TEX_DIR, "entrant_typology.tex"))
+}
+
+# ---- 9f. Blank Rate — open-seat heterogeneity (cols = subgroup specs) ----
+{
+  sub_labels <- c(
+    baseline_state_fe        = "All municipalities",
+    subsample_open_seat      = "Open seat",
+    subsample_contested_seat = "Contested seat"
+  )
+  mods <- label_mods(tex_blank_sub_fits, BLANK_SUBGROUP_SPECS, sub_labels)
+  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  write_etable_frag(out, file.path(TEX_DIR, "open_seat_blank_rate.tex"))
+}
+
+# ---- 9g. Robustness — Winner Majority (cols = specs) ----
+{
+  mods <- label_mods(tex_robust_iv_fits, ROBUSTNESS_TEX_SPECS, SPEC_LABELS)
+  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  write_etable_frag(out, file.path(TEX_DIR, "robustness_winner_majority.tex"))
+}
+
+cat("\nLaTeX fragments written to", TEX_DIR, "\n")

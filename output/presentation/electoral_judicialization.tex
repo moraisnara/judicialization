@@ -431,6 +431,51 @@ Direction of bias: \textbf{ambiguous}
 \end{frame}
 
 
+\begin{frame}{Candidate and Elected Composition (2020 and 2024)}
+\footnotesize
+\textit{N\,$\approx$\,5,568--5,569 municipalities. Weighted by total candidates per municipality.}
+\smallskip
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{L{3.6cm}rr|rr}
+  \toprule
+  & \multicolumn{2}{c|}{\textbf{Executive (Prefeito)}} & \multicolumn{2}{c}{\textbf{Legislative (Vereador)}} \\
+  & 2020 & 2024 & 2020 & 2024 \\
+  \midrule
+  \multicolumn{5}{l}{\textit{Candidate pool}} \\
+  Female share        & 13.4\% & 15.3\% & 34.8\% & 35.4\% \\
+  Nonwhite share      & 36.1\% & 35.8\% & 51.3\% & 53.0\% \\
+  Higher education    & 61.4\% & 63.8\% & 26.9\% & 31.1\% \\
+  Mean age (years)    & 50.3   & 50.9   & 45.7   & 47.2   \\[3pt]
+  \multicolumn{5}{l}{\textit{Elected pool}} \\
+  Female share        & 12.7\% & 13.2\% & 14.9\% & 17.1\% \\
+  Nonwhite share      & 32.7\% & 33.2\% & 45.0\% & 45.5\% \\
+  Higher education    & 63.6\% & 66.4\% & 41.0\% & 44.9\% \\[3pt]
+  \multicolumn{5}{l}{\textit{Votes cast for female candidates}} \\
+  Female vote share   & 13.1\% & 14.6\% & --- & --- \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\medskip
+\begin{columns}[T]
+\begin{column}{0.50\textwidth}
+\begin{alertblock}{Representation gaps}
+  \footnotesize
+  \textbf{Executive:} female candidates ($\sim$14\%) and female mayors ($\sim$13\%) are roughly aligned --- selection is not the bottleneck; entry is. Zero gender quota applies to mayoral races.\\[4pt]
+  \textbf{Legislative:} despite a 30\% gender quota (\emph{Lei das Cotas}, Art.~10 Lei~9.504/97) driving female candidate share to $\sim$35\%, female \emph{vereadores} are only 15--17\% of the elected council --- a 2:1 conversion gap.
+\end{alertblock}
+\end{column}
+\begin{column}{0.47\textwidth}
+\begin{block}{Between-cycle change}
+  \footnotesize
+  Female representation improved modestly across both arenas between 2020 and 2024 ($+$1--2pp). The structural underrepresentation is stable: women are 15--16\% of mayors despite being more than half the electorate.\footnotemark\\[4pt]
+  Nonwhite candidates are a majority in legislative races (53\%) but underrepresented in the elected pool (45\%). Education and age differences between arenas reflect the professionalization premium in single-winner plurality races.
+\end{block}
+\end{column}
+\end{columns}
+\footnotetext{\scriptsize Voter gender breakdown not available in this project's data (requires TSE \emph{perfil do eleitorado}).}
+\end{frame}
+
+
 % ============================================================
 \section{Identification Strategy}
 % ============================================================
@@ -1447,7 +1492,15 @@ Abuso do Poder Econ\^{o}mico, Abuso do Poder Pol\'{i}tico, Capta\c{c}\~{a}o Il\'
 \end{column}
 \end{columns}
 \medskip
-\footnotesize\textit{IV residualized on state FE for histogram. Map: raw Bartik IV by municipality (grey = not in sample). Visual IV graph ($\tau_k$ vs.\ $F_k$, sized by $|\alpha_k|$): see \texttt{output/figures/visual\_iv\_grid.pdf}.}
+\footnotesize\textit{IV residualized on state FE for histogram. Map: raw Bartik IV by municipality (grey = not in sample).}
+\end{frame}
+
+
+\begin{frame}{Appendix E3: Visual IV --- Topic-Level Reduced Forms ($\tau_k$ vs.\ $F_k$)}
+\begin{center}
+  \includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{../figures/visual_iv_grid.pdf}
+\end{center}
+\footnotesize\textit{Each dot is one litigation topic. $\tau_k$: reduced-form coefficient of topic-$k$ shift on outcome (Borusyak, Hull \& Jaravel 2022). $F_k$: first-stage $F$ for that topic's shift. Dot size $\propto |\alpha_k|$ (Rotemberg weight). Positive $\tau_k$ at high $F_k$ indicates topics where the instrument is strong and the effect is in the winner-consolidation direction.}
 \end{frame}
 
 
