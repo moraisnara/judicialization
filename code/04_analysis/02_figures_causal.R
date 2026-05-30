@@ -169,23 +169,22 @@ iv_raw$spec_name <- iv_raw[[spec_col]]
 
 vb_outcomes <- c(
   "delta_turnout_rate_2024_2020",
-  "delta_null_share_2024_2020",
-  "delta_blank_share_2024_2020"
+  "delta_null_rate_2024_2020",
+  "delta_blank_rate_2024_2020"
 )
 
+# Non-subgroup specs only for the forest plot
 spec_labels <- c(
-  baseline_state_fe         = "Baseline (state FE)",
-  baseline_state_fe_sz      = "Baseline, single-zone",
-  robustness_full_controls  = "Full controls",
-  robustness_microregion_fe = "Microregion FE",
-  subsample_le200k          = "≤200k voters",
-  subsample_gt200k          = ">200k voters"
+  baseline          = "Baseline",
+  single_zone       = "Single-zone municipalities",
+  extended_controls = "Extended controls",
+  broader_treatment = "Broader treatment measure"
 )
 
 outcome_labels <- c(
   delta_turnout_rate_2024_2020 = "Turnout rate",
-  delta_null_share_2024_2020   = "Null vote share",
-  delta_blank_share_2024_2020  = "Blank vote share"
+  delta_null_rate_2024_2020    = "Null vote rate",
+  delta_blank_rate_2024_2020   = "Blank vote rate"
 )
 
 vb_df <- iv_raw %>%

@@ -41,7 +41,9 @@ COUNT_COLS = [
 def load_year(year: int) -> pd.DataFrame:
     folder = RAW_DIR / f"detalhe_votacao_munzona_{year}"
     files = sorted(folder.glob(f"detalhe_votacao_munzona_{year}_*.csv"))
-    files = [f for f in files if "leiame" not in f.name.lower()]
+    # exclude the BRASIL aggregate file — state files already cover all municipalities
+    files = [f for f in files if "leiame" not in f.name.lower()
+             and "BRASIL" not in f.name]
     if not files:
         print(f"  WARNING: no files found for {year}", flush=True)
         return pd.DataFrame()

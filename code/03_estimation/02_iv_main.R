@@ -64,7 +64,6 @@ cat(sprintf("Loaded design: %d municipalities\n", nrow(df)))
 # 2. VARIABLE DEFINITIONS
 # ============================================================
 
-THRESHOLD_200K <- 200000L  # Art. 29-II CF/88 — second-round eligibility
 
 # ---- Instrument variant ----
 # bartik_iv_2020_2024 is built with the adversarial filter applied at the
@@ -127,13 +126,6 @@ ROBUSTNESS_CONTROLS <- c(
   "share_first_time_candidates_2020", "share_career_politicians_2020"
 )
 
-# Top-4 Rotemberg-weight topic shares (s_ik for topics with |alpha_k| >= 10%)
-# Added by 05_patch_family_ivs.py; avail() drops any missing columns gracefully.
-# 11616 alpha=+40%, 11617 alpha=-30%, 11679 alpha=+19%, 11662 alpha=+13%
-TOPIC_SHARE_CONTROLS <- c(
-  "share_11616_2020", "share_11617_2020",
-  "share_11679_2020", "share_11662_2020"
-)
 
 
 # ============================================================
@@ -152,10 +144,6 @@ build_sample <- function(data, controls, outcomes, fe_col, instrument, endogenou
   if (single_zone && "n_zones_in_municipality" %in% names(samp))
     samp <- samp[samp$n_zones_in_municipality == 1L, ]
   if (!is.null(aptos_filter)) {
-    if (aptos_filter == "le200k" && "registered_voters_2024" %in% names(samp))
-      samp <- samp[samp$registered_voters_2024 <= THRESHOLD_200K, ]
-    if (aptos_filter == "gt200k" && "registered_voters_2024" %in% names(samp))
-      samp <- samp[samp$registered_voters_2024 >  THRESHOLD_200K, ]
     if (aptos_filter == "open_seat" && "open_seat_2024" %in% names(samp))
       samp <- samp[!is.na(samp$open_seat_2024) & samp$open_seat_2024 == 1L, ]
     if (aptos_filter == "no_open_seat" && "open_seat_2024" %in% names(samp))
@@ -243,21 +231,13 @@ n_micro <- if ("code_micro" %in% names(df))
              length(unique(df$code_micro[!is.na(df$code_micro)])) else 0L
 
 specs <- list(
-  list("baseline_state_fe",           BASELINE_CONTROLS,                            "SG_UF",      FALSE, NULL),
-  list("baseline_state_fe_sz",        BASELINE_CONTROLS,                            "SG_UF",      TRUE,  NULL),
-  list("robustness_full_controls",    ROBUSTNESS_CONTROLS,                          "SG_UF",      FALSE, NULL),
-  list("robustness_microregion_fe",   BASELINE_CONTROLS,                            "code_micro", FALSE, NULL),
-  list("subsample_le200k",            BASELINE_CONTROLS,                            "SG_UF",      FALSE, "le200k"),
-  list("subsample_open_seat",         BASELINE_CONTROLS,                            "SG_UF",      FALSE, "open_seat"),
-  list("subsample_contested_seat",    BASELINE_CONTROLS,                            "SG_UF",      FALSE, "no_open_seat"),
-  list("robustness_topic_shares",     c(BASELINE_CONTROLS, TOPIC_SHARE_CONTROLS),   "SG_UF",      FALSE, NULL),
-  list("robustness_broader_lawsuits", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"), "SG_UF", FALSE, NULL)
+  list("baseline",          BASELINE_CONTROLS,                                       "SG_UF", FALSE, NULL),
+  list("single_zone",       BASELINE_CONTROLS,                                       "SG_UF", TRUE,  NULL),
+  list("extended_controls", ROBUSTNESS_CONTROLS,                                     "SG_UF", FALSE, NULL),
+  list("open_seat",         BASELINE_CONTROLS,                                       "SG_UF", FALSE, "open_seat"),
+  list("contested_seat",    BASELINE_CONTROLS,                                       "SG_UF", FALSE, "no_open_seat"),
+  list("broader_treatment", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"),      "SG_UF", FALSE, NULL)
 )
-
-if (n_micro < 10) {
-  specs <- specs[sapply(specs, function(s) s[[3]] != "code_micro")]
-  cat("NOTE: code_micro not available; skipping microregion FE spec.\n")
-}
 
 cat(sprintf("Running %d variants x %d specifications x %d outcomes\n\n",
     length(VARIANTS), length(specs), length(ALL_OUTCOMES)))
@@ -272,14 +252,9 @@ iv_rows   <- list()
 liml_rows <- list()
 
 # Model objects stored for etable() LaTeX generation (Section 9)
-FS_TEX_SPECS <- c("baseline_state_fe", "baseline_state_fe_sz",
-                  "robustness_full_controls", "subsample_le200k",
-                  "robustness_broader_lawsuits")
-ROBUSTNESS_TEX_SPECS <- c("baseline_state_fe", "baseline_state_fe_sz",
-                           "robustness_full_controls", "subsample_le200k",
-                           "robustness_broader_lawsuits")
-BLANK_SUBGROUP_SPECS <- c("baseline_state_fe", "subsample_open_seat",
-                           "subsample_contested_seat")
+FS_TEX_SPECS       <- c("baseline", "single_zone", "extended_controls", "broader_treatment")
+ROBUSTNESS_TEX_SPECS <- c("baseline", "single_zone", "extended_controls", "broader_treatment")
+BLANK_SUBGROUP_SPECS <- c("baseline", "open_seat", "contested_seat")
 
 tex_fs_fits       <- list()   # [spec_name] = feols (first stage)
 tex_base_iv_fits  <- list()   # [outcome]   = feols (baseline IV)
@@ -343,7 +318,7 @@ for (vr in VARIANTS) {
           iv_fit, var_name, spec_name, family, y, n_obs, n_cl, endogenous
         )
         # Store model objects for tex generation
-        if (spec_name == "baseline_state_fe")
+        if (spec_name == "baseline")
           tex_base_iv_fits[[y]] <- iv_fit
         if (y == "delta_winner_majority_2024_2020" && spec_name %in% ROBUSTNESS_TEX_SPECS)
           tex_robust_iv_fits[[spec_name]] <- iv_fit
@@ -354,7 +329,7 @@ for (vr in VARIANTS) {
     }
 
     # LIML for baseline spec (K=1 instrument — no eigenvalue issue)
-    if (spec_name == "baseline_state_fe") {
+    if (spec_name == "baseline") {
       for (y in ALL_OUTCOMES) {
         if (!(y %in% names(samp))) next
         if (sum(!is.na(samp[[y]])) < 20L) next
@@ -427,13 +402,12 @@ report <- c(
   "  (adversarial class/subject filter applied at build stage in 02_bartik_inputs.py)",
   "",
   "## Specifications",
-  "1. **baseline_state_fe** — 7 baseline controls + state FE",
-  "2. **baseline_state_fe_sz** — same, single-zone municipalities only",
-  "3. **robustness_full_controls** — 14 controls + state FE",
-  "4. **robustness_microregion_fe** — 7 baseline controls + microregion FE",
-  "5. **subsample_le200k** — baseline + state FE, ≤200k registered voters",
-  "6. **robustness_topic_shares** — baseline + top-4 Rotemberg topic shares",
-  "7. **robustness_broader_lawsuits** — baseline + log1p_lawsuits_no_rrc_2020",
+  "1. **baseline** — 7 baseline controls + state FE",
+  "2. **single_zone** — baseline, single-zone municipalities only",
+  "3. **extended_controls** — 14 controls + state FE",
+  "4. **open_seat** — baseline, open-seat municipalities (2020 winner term-limited)",
+  "5. **contested_seat** — baseline, contested-seat municipalities",
+  "6. **broader_treatment** — baseline + log1p_lawsuits_no_rrc_2020 as additional control",
   "",
   "## First Stage",
   "",
@@ -495,10 +469,10 @@ iv_results$reject_tF_5pct <- abs(iv_results$t) > iv_results$tF_cv
 # Add tF CV to first-stage too (for reference)
 first_stage$tF_cv <- sapply(first_stage$first_stage_F, get_tF_cv)
 
-cat("\ntF correction summary (baseline_state_fe):\n")
-tF_summary <- iv_results[iv_results$spec == "baseline_state_fe", ]
+cat("\ntF correction summary (baseline):\n")
+tF_summary <- iv_results[iv_results$spec == "baseline", ]
 for (vn in sapply(VARIANTS, `[[`, "name")) {
-  f_val <- mean(first_stage$first_stage_F[first_stage$spec == "baseline_state_fe" &
+  f_val <- mean(first_stage$first_stage_F[first_stage$spec == "baseline" &
                                           first_stage$variant == vn], na.rm = TRUE)
   cv    <- mean(tF_summary$tF_cv[tF_summary$variant == vn], na.rm = TRUE)
   cat(sprintf("  Variant %-20s: F=%4.1f -> tF_cv=%.2f\n", vn, f_val, cv))
@@ -511,7 +485,7 @@ cat("  (Re-saved with tF correction columns)\n")
 
 
 # ============================================================
-# 8. LIML vs 2SLS COMPARISON  (baseline_state_fe spec only)
+# 8. LIML vs 2SLS COMPARISON  (baseline spec only)
 # ============================================================
 # With K=1 instrument, LIML is numerically identical to 2SLS (no eigenvalue issue).
 # A large LIML–2SLS divergence would signal many-instrument or weak-instrument bias.
@@ -529,7 +503,7 @@ if (length(liml_rows) > 0) {
   liml_results$reject_tF_5pct <- abs(liml_results$t) > liml_results$tF_cv
 
   # Side-by-side comparison for primary/secondary outcomes
-  iv_base  <- iv_results[iv_results$spec == "baseline_state_fe" &
+  iv_base  <- iv_results[iv_results$spec == "baseline" &
                          iv_results$family %in% c("primary", "secondary"),
                          c("outcome", "coef", "se", "p", "ivf")]
   names(iv_base)[2:5] <- paste0(names(iv_base)[2:5], "_2sls")
@@ -581,11 +555,12 @@ OUTCOME_LABELS <- c(
 )
 
 SPEC_LABELS <- c(
-  baseline_state_fe           = "Baseline (state FE)",
-  baseline_state_fe_sz        = "Baseline, single-zone",
-  robustness_full_controls    = "Full controls",
-  subsample_le200k            = "$\\leq$200k voters",
-  robustness_broader_lawsuits = "Broader lawsuits ctrl"
+  baseline          = "Baseline",
+  single_zone       = "Single-zone municipalities",
+  extended_controls = "Extended controls",
+  open_seat         = "Open seat",
+  contested_seat    = "Contested seat",
+  broader_treatment = "Broader treatment measure"
 )
 
 # etable() dict: original fixest coef name -> display label
@@ -642,8 +617,8 @@ label_mods <- function(store, keys, labels) {
   mods <- setNames(tex_fs_fits[valid_fs], SPEC_LABELS[valid_fs])
   out <- do.call(etable, c(list(
     mods,
-    keep       = paste0("^", instrument, "$"),
-    fitstat    = ~ -all,
+    keep_raw   = paste0("^", instrument, "$"),
+    fitstat    = ~ n + ivf,
     extralines = list(
       "First-stage $F$"          = fs_F_row,
       "tF$_{\\text{cv}}$ (5\\%)" = fs_tF_row,
@@ -654,7 +629,7 @@ label_mods <- function(store, keys, labels) {
 }
 
 # IV coef name as stored by fixest (fit_<endogenous>)
-iv_keep <- paste0("^fit_", endogenous, "$")
+iv_keep_raw <- paste0("^fit_", endogenous, "$")
 
 # ---- 9b. Electoral Competition (cols = outcomes, baseline spec) ----
 {
@@ -666,7 +641,7 @@ iv_keep <- paste0("^fit_", endogenous, "$")
     "delta_log1p_n_candidates_with_votes_2024_2020"
   )
   mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_base))
   write_etable_frag(out, file.path(TEX_DIR, "executive_iv_competition.tex"))
 }
 
@@ -679,7 +654,7 @@ iv_keep <- paste0("^fit_", endogenous, "$")
     "delta_valid_vote_rate_2024_2020"
   )
   mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_base))
   write_etable_frag(out, file.path(TEX_DIR, "executive_iv_voter_behavior.tex"))
 }
 
@@ -694,7 +669,7 @@ iv_keep <- paste0("^fit_", endogenous, "$")
     "delta_winner_is_new_vs_2020_2024_2020"
   )
   mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_base))
   write_etable_frag(out, file.path(TEX_DIR, "executive_iv_composition.tex"))
 }
 
@@ -706,26 +681,26 @@ iv_keep <- paste0("^fit_", endogenous, "$")
     "delta_share_cross_cycle_returner_2024_2020"
   )
   mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_base))
   write_etable_frag(out, file.path(TEX_DIR, "entrant_typology.tex"))
 }
 
 # ---- 9f. Blank Rate — open-seat heterogeneity (cols = subgroup specs) ----
 {
   sub_labels <- c(
-    baseline_state_fe        = "All municipalities",
-    subsample_open_seat      = "Open seat",
-    subsample_contested_seat = "Contested seat"
+    baseline      = "All municipalities",
+    open_seat     = "Open seat",
+    contested_seat = "Contested seat"
   )
   mods <- label_mods(tex_blank_sub_fits, BLANK_SUBGROUP_SPECS, sub_labels)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_base))
   write_etable_frag(out, file.path(TEX_DIR, "open_seat_blank_rate.tex"))
 }
 
 # ---- 9g. Robustness — Winner Majority (cols = specs) ----
 {
   mods <- label_mods(tex_robust_iv_fits, ROBUSTNESS_TEX_SPECS, SPEC_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_base))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_base))
   write_etable_frag(out, file.path(TEX_DIR, "robustness_winner_majority.tex"))
 }
 

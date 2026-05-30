@@ -98,7 +98,6 @@ BASELINE_CONTROLS <- c(
   "effective_party_count_candidates_2020" # baseline party count
 )
 
-THRESHOLD_200K <- 200000L
 
 
 # ============================================================
@@ -115,10 +114,6 @@ build_sample <- function(data, controls, outcomes, fe_col, instrument, endogenou
   samp  <- data[complete.cases(data[, req, drop = FALSE]), ]
   if (single_zone && "n_zones_in_municipality" %in% names(samp))
     samp <- samp[samp$n_zones_in_municipality == 1L, ]
-  if (!is.null(aptos_filter) && "log1p_total_valid_votes_2020" %in% names(samp)) {
-    thresh <- log1p(THRESHOLD_200K)
-    if (aptos_filter == "le200k") samp <- samp[samp$log1p_total_valid_votes_2020 <= thresh, ]
-  }
   rownames(samp) <- NULL
   samp
 }
@@ -168,14 +163,13 @@ extract_iv_row <- function(fit, variant, spec, family, outcome, n_obs, n_cl, end
 
 # Each entry: list(name, controls, fe_col, single_zone, aptos_filter)
 specs <- list(
-  list("baseline_state_fe",           BASELINE_CONTROLS,                              "SG_UF", FALSE, NULL),
-  list("baseline_state_fe_sz",        BASELINE_CONTROLS,                              "SG_UF", TRUE,  NULL),
-  list("robustness_full_controls",    c(BASELINE_CONTROLS,
+  list("baseline",          BASELINE_CONTROLS,                                       "SG_UF", FALSE, NULL),
+  list("single_zone",       BASELINE_CONTROLS,                                       "SG_UF", TRUE,  NULL),
+  list("extended_controls", c(BASELINE_CONTROLS,
     "female_share_2020", "nonwhite_share_2020",
     "incumbent_candidate_share_2020", "new_candidate_share_2020"
-  ),                                                                                  "SG_UF", FALSE, NULL),
-  list("subsample_le200k",            BASELINE_CONTROLS,                              "SG_UF", FALSE, "le200k"),
-  list("robustness_broader_lawsuits", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"), "SG_UF", FALSE, NULL)
+  ),                                                                                 "SG_UF", FALSE, NULL),
+  list("broader_treatment", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"),      "SG_UF", FALSE, NULL)
 )
 
 cat(sprintf("Running %d variants x %d specs x %d outcomes\n\n",
@@ -190,7 +184,7 @@ fs_rows <- list()
 iv_rows <- list()
 
 # Model objects for etable() tex fragments (Section 8)
-# Keys are outcome names; only baseline_state_fe spec stored
+# Keys are outcome names; only baseline spec stored
 tex_cand_pool_fits <- list()   # candidate pool outcomes
 tex_elected_fits   <- list()   # elected composition outcomes
 tex_party_fits     <- list()   # party competition outcomes
@@ -230,7 +224,7 @@ for (vr in VARIANTS) {
         fs_fit, var_name, spec_name, n_obs, n_cl, instrument)
       cat(sprintf("    First stage F = %.1f\n",
           coef(fs_fit)[instrument]^2 / se(fs_fit)[instrument]^2))
-      if (spec_name == "baseline_state_fe") tex_leg_fs_fit <<- fs_fit
+      if (spec_name == "baseline") tex_leg_fs_fit <<- fs_fit
     }, error = function(e) message("  FS error [", spec_name, "]: ", conditionMessage(e)))
 
     # 2SLS for each outcome
@@ -240,17 +234,19 @@ for (vr in VARIANTS) {
       family <- if (y %in% CANDIDATE_POOL_OUTCOMES) "candidate_pool"
                 else if (y %in% ELECTED_COMP_OUTCOMES) "elected_comp"
                 else "party_comp"
+      iv_fit_y <- NULL
       tryCatch({
-        iv_fit <- run_iv(samp, y, controls, fe_col, instrument, endogenous)
+        iv_fit_y <- run_iv(samp, y, controls, fe_col, instrument, endogenous)
         iv_rows[[length(iv_rows) + 1]] <- extract_iv_row(
-          iv_fit, var_name, spec_name, family, y, n_obs, n_cl, endogenous)
-        if (spec_name == "baseline_state_fe") {
-          if (y %in% CANDIDATE_POOL_OUTCOMES) tex_cand_pool_fits[[y]] <<- iv_fit
-          else if (y %in% ELECTED_COMP_OUTCOMES) tex_elected_fits[[y]]  <<- iv_fit
-          else                                    tex_party_fits[[y]]    <<- iv_fit
-        }
+          iv_fit_y, var_name, spec_name, family, y, n_obs, n_cl, endogenous)
       }, error = function(e)
         message("  IV error [", spec_name, ", ", y, "]: ", conditionMessage(e)))
+      # Store model objects for tex generation outside tryCatch to avoid scoping issues
+      if (!is.null(iv_fit_y) && spec_name == "baseline") {
+        if (y %in% CANDIDATE_POOL_OUTCOMES)      tex_cand_pool_fits[[y]] <- iv_fit_y
+        else if (y %in% ELECTED_COMP_OUTCOMES)   tex_elected_fits[[y]]   <- iv_fit_y
+        else                                      tex_party_fits[[y]]     <- iv_fit_y
+      }
     }
   }
 }
@@ -401,26 +397,26 @@ label_mods <- function(store, keys, labels) {
   setNames(mods, labels[names(mods)])
 }
 
-iv_keep <- paste0("^fit_", endogenous, "$")
+iv_keep_raw <- paste0("^fit_", endogenous, "$")
 
 # ---- 8a. Candidate Pool (cols = outcomes) ----
 {
   mods <- label_mods(tex_cand_pool_fits, CANDIDATE_POOL_OUTCOMES, LEG_OUTCOME_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_leg))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_leg))
   write_etable_frag(out, file.path(TEX_DIR, "legislative_iv_candidate_pool.tex"))
 }
 
 # ---- 8b. Elected Composition (cols = outcomes) ----
 {
   mods <- label_mods(tex_elected_fits, ELECTED_COMP_OUTCOMES, LEG_OUTCOME_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_leg))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_leg))
   write_etable_frag(out, file.path(TEX_DIR, "legislative_iv_elected_comp.tex"))
 }
 
 # ---- 8c. Party Competition (cols = outcomes) ----
 {
   mods <- label_mods(tex_party_fits, PARTY_COMP_OUTCOMES, LEG_OUTCOME_LABELS)
-  out  <- do.call(etable, c(list(mods, keep = iv_keep, fitstat = ~ ivf + n), etab_leg))
+  out  <- do.call(etable, c(list(mods, keep_raw = iv_keep_raw, fitstat = ~ ivf + n), etab_leg))
   write_etable_frag(out, file.path(TEX_DIR, "legislative_iv_party_comp.tex"))
 }
 

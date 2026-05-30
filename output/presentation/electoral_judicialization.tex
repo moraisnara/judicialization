@@ -61,9 +61,9 @@
 \newcommand{\cross}{{\color{myred}$\times$}}
 
 % ---- Title info ----
-\title{Electoral Judicialization and\\Municipal Competition in Brazil}
-\subtitle{Evidence from a Bartik Shift-Share Instrument}
-\author{Nara Lívia Morais}
+\title{When It Gets to Court:\\An Analysis of Candidates and Voters\\in a Judicialized Election}
+\subtitle{Evidence from Brazilian Municipal Elections, 2020--2024}
+\author{Nara Morais}
 \institute{FEA--USP}
 \date{\today}
 
@@ -77,73 +77,76 @@
 \section{Motivation}
 % ============================================================
 
-\begin{frame}{Does Judicial Intervention Shape Electoral Competition?}
-\begin{columns}[T]
-\begin{column}{0.58\textwidth}
+\begin{frame}{Does Judicial Intervention Reshape the Electoral Arena?}
 \textbf{Research question:}\\
-Does pre-election judicial intervention causally affect the competitive dynamics of mayoral races?
+Do pre-election adversarial lawsuits change the behaviour of \emph{both} voters and candidates in Brazilian municipal elections?
 \bigskip
 
-\textbf{The mechanism:}
+\textbf{Why this paper: the information degradation mechanism}
 \begin{itemize}
-  \item Candidates face adversarial lawsuits \emph{before} election day
-  \item Lawsuits impose legal costs, reputational exposure, and campaign disruption
-  \item This could deter entry, shift vote shares, and alter voter behavior
+  \item Pre-election lawsuits raise legal costs for candidates (\textbf{entry deterrence}) and generate ambiguous signals for voters (\textbf{withdrawal from candidate choice})
+  \item Voters cannot readily tell a meritorious challenge from strategic harassment --- litigation adds noise, not signal
+  \item Under Brazil's compulsory voting, voter disaffection surfaces as \textbf{blank ballots}, not abstention
 \end{itemize}
-\bigskip
+\medskip
 
-\textbf{The challenge:}\\
-Close races \emph{attract} more lawsuits --- endogeneity runs in both directions
-\end{column}
-\begin{column}{0.40\textwidth}
-\begin{block}{This Paper}
-  \begin{itemize}
-    \item 5,560 Brazilian municipalities
-    \item 2020 and 2024 mayoral elections
-    \item TSE administrative data
-    \item Identification: \textbf{Bartik shift-share IV} (F\,$\approx$\,19.6)
-  \end{itemize}
-\end{block}
-\begin{alertblock}{Key Findings}
-  \footnotesize
-  Adversarial judicialization $\uparrow$ significantly raises the blank vote rate ($+$1.3\,pp, $p=0.018$). Candidate pool contracts (directional). Competition and turnout: precise nulls after tF correction.
+\begin{alertblock}{Key Findings \quad{\footnotesize Bartik shift-share IV $\cdot$ F\,=\,19.6 $\cdot$ N\,=\,5,560 municipalities}}
+\footnotesize
+\begin{itemize}
+  \item \textbf{Blank vote rate} $\uparrow$ $+$1.3\,pp ($p=0.018$; survives tF correction) --- voters withdraw from candidate choice
+  \item \textbf{Candidate pool} contracts: $-$6.6\% executive, $-$7.5\% legislative --- entry deterrence channel
+  \item \textbf{Competition and turnout}: precise nulls after tF correction --- no reallocation, no demobilization
+\end{itemize}
 \end{alertblock}
-\end{column}
-\end{columns}
 \end{frame}
 
 
-\begin{frame}{Why Brazil? Why Municipalities?}
-\begin{columns}[T]
-\begin{column}{0.55\textwidth}
-\textbf{Brazil's Electoral Justice System:}
+\begin{frame}{Setting: Brazil, Municipalities, 2020--2024}
 \begin{itemize}
-  \item \emph{Tribunal Superior Eleitoral} (TSE) + 27 \emph{Tribunais Regionais Eleitorais} + 2,800+ first-instance zones
-  \item Adjudicates eligibility, campaign finance, and conduct \emph{before} election day
-  \item Among the world's most active electoral court systems
-  \item Rich variation in topic mix across municipalities, states, and cycles
+  \item \textbf{Tribunal Superior Eleitoral (TSE)} + 27 \emph{Tribunais Regionais Eleitorais} + 2,800+ first-instance electoral zones; adjudicates eligibility, campaign conduct, and propaganda violations \emph{before} election day
+  \item \textbf{5,570 simultaneous municipal elections} per cycle; directly elected mayor; uniform electoral rules under CF Art.~29
+  \item \textbf{Treatment:} $\Delta\log(1+\text{adversarial lawsuits}_{m})$, 2020$\to$2024; $\sim$1.2M adversarial cases in 2020, $\sim$1.1M in 2024
+  \item \textbf{Identification:} 2020 lawsuit topic mix (shares) $\times$ state-level 2020$\to$2024 topic growth (shifts) $=$ Bartik IV
+  \item \textbf{Analysis sample:} N\,=\,5,560 municipalities; SE clustered by 2,187 principal electoral zones
 \end{itemize}
-\end{column}
-\begin{column}{0.43\textwidth}
-\begin{block}{Municipal Setting}
-  \begin{itemize}
-    \item 5,570 simultaneous contests $=$ large cross-section
-    \item Homogeneous office: directly elected mayor
-    \item Uniform electoral rules (CF Art.~29)
-    \item Comparable competitive dynamics across units
-  \end{itemize}
-\end{block}
-\begin{block}{Two Election Cycles}
-  2020 (Nov 15) $\to$ \textbf{shares}\\
-  2024 (Oct 6) $\to$ \textbf{treatment + outcomes}
-\end{block}
-\end{column}
-\end{columns}
 \end{frame}
 
 
 \begin{frame}{Road Map}
 \tableofcontents
+\end{frame}
+
+
+% ============================================================
+\section{Literature and Contribution}
+% ============================================================
+
+\begin{frame}{Related Literature and Contribution}
+\footnotesize
+
+\textbf{Judicialization and Electoral Courts}
+\begin{itemize}\itemsep1pt
+  \item Tate \& Vallinder (1995), Helmke \& Staton (2011): judicialization as politics migrating into courts; Latin American waves driven by institutional diffusion
+  \item Taylor (2008), Sadek (1995): TSE as constitutive political actor; Brazilian electoral justice literature
+  \item[\color{myblue}$\hookrightarrow$] \textcolor{myblue}{\textit{This paper: first causal estimate at the micro-electoral level --- filings before election day, not cassação outcomes}}
+\end{itemize}
+
+\medskip
+\textbf{Voter Behavior and Compulsory Voting}
+\begin{itemize}\itemsep1pt
+  \item Power \& Roberts (1995): institutional drivers of blank/spoiled votes in Brazil's compulsory system
+  \item Driscoll et al., Castro (2025): blank votes as protest in low-information settings
+  \item[\color{myblue}$\hookrightarrow$] \textcolor{myblue}{\textit{This paper: first causal identification of judicial activity as a driver of blank votes}}
+\end{itemize}
+
+\medskip
+\textbf{Shift-Share Identification and Candidate Entry}
+\begin{itemize}\itemsep1pt
+  \item GPS (2020, AER), BHJ (2022, ReStud), Ash, Morelli \& Vannoni (2025, JPE): shift-share IV design and compliance
+  \item Besley \& Coate (1997): entry deterrence; Ferraz \& Finan (2008): information and accountability in Brazil
+  \item[\color{myblue}$\hookrightarrow$] \textcolor{myblue}{\textit{This paper: first Bartik IV applied to electoral litigation; full GPS/BHJ/AKM compliance with tF correction}}
+\end{itemize}
+\normalsize
 \end{frame}
 
 
@@ -191,6 +194,97 @@ We use only cases filed \emph{before} these dates.
 \end{frame}
 
 
+\begin{frame}{The TSE as a Constitutive Actor --- Electoral-Rule Milestones}
+\vspace{4pt}
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  font=\scriptsize\sffamily,
+  tldot/.style={circle,inner sep=1.8pt},
+  lbl/.style={align=center,text width=2.0cm}
+]
+\draw[-{Stealth[length=5pt]},thick,mygray] (-0.2,0) -- (12.5,0);
+% 1932 (statute) -- below
+\node[tldot,fill=myblue] (a) at (0.6,0){};
+\draw[myblue] (a) -- (0.6,-0.55);
+\node[lbl,anchor=north] at (0.6,-0.6){{\color{myblue}\textbf{1932}}\\\textcolor{mydark}{Justi\c{c}a Eleitoral created; women's suffrage}};
+% 1988 (constitution) -- above
+\node[tldot,fill=myblue] (b) at (2.23,0){};
+\draw[myblue] (b) -- (2.23,0.55);
+\node[lbl,anchor=south] at (2.23,0.6){{\color{myblue}\textbf{1988}}\\\textcolor{mydark}{EJ constitutionalised (CF 118--121)}};
+% 1990 (statute) -- below
+\node[tldot,fill=myblue] (c) at (3.86,0){};
+\draw[myblue] (c) -- (3.86,-0.55);
+\node[lbl,anchor=north] at (3.86,-0.6){{\color{myblue}\textbf{1990}}\\\textcolor{mydark}{Lei de Inelegibilidades (LC 64)}};
+% 1997 (statute) -- above
+\node[tldot,fill=myblue] (d) at (5.49,0){};
+\draw[myblue] (d) -- (5.49,0.55);
+\node[lbl,anchor=south] at (5.49,0.6){{\color{myblue}\textbf{1997}}\\\textcolor{mydark}{Gender quota 30\% (Lei 9.504, Art.~10)}};
+% 2009 (statute) -- below
+\node[tldot,fill=myblue] (e) at (7.12,0){};
+\draw[myblue] (e) -- (7.12,-0.55);
+\node[lbl,anchor=north] at (7.12,-0.6){{\color{myblue}\textbf{2009}}\\\textcolor{mydark}{Quota made mandatory (Lei 12.034)}};
+% 2010 (statute + STF 2012) -- above
+\node[tldot,fill=myblue] (f) at (8.75,0){};
+\draw[myblue] (f) -- (8.75,0.55);
+\node[lbl,anchor=south] at (8.75,0.6){{\color{myblue}\textbf{2010}}\\\textcolor{mydark}{Ficha Limpa (LC 135); STF upholds 2012}};
+% 2018 (STF) -- below
+\node[tldot,fill=myred] (g) at (10.38,0){};
+\draw[myred] (g) -- (10.38,-0.55);
+\node[lbl,anchor=north] at (10.38,-0.6){{\color{myred}\textbf{2018}}\\\textcolor{mydark}{Women's campaign funds \& TV time (ADI 5617)}};
+% 2020 (TSE + STF) -- above
+\node[tldot,fill=mygreen] (h) at (12.01,0){};
+\draw[mygreen] (h) -- (12.01,0.55);
+\node[lbl,anchor=south] at (12.01,0.6){{\color{mygreen}\textbf{2020}}\\\textcolor{mydark}{Racial quota for funds \& time (TSE; STF ADPF 738)}};
+\end{tikzpicture}}
+\end{center}
+\vspace{4pt}
+\footnotesize\textit{Actor: \textcolor{myblue}{statute (Congress)}, \textcolor{myred}{STF}, \textcolor{mygreen}{TSE}. Horizontal spacing not to scale. Sources: TSE; STF (ADI~5617; ADPF~738).}
+\end{frame}
+
+
+\begin{frame}{Zoom: 2020--2025 --- The TSE Becomes a Central Political Actor}
+\vspace{1pt}
+\begin{tikzpicture}[
+  font=\scriptsize\sffamily,
+  ev/.style={text width=10.6cm,align=left,anchor=west,font=\scriptsize},
+  yr/.style={anchor=east,font=\footnotesize\bfseries\sffamily}
+]
+\draw[thick,mygray] (0,0.3) -- (0,-6.3);
+% 2020 racial quota (TSE)
+\node[circle,fill=mygreen,inner sep=1.9pt] at (0,0){};
+\node[yr,mygreen] at (-0.15,0){2020};
+\node[ev] at (0.25,0){\textcolor{mydark}{\textbf{Aug--Oct:} racial quota --- FEFC \& free TV time must be \emph{proportional} to Black candidates (TSE, 25 Aug; STF ADPF~738 brings it forward to 2020).}};
+% 2020 election (COVID) -- paper cycle
+\node[rectangle,fill=myred,inner sep=2.2pt] at (0,-1.05){};
+\node[yr,myred] at (-0.15,-1.05){2020};
+\node[ev] at (0.25,-1.05){\textcolor{myred}{\textbf{Nov:} municipal elections \textbf{postponed to November} (COVID-19; EC~107/2020).} \textcolor{mydark}{\emph{$\leftarrow$ paper's baseline cycle.}}};
+% 2022 disinformation
+\node[circle,fill=mygreen,inner sep=1.9pt] at (0,-2.1){};
+\node[yr,mygreen] at (-0.15,-2.1){2022};
+\node[ev] at (0.25,-2.1){\textcolor{mydark}{TSE assumes disinformation/content-removal powers (Res.~23.714/2022); Moraes becomes TSE president (Aug); Oct general elections.}};
+% 2023 ineligibility
+\node[circle,fill=mygreen,inner sep=1.9pt] at (0,-3.15){};
+\node[yr,mygreen] at (-0.15,-3.15){2023};
+\node[ev] at (0.25,-3.15){\textcolor{mydark}{\textbf{Jun:} TSE declares Bolsonaro \textbf{ineligible for 8 years} (through 2030) --- abuse of political power \& misuse of media (ambassadors meeting), 5--2.}};
+% 2023 STF upholds TSE
+\node[circle,fill=myred,inner sep=1.9pt] at (0,-4.2){};
+\node[yr,myred] at (-0.15,-4.2){2023};
+\node[ev] at (0.25,-4.2){\textcolor{mydark}{\textbf{Dec:} STF (ADI~7.261) upholds the TSE's competence to regulate electoral disinformation.}};
+% 2024 AI rules
+\node[circle,fill=mygreen,inner sep=1.9pt] at (0,-5.25){};
+\node[yr,mygreen] at (-0.15,-5.25){2024};
+\node[ev] at (0.25,-5.25){\textcolor{mydark}{\textbf{Feb:} first-ever AI rules (Res.~23.732/2024) --- deepfakes banned, AI-use disclosure required, big-tech liability for non-removal.}};
+% 2024 election -- paper cycle
+\node[rectangle,fill=myred,inner sep=2.2pt] at (0,-6.3){};
+\node[yr,myred] at (-0.15,-6.3){2024};
+\node[ev] at (0.25,-6.3){\textcolor{myred}{\textbf{Oct:} municipal elections.} \textcolor{mydark}{\emph{$\leftarrow$ paper's treatment + outcome cycle.}}};
+\end{tikzpicture}
+\par\vspace{1pt}
+\footnotesize\textit{\textcolor{mygreen}{TSE acts} / \textcolor{myred}{STF or election}. The 2020 and 2024 cycles bracket this period of intense judicial rule-making. Sources: TSE; STF.}
+\end{frame}
+
+
 \begin{frame}{What Lawsuits Do --- and Who Files Them}
 \begin{columns}[T]
 \begin{column}{0.55\textwidth}
@@ -209,105 +303,105 @@ Opposing candidates, parties, \emph{Ministério Público Eleitoral}, any citizen
 \begin{alertblock}{Treatment Variable}
   \textbf{Adversarial competition-relevant cases:}
   \begin{itemize}
-    \item Mayoral candidate is the \emph{respondent}
-    \item Filed before election day
-    \item Substantive challenge (adversarial class and subject — not administrative)
+    \item Filed in the electoral zone before election day
+    \item Substantive challenge (adversarial class and subject --- not administrative)
+    \item Includes cases against any candidate type in the zone
   \end{itemize}
   \bigskip
   \textbf{Measurement:}\\
   $\Delta\log(1+\text{lawsuits}_{m})$\\from 2020 to 2024
 \end{alertblock}
+\smallskip
+\footnotesize\textbf{``Judicialization'' here} $=$ routing competition \emph{through the courts} (measured by filings) --- not judicial \emph{activism} or \emph{outcomes} (\emph{cassa\c{c}\~{a}o}). The effect runs through the \emph{process}, so filings, not verdicts, are the measure.
 \end{column}
 \end{columns}
 \end{frame}
 
 
 \begin{frame}{Administrative vs.\ Adversarial Electoral Litigation}
-\begin{columns}[T]
-\begin{column}{0.57\textwidth}
-Not all electoral case subjects involve genuine legal challenges to candidates:
-\bigskip
-\begin{description}
-  \item[\textbf{Candidacy Registration (RRC):}] Automatically generated for \emph{every} registered candidacy. No plaintiff, no adversarial content, no legal risk. Purely administrative.
-  \medskip
-  \item[\textbf{Coalition Slate Registration (DRAP):}] Filed by each party before every election; mandatory under Art.~6, Lei~9.504/1997. Universal coverage ($>$97\% of municipalities).
-  \medskip
-  \item[\textbf{Adversarial challenges:}] Filed against a specific candidate's conduct, eligibility, or campaign behaviour by opponents, the Electoral Public Prosecutor (\emph{MPE}), or citizens. These constitute genuine judicial intervention.
-\end{description}
-\end{column}
-\begin{column}{0.41\textwidth}
-\begin{block}{Case Volume (2020)}
-  \footnotesize
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabular}{lrc}
-    \toprule
-    Type & Volume & Included? \\
-    \midrule
-    Candidacy registration (RRC) & $\sim$994k & \cross \\
-    Coalition registration (DRAP) & $\sim$137k & \cross \\
-    Admin.\ procedural classes & various & \cross \\
-    \midrule
-    Eligibility challenges & & \tick \\
-    Abuse of power & & \tick \\
-    Campaign conduct & & \tick \\
-    Propaganda violations & & \tick \\
-    Document/information offenses & & \tick \\
-    \bottomrule
-  \end{tabular}
-\end{block}
-\medskip
-\footnotesize\textit{Adversarial filter applied at data construction stage (class and subject exclusions).}
-\end{column}
-\end{columns}
-\end{frame}
-
-
-\begin{frame}{Pre-Election Timing Restriction}
-\begin{itemize}
-  \item \textbf{Restriction:} we keep only cases filed \textit{strictly before} election day:
-  \[
-    \text{filing date} < \text{election date}
-  \]
-  \medskip
-  \item \textbf{Rationale:} only pre-election cases can plausibly affect competitive dynamics through legal costs, reputational signaling, or candidacy threats
-  \medskip
-  \item Post-election \emph{cassa\c{c}\~{a}o} proceedings determine whether the \emph{realized winner} is removed --- a distinct phenomenon that could reverse causality
-  \medskip
-  \item Applied identically to both the 2020 baseline (for shares) and the 2024 measurement (for treatment)
-  \medskip
-  \item \textbf{Future robustness:} \todo{test with $>$30\,days before election day to address late strategic filings}
-\end{itemize}
+\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{4.8cm}rrc}
+  \toprule
+  Case type & 2020 volume & 2024 volume & Included? \\
+  \midrule
+  \multicolumn{4}{l}{\textit{Excluded --- administrative / mandatory filings}} \\
+  Candidacy registration (RRC) & $\sim$994k & $\sim$841k & \cross \\
+  Coalition registration (DRAP) & $\sim$137k & $\sim$118k & \cross \\
+  Other administrative classes & various & various & \cross \\
+  \midrule
+  \multicolumn{4}{l}{\textit{Included --- adversarial competition-relevant cases}} \\
+  Eligibility challenges & & & \tick \\
+  Abuse of economic/political power & & & \tick \\
+  Campaign conduct violations & & & \tick \\
+  Propaganda / information offenses & & & \tick \\
+  \midrule
+  \textbf{Total adversarial} & $\mathbf{\sim}$\textbf{1.2M} & $\mathbf{\sim}$\textbf{1.1M} & \tick \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\vfill
+\footnotesize\textit{Pre-election restriction: filing date $<$ election date (2020: Nov~15; 2024: Oct~6). Filter applied at data construction via class and subject-code exclusions. See Appendix D for full case taxonomy.}
 \end{frame}
 
 
 \begin{frame}{The Endogeneity Problem}
+\textbf{OLS is biased --- direction is ambiguous:}
+\medskip
+
+\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{L{4.2cm}L{7.0cm}}
+  \toprule
+  Source & Confound \\
+  \midrule
+  Competition $\to$ lawsuits & Close races attract more suits $\Rightarrow$ positive bias on competitiveness \\
+  Vulnerability $\to$ lawsuits & Weak incumbents invite challengers to file $\Rightarrow$ negative bias on incumbency \\
+  Unobservables & Political culture, lawyer density, party intensity --- correlated with both treatment and outcome \\
+  \bottomrule
+\end{tabular}
+\normalsize
+\bigskip
+
+\begin{alertblock}{Solution: Bartik shift-share IV}
+  \footnotesize
+  Predicted 2024 lawsuits from the municipality's \textbf{2020 topic mix} $\times$ \textbf{state-level topic growth} --- a source of variation the municipality does not drive. Litigation waves are driven by TRE jurisprudence, MPE enforcement priorities, and party legal strategies at the supra-municipal level (Helmke \& Staton 2011).
+\end{alertblock}
+\end{frame}
+
+
+% ============================================================
+\section{Conceptual Framework}
+% ============================================================
+
+\begin{frame}{A Theory of Arena-Wide Information Degradation}
 \begin{columns}[T]
 \begin{column}{0.55\textwidth}
-\textbf{OLS is likely biased:}
+\textbf{Core claim:}\\
+Adversarial pre-election litigation degrades the \emph{informativeness} of the electoral environment. Voters cannot readily separate a meritorious challenge from strategic harassment, so additional litigation raises \emph{noise}, not signal.
 \bigskip
-\begin{enumerate}
-  \item \textbf{Competition $\to$ lawsuits}\\
-  Close races attract more suits; positive confound with competitiveness
-  \medskip
-  \item \textbf{Vulnerability $\to$ lawsuits}\\
-  Incumbent weakness invites challengers to file; negative confound with incumbency
-  \medskip
-  \item \textbf{Unobservables}\\
-  Local political culture, lawyer density, party intensity --- correlated with both
-\end{enumerate}
-\bigskip
-Direction of bias: \textbf{ambiguous}
+
+\textbf{One mechanism, differentiated margins:}
+\begin{itemize}
+  \item \textbf{Candidates:} litigation raises the fixed cost of running (Besley \& Coate 1997) $\Rightarrow$ marginal entry deterrence
+  \item \textbf{Voters:} unable to update toward any candidate $\Rightarrow$ withdrawal from candidate choice
+  \item \textbf{Competition:} no \emph{systematic} reallocation across candidates $\Rightarrow$ competition measures are precise nulls
+\end{itemize}
 \end{column}
 \begin{column}{0.43\textwidth}
-\begin{alertblock}{Identification Need}
-  We need exogenous variation in the \emph{level} of judicialization independent of the municipality's own 2024 competitive dynamics.
+\begin{alertblock}{Why a blank vote, not abstention?}
+  \footnotesize
+  Brazil has \textbf{compulsory voting}. Exit (abstention) is penalised, so the disaffected voter's available margin is to appear at the polls and cast a \textbf{blank} ballot. The theory therefore predicts disaffection surfacing as blank votes with \emph{turnout unchanged} --- exactly the observed pattern (Power \& Roberts 1995).
 \end{alertblock}
-\bigskip
-\begin{block}{Our Strategy}
-  \textbf{Bartik shift-share IV:}\\
-  Predicted 2024 lawsuits from the municipality's 2020 topic mix $\times$ state-level topic growth --- a source of variation the municipality does not drive.
-  \medskip\\
-  \footnotesize Theoretical framework: Helmke \& Staton (2011) — litigation waves in Latin America driven by institutional and strategic diffusion at the supra-municipal level.
+\medskip
+\begin{block}{Testable predictions}
+  \footnotesize
+  \begin{enumerate}
+    \item Blank rate $\uparrow$; turnout $\approx 0$
+    \item Candidate count $\downarrow$ (quantity, not selection)
+    \item Competition outcomes $\approx 0$ (no reallocation)
+    \item Effect strongest where no incumbent anchors voter beliefs (open seats)
+  \end{enumerate}
 \end{block}
 \end{column}
 \end{columns}
@@ -318,87 +412,213 @@ Direction of bias: \textbf{ambiguous}
 \section{Data Construction}
 % ============================================================
 
-\begin{frame}{Data Pipeline Overview}
+\begin{frame}{Building the Dataset}
 \begin{center}
 \begin{tikzpicture}[
-    node distance=0.5cm and 0.6cm,
-    raw/.style={rectangle,rounded corners=4pt,draw=myblue,fill=mylight,
-                font=\scriptsize\sffamily,text width=2.4cm,align=center,minimum height=0.8cm},
-    der/.style={rectangle,rounded corners=4pt,draw=myblue,fill=myblue!25,
-                font=\scriptsize\sffamily,text width=2.4cm,align=center,minimum height=0.8cm},
-    fin/.style={rectangle,rounded corners=4pt,draw=myblue,fill=myblue!55,text=white,
-                font=\small\sffamily\bfseries,text width=5.5cm,align=center,minimum height=0.9cm},
-    ar/.style={-{Stealth[length=4pt]},thick,myblue}
+    hdr/.style={rectangle,font=\scriptsize\bfseries\sffamily,text=white,
+                inner sep=4pt,minimum width=2.5cm,minimum height=0.6cm,align=center},
+    abox/.style={rectangle,rounded corners=3pt,font=\scriptsize\sffamily,
+                 text width=2.4cm,align=left,inner sep=5pt,minimum height=1.5cm},
+    fin/.style={rectangle,rounded corners=4pt,draw=myblue,fill=myblue!60,text=white,
+                font=\small\bfseries\sffamily,text width=8.0cm,align=center,inner sep=8pt}
   ]
-  \node[raw] (p1) {TSE Process\\Records};
-  \node[raw,right=of p1] (p2) {Candidate\\Registry};
-  \node[raw,right=of p2] (p3) {Vote\\Results};
-  \node[raw,right=of p3] (p4) {Voting\\Admin Data};
-  \node[raw,right=of p4] (p5) {Census 2010\\(IBGE)};
-  \node[raw,right=of p5] (p6) {2016\\Electoral};
 
-  \node[der,below=0.7cm of p1,xshift=0.3cm] (d1) {Judicialization\\Panel 20/24};
-  \node[der,right=of d1] (d2) {Bartik Shares\\+ Shifts};
-  \node[der,right=of d2] (d3) {Electoral\\Outcomes};
-  \node[der,right=of d3] (d4) {Voter Behavior\\$\Delta$ 20$\to$24};
-  \node[der,right=of d4] (d5) {Municipal\\Covariates};
+  % ---- shaded content boxes ----
+  \node[abox,draw=myred,fill=myred!7]     (b1) at (1.5, 2.5)
+    {Source: TSE\\[3pt]adversarial pre-election cases by subject code};
+  \node[abox,draw=myblue,fill=myblue!7]   (b2) at (4.5, 2.5)
+    {Source: TSE\\[3pt]registration, vote totals, demographics};
+  \node[abox,draw=mygreen,fill=mygreen!7] (b3) at (7.5, 2.5)
+    {Source: TSE\\[3pt]turnout, blank, null, valid votes by zone};
+  \node[abox,draw=mydark,fill=black!4]    (b4) at (10.5,2.5)
+    {Source: IBGE\\[3pt]population, income, urbanization};
 
-  \node[fin,below=0.7cm of d2,xshift=1.5cm] (panel) {Analysis Panel --- N\,=\,5{,}560 municipalities};
+  % ---- colored header boxes sitting flush on top of each content box ----
+  \node[hdr,fill=myred,  anchor=south] at (b1.north) {LAWSUITS};
+  \node[hdr,fill=myblue, anchor=south] at (b2.north) {CANDIDATES};
+  \node[hdr,fill=mygreen,anchor=south] at (b3.north) {VOTERS};
+  \node[hdr,fill=mydark, anchor=south] at (b4.north) {CONTEXT};
 
-  \draw[ar] (p1.south) -- (d1.north);
-  \draw[ar] (p2.south) -- (d1.north);
-  \draw[ar] (p1.south) -- (d2.north);
-  \draw[ar] (p3.south) -- (d3.north);
-  \draw[ar] (p4.south) -- (d4.north);
-  \draw[ar] (p5.south) -- (d5.north);
-  \draw[ar] (p6.south) -- (d5.north);
-  \draw[ar] (p2.south) -- (d5.north);
-  \draw[ar] (d1.south) -- (panel.north);
-  \draw[ar] (d2.south) -- (panel.north);
-  \draw[ar] (d3.south) -- (panel.north);
-  \draw[ar] (d4.south) -- (panel.north);
-  \draw[ar] (d5.south) -- (panel.north);
+  % ---- external annotation near VOTERS ----
+  \node[font=\tiny\itshape,color=mygreen,anchor=west] at (8.72,2.5) {first round only};
+
+  % ---- convergence: lines from content boxes → horizontal bar → arrow ----
+  \draw[mygray,semithick] (b1.south) -- (1.5, 1.1);
+  \draw[mygray,semithick] (b2.south) -- (4.5, 1.1);
+  \draw[mygray,semithick] (b3.south) -- (7.5, 1.1);
+  \draw[mygray,semithick] (b4.south) -- (10.5,1.1);
+  \draw[mygray,semithick] (1.5,1.1) -- (10.5,1.1);
+  \draw[-{Stealth[length=6pt]},thick,myblue] (6.0,1.1) -- (6.0,0.3);
+
+  % ---- final box ----
+  \node[fin] at (6.0,-0.05) {Final municipal dataset};
+
+  % ---- external metadata ----
+  \node[font=\scriptsize,color=mygray,anchor=north] at (6.0,-0.58)
+    {$N\,=\,5{,}560$ $\cdot$ first-differenced $\Delta$ 2020$\to$2024 $\cdot$ SE clustered by 2,187 electoral zones};
+
 \end{tikzpicture}
 \end{center}
 \end{frame}
 
 
-\begin{frame}{Electoral Outcome Data}
+\begin{frame}{Electoral Zones vs.\ Municipalities}
 \begin{columns}[T]
-\begin{column}{0.55\textwidth}
-\textbf{Source:} TSE vote return records by zone and candidate\\[4pt]
-\textbf{Processing:}
-\begin{enumerate}
-  \item Keep first-round results, mayoral races
-  \item Aggregate zones $\to$ municipality totals
-  \item Rank candidates by vote share; compute $\Delta$ 2024$-$2020
-\end{enumerate}
-\bigskip
-\textbf{Second round:} Only $\sim$222 municipalities ($>$200k voters) eligible. Focus on \textbf{round-1 outcomes}, decisive for 96\% of municipalities.
+
+\begin{column}{0.60\textwidth}
+  \vspace{-4pt}
+  \includegraphics[width=\linewidth]{../figures/map_data_universe.pdf}
 \end{column}
-\begin{column}{0.43\textwidth}
-\begin{block}{Outcome Families}
+
+\begin{column}{0.38\textwidth}
+  \vspace{4pt}
+  \textbf{Sample coverage}
+  \smallskip
+
   \footnotesize
-  \textit{Electoral competition:}
-  \begin{itemize}
-    \item $\Delta$ runner-up vote share
-    \item $\Delta$ winner--runner-up margin
-    \item $\Delta$ winner vote share
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabular}{lr}
+    \toprule
+    & \\[-6pt]
+    Municipalities & 5,571 \\
+    Electoral zones & 2,190 \\
+    States (UF) & 27 \\
+    Avg.\ munis per zone & 2.5 \\
+    \bottomrule
+  \end{tabular}
+
+  \bigskip
+  \textbf{Zone size distribution}
+  \smallskip
+
+  \begin{tabular}{lrr}
+    \toprule
+    Munis per zone & Zones & Share \\
+    \midrule
+    1 & 1,001 & 38\% \\
+    2 & \phantom{0}609 & 23\% \\
+    3--5 & \phantom{0}965 & 37\% \\
+    6 or more & \phantom{00}63 & 2\% \\
+    \bottomrule
+  \end{tabular}
+
+\end{column}
+
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Outcome Families}
+All outcomes are first-differences $\Delta$ (2024\,$-$\,2020). First round only.
+\medskip
+\begin{columns}[T]
+\begin{column}{0.32\textwidth}
+\begin{block}{Electoral Competition}
+  \footnotesize
+  \begin{itemize}\itemsep2pt
+    \item $\Delta$ Runner-up vote share
+    \item $\Delta$ Margin (winner $-$ runner-up)
+    \item $\Delta$ Winner vote share
     \item $\Delta$ P(winner $>$ 50\%)
-    \item $\Delta$ log number of candidates
-  \end{itemize}
-  \textit{Voter behavior:}
-  \begin{itemize}
-    \item $\Delta$ turnout rate
-    \item $\Delta$ null and blank vote rates
-  \end{itemize}
-  \textit{Composition:}
-  \begin{itemize}
-    \item $\Delta$ female/nonwhite vote share
-    \item Winner identity (new entrant vs.\ incumbent)
+    \item $\Delta$ Log n candidates
   \end{itemize}
 \end{block}
 \end{column}
+\begin{column}{0.32\textwidth}
+\begin{block}{Voter Behavior}
+  \footnotesize
+  \begin{itemize}\itemsep2pt
+    \item $\Delta$ Turnout rate
+    \item $\Delta$ Null vote rate
+    \item $\Delta$ \textbf{Blank vote rate} $\leftarrow$ primary
+    \item $\Delta$ Valid vote rate
+  \end{itemize}
+\end{block}
+\end{column}
+\begin{column}{0.32\textwidth}
+\begin{block}{Composition \& Entry}
+  \footnotesize
+  \begin{itemize}\itemsep2pt
+    \item $\Delta$ Female vote share
+    \item $\Delta$ Nonwhite vote share
+    \item $\Delta$ New-candidate vote share
+    \item $\Delta$ Incumbent vote share
+    \item $\Delta$ Winner is female
+    \item $\Delta$ Winner is new entrant
+    \item $\Delta$ New entrant pool share
+    \item $\Delta$ Serial challenger share
+    \item $\Delta$ Cross-cycle returner share
+  \end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+% ── Descriptive overview: Lawsuits + Voters ──────────────────────────────────
+\begin{frame}{Scale of the Phenomenon --- Lawsuits and Voters}
+\begin{columns}[T]
+
+% ---- LEFT: Lawsuits ----
+\begin{column}{0.48\textwidth}
+\textbf{Electoral Lawsuits}
+\vspace{2pt}
+
+\footnotesize
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{lrr}
+  \toprule
+  & 2020 & 2024 \\
+  \midrule
+  All lawsuits (total)        & 2.70M & 2.33M \\
+  \quad of which adversarial  & 1.23M & 1.06M \\
+  \quad adversarial share     & 45.6\% & 45.5\% \\
+  Municipalities exposed      & 4,045 & 4,040 \\
+  \quad share of total        & 72.6\% & 72.5\% \\
+  \multicolumn{3}{l}{\textit{Intensity ratios}} \\
+  All lawsuits / candidate    & 5.0 & 5.2 \\
+  Adversarial / candidate     & 2.3 & 2.4 \\
+  1 adversarial per            & 121 voters & 148 voters \\
+  \bottomrule
+\end{tabular}
+
+\vspace{4pt}
+\begin{alertblock}{}
+  \footnotesize
+  \textbf{2.3 adversarial lawsuits per candidate} on average --- litigation is pervasive, not exceptional. Adversarial share is stable ($\approx$46\%) across cycles. All intensity ratios \textbf{rose} from 2020 to 2024: more lawsuits per candidate ($+$4\%) and one adversarial lawsuit per fewer voters ($+$22\%). Total volume fell $-$14\% --- the variation the instrument exploits.
+\end{alertblock}
+\end{column}
+
+% ---- RIGHT: Voters ----
+\begin{column}{0.48\textwidth}
+\textbf{Electorate and Voting Behaviour}
+\vspace{2pt}
+
+\footnotesize
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{lrr}
+  \toprule
+  & 2020 & 2024 \\
+  \midrule
+  Registered voters       & 149.4M & 156.5M \\
+  \textbf{Voted}          & \textbf{114.8M} & \textbf{122.5M} \\
+  \quad turnout rate      & 76.8\% & 78.3\% \\
+  \textbf{Did not vote}   & \textbf{34.6M} & \textbf{34.0M} \\
+  \quad abstention rate   & 23.2\% & 21.7\% \\
+  \multicolumn{3}{l}{\textit{Among those who voted}} \\
+  Blank votes             & 3.9M\ \ (3.4\%) & 3.5M\ \ (2.8\%) \\
+  Null votes              & 7.3M\ \ (6.3\%) & 5.3M\ \ (4.4\%) \\
+  Valid votes             & 103.6M (90.2\%) & 113.7M (92.8\%) \\
+  \bottomrule
+\end{tabular}
+
+\vspace{4pt}
+\begin{block}{}
+  \footnotesize
+  Compulsory voting anchors turnout above 76\%. \textbf{Blank and null votes} are the residual margin --- $\approx$10\% of voters in 2020, falling to $\approx$7\% in 2024. The blank-vote channel is the paper's primary identified effect ($+$1.3\,pp, $p=0.018$).
+\end{block}
+\end{column}
+
 \end{columns}
 \end{frame}
 
@@ -411,20 +631,20 @@ Direction of bias: \textbf{ambiguous}
   Variable & Mean & SD & Min & Max \\
   \midrule
   \multicolumn{5}{l}{\textit{Treatment and instrument}} \\
-  $\Delta\log(1+\text{adversarial lawsuits})$ & $-0.062$ & $0.649$ & $-6.2$ & $5.1$ \\
-  Bartik IV ($\bZ$, adversarial filter) & $-0.137$ & $0.161$ & $-1.3$ & $0.4$ \\[4pt]
+  $\Delta\log(1+\text{adversarial lawsuits})$ & $-0.107$ & $0.434$ & $-7.56$ & $5.46$ \\
+  Bartik IV ($\bZ$, adversarial filter) & $-0.121$ & $0.078$ & $-0.62$ & $0.14$ \\[4pt]
   \multicolumn{5}{l}{\textit{Outcome variables}} \\
-  $\Delta$ Runner-up vote share & $-0.012$ & $0.159$ & $-0.500$ & $0.499$ \\
+  $\Delta$ Runner-up vote share & $-0.012$ & $0.158$ & $-0.500$ & $0.499$ \\
   $\Delta$ Margin (winner$-$runner-up) & $0.060$ & $0.325$ & $-1.000$ & $1.000$ \\
-  $\Delta$ Winner vote share & $0.048$ & $0.191$ & $-1.000$ & $0.718$ \\
-  $\Delta$ Blank vote rate & $0.001$ & $0.009$ & $-0.071$ & $0.070$ \\
+  $\Delta$ Winner vote share & $0.048$ & $0.192$ & $-1.000$ & $0.718$ \\
+  $\Delta$ Blank vote rate & $0.001$ & $0.025$ & $-0.069$ & $0.102$ \\
   $\Delta$ Turnout rate & $0.010$ & $0.031$ & $-0.158$ & $0.149$ \\[4pt]
   \multicolumn{5}{l}{\textit{Pre-determined controls}} \\
-  Log population (2010) & $9.41$ & $1.15$ & $6.69$ & $16.23$ \\
-  Urban share (2010) & $0.080$ & $0.144$ & $0$ & $1$ \\
-  Log income per capita (2010) & $0.42$ & $0.51$ & $0.00$ & $2.39$ \\
+  Log population (2010) & $9.41$ & $1.15$ & $6.69$ & $16.24$ \\
+  Urban share (2010) & $0.638$ & $0.220$ & $0.042$ & $1.000$ \\
+  Log income per capita (2010) & $6.231$ & $0.472$ & $4.866$ & $7.702$ \\
   Margin 2016 (pp) & $18.5$ & $21.2$ & $0.0$ & $100.0$ \\[4pt]
-  \multicolumn{5}{l}{\textit{N = 5,560 municipalities (baseline analysis sample)}} \\
+  \multicolumn{5}{l}{\textit{N\,=\,5,560 municipalities. $\Delta$ blank rate min/max: 1st/99th percentile.}} \\
   \bottomrule
 \end{tabular}
 \normalsize
@@ -434,8 +654,9 @@ Direction of bias: \textbf{ambiguous}
 \begin{frame}{Candidate and Elected Composition (2020 and 2024)}
 \footnotesize
 \textit{N\,$\approx$\,5,568--5,569 municipalities. Weighted by total candidates per municipality.}
-\smallskip
-\renewcommand{\arraystretch}{1.25}
+\vspace{3pt}
+
+\renewcommand{\arraystretch}{1.1}
 \begin{tabular}{L{3.6cm}rr|rr}
   \toprule
   & \multicolumn{2}{c|}{\textbf{Executive (Prefeito)}} & \multicolumn{2}{c}{\textbf{Legislative (Vereador)}} \\
@@ -445,34 +666,53 @@ Direction of bias: \textbf{ambiguous}
   Female share        & 13.4\% & 15.3\% & 34.8\% & 35.4\% \\
   Nonwhite share      & 36.1\% & 35.8\% & 51.3\% & 53.0\% \\
   Higher education    & 61.4\% & 63.8\% & 26.9\% & 31.1\% \\
-  Mean age (years)    & 50.3   & 50.9   & 45.7   & 47.2   \\[3pt]
+  Mean age (years)    & 50.3   & 50.9   & 45.7   & 47.2   \\
   \multicolumn{5}{l}{\textit{Elected pool}} \\
   Female share        & 12.7\% & 13.2\% & 14.9\% & 17.1\% \\
   Nonwhite share      & 32.7\% & 33.2\% & 45.0\% & 45.5\% \\
-  Higher education    & 63.6\% & 66.4\% & 41.0\% & 44.9\% \\[3pt]
-  \multicolumn{5}{l}{\textit{Votes cast for female candidates}} \\
+  Higher education    & 63.6\% & 66.4\% & 41.0\% & 44.9\% \\
+  \multicolumn{5}{l}{\textit{Votes cast for female candidates (executive only)}} \\
   Female vote share   & 13.1\% & 14.6\% & --- & --- \\
   \bottomrule
 \end{tabular}
-\normalsize
-\medskip
+
+\vspace{4pt}
 \begin{columns}[T]
 \begin{column}{0.50\textwidth}
 \begin{alertblock}{Representation gaps}
   \footnotesize
-  \textbf{Executive:} female candidates ($\sim$14\%) and female mayors ($\sim$13\%) are roughly aligned --- selection is not the bottleneck; entry is. Zero gender quota applies to mayoral races.\\[4pt]
-  \textbf{Legislative:} despite a 30\% gender quota (\emph{Lei das Cotas}, Art.~10 Lei~9.504/97) driving female candidate share to $\sim$35\%, female \emph{vereadores} are only 15--17\% of the elected council --- a 2:1 conversion gap.
+  \textbf{Executive:} entry is the bottleneck, not selection --- female candidates ($\sim$14\%) and female mayors ($\sim$13\%) are nearly equal. No gender quota applies to mayoral races.\\[3pt]
+  \textbf{Legislative:} the 30\% \emph{Lei das Cotas} quota lifts candidates to $\sim$35\%, yet elected women are only 15--17\% --- a 2:1 conversion gap.
 \end{alertblock}
 \end{column}
 \begin{column}{0.47\textwidth}
 \begin{block}{Between-cycle change}
   \footnotesize
-  Female representation improved modestly across both arenas between 2020 and 2024 ($+$1--2pp). The structural underrepresentation is stable: women are 15--16\% of mayors despite being more than half the electorate.\footnotemark\\[4pt]
-  Nonwhite candidates are a majority in legislative races (53\%) but underrepresented in the elected pool (45\%). Education and age differences between arenas reflect the professionalization premium in single-winner plurality races.
+  Composition is \textbf{stable} ($+$1--2\,pp). Women are 15--16\% of mayors; nonwhite candidates are 53\% of the legislative field but only 45\% of elected councils.
 \end{block}
 \end{column}
 \end{columns}
-\footnotetext{\scriptsize Voter gender breakdown not available in this project's data (requires TSE \emph{perfil do eleitorado}).}
+\end{frame}
+
+
+\begin{frame}{The Treatment Variable: Adversarial Lawsuits}
+\begin{columns}[T]
+\begin{column}{0.42\textwidth}
+  \textbf{Distribution of Bartik IV}\\
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{../figures/bartik_histogram.pdf}
+  \vspace{2pt}
+  \footnotesize\textit{Residualised on state FE. Mean\,=\,$-$0.121, SD\,=\,0.078.}
+\end{column}
+\begin{column}{0.56\textwidth}
+  \textbf{Geographic distribution}\\
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{../figures/bartik_choropleth.pdf}
+  \vspace{2pt}
+  \footnotesize\textit{Raw Bartik IV by municipality. Blue\,=\,above-average predicted exposure; red\,=\,below-average.}
+\end{column}
+\end{columns}
+\medskip
+\footnotesize
+\textbf{Key features:} Treatment declined on average 2020$\to$2024 (mean $\Delta$\,=\,$-$0.107). Most variation is cross-sectional: municipalities with a heavier campaign-conduct and information-environment mix in 2020 faced higher predicted litigation waves by 2024. Larger, higher-turnout municipalities had more diverse 2020 portfolios (see balance table, Appendix F).
 \end{frame}
 
 
@@ -484,27 +724,28 @@ Direction of bias: \textbf{ambiguous}
 \begin{columns}[T]
 \begin{column}{0.57\textwidth}
 \textbf{In 2020, each municipality has a topic mix:}\\
-Some had mostly candidate eligibility challenges; others had more campaign conduct or propaganda violations.
-\bigskip
+Some had mostly candidate eligibility challenges; others more campaign conduct or propaganda violations.
+\medskip
 
-\textbf{By 2024, adversarial litigation waves diffused unevenly across topics.}\\
-Waves spread through TRE jurisprudence, coordinated party strategies, and MPE enforcement priorities --- systemic forces that are state-wide, not municipality-specific.
-\bigskip
+\textbf{By 2024, litigation waves diffused unevenly across topics.}\\
+Waves spread through TRE jurisprudence, coordinated party strategies, and MPE enforcement priorities --- state-wide forces, not municipality-specific.
+\medskip
 
 \textbf{The instrument:}\\
-$\bZ$ = municipality's \emph{exposure} to these waves, predicted from its 2020 topic mix $\times$ state-level growth in each topic.
+$\bZ$ = municipality's \emph{exposure} to these waves, predicted from its 2020 topic mix $\times$ state-level topic growth.
 \end{column}
 \begin{column}{0.41\textwidth}
 \begin{alertblock}{Key Design Logic}
-  \begin{enumerate}
-    \item \textbf{Shares}: from 2020 --- pre-determined, before 2024 politics materialize
-    \item \textbf{Shifts}: state-level waves driven by institutional and strategic diffusion, not by any single municipality's dynamics
-    \item \textbf{Product}: predicted exposure to adversarial litigation waves, orthogonal to local 2024 competitive outcomes
+  \footnotesize
+  \begin{enumerate}\itemsep2pt
+    \item \textbf{Shares}: 2020 topic mix --- pre-determined, before 2024 politics materialize
+    \item \textbf{Shifts}: state-level growth driven by institutional diffusion, not any single municipality
+    \item \textbf{Product}: predicted exposure orthogonal to local 2024 outcomes
   \end{enumerate}
 \end{alertblock}
-\medskip
+\vspace{4pt}
 \begin{block}{Template}
-  \footnotesize Ash, Morelli \& Vannoni (2025, JPE): Bartik IV for legislative output $\to$ state growth. Same share-shift design; Nara's shares and shifts are litigation topics rather than legal subject matter.
+  \footnotesize Ash, Morelli \& Vannoni (2025, JPE): same Bartik design applied to legislative output. Litigation topics play the role of legal subject matter.
 \end{block}
 \end{column}
 \end{columns}
@@ -536,29 +777,27 @@ $\bZ$ = municipality's \emph{exposure} to these waves, predicted from its 2020 t
 \begin{column}{0.55\textwidth}
 \textbf{Formal condition:}\\
 $E[\bZ \cdot u_m \mid \mathbf{X}_m, \delta_{\text{UF}}] = 0$
-\bigskip
+\medskip
 
-\textbf{GPS (2020) identification approach:}\\
-Validity rests on \textbf{conditional exogeneity of the 2020 shares} $s_{m,k,2020}$. A municipality's 2020 litigation portfolio was determined by then-prevailing political dynamics --- two election cycles before 2024 outcomes materialize.
+\textbf{GPS (2020) --- share exogeneity:}\\
+The 2020 litigation portfolio was determined by then-prevailing political dynamics --- two election cycles before 2024 outcomes materialize. Conditional on state FE and 2020 controls, shares are as-good-as-random.
 
-\bigskip
-\textbf{BHJ (2022) shift exogeneity:}\\
-State-level topic growth reflects institutional and strategic waves (TRE jurisprudence, MPE priorities, party legal strategies) that are common to a state and not driven by individual municipality dynamics.
+\medskip
+\textbf{BHJ (2022) --- shift exogeneity:}\\
+State-level topic growth reflects TRE jurisprudence, MPE priorities, and party legal strategies common to a state --- not driven by individual municipality dynamics.
 \end{column}
 \begin{column}{0.43\textwidth}
 \begin{alertblock}{Potential Threats}
-  \begin{enumerate}
-    \item \textbf{Large-municipality dominance}: $m$ drives state shift\\
-    $\rightarrow$ LOO construction; most municipalities are small
-    \medskip
+  \footnotesize
+  \begin{enumerate}\itemsep3pt
+    \item \textbf{Large-muni dominance}: $m$ drives state shift\\
+    $\to$ LOO construction; most munis are small
     \item \textbf{Share persistence}: 2020 shares correlated with unobserved 2024 dynamics\\
-    $\rightarrow$ state FE $+$ 2020 competitive controls; balance table (Appendix F)
-    \medskip
-    \item \textbf{Network spillovers}: litigation waves correlate with state political events\\
-    $\rightarrow$ state FE absorbs common state shocks
-    \medskip
-    \item \textbf{K$_{\text{eff}}$ is small} ($\approx$3): BHJ shift-exogeneity asymptotics are weak at low effective-K\\
-    $\rightarrow$ GPS share-exogeneity approach is primary; exposure-robust SEs reported
+    $\to$ state FE $+$ 2020 controls; balance table (App.~F)
+    \item \textbf{Network spillovers}: waves correlated with state events\\
+    $\to$ state FE absorbs common shocks
+    \item \textbf{K$_{\text{eff}}\approx3$}: BHJ asymptotics weak\\
+    $\to$ GPS approach primary; exposure-robust SEs reported
   \end{enumerate}
 \end{alertblock}
 \end{column}
@@ -566,76 +805,60 @@ State-level topic growth reflects institutional and strategic waves (TRE jurispr
 \end{frame}
 
 
-\begin{frame}{Rotemberg Weight Decomposition (GPS 2020)}
-\textit{Which litigation topics actually drive the instrument?}
-\smallskip
-
-The 2SLS estimand decomposes as $\hat\tau_{\text{IV}} = \sum_k \alpha_k \hat\tau_k$, where
-$\alpha_k = (\tilde{z}_k'\tilde{d})/(\tilde{Z}'\tilde{d})$ is topic $k$'s share of the first-stage numerator
-and $\hat\tau_k$ is the just-identified IV using only topic $k$.
-
-\smallskip
-\footnotesize
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{rlrrrr}
-  \toprule
-  Rank & Topic (abbreviated) & $\alpha$ (\%) & Cum. & $F_k$ & $\hat\tau_k^{\text{majority}}$ \\
-  \midrule
-  1 & Document falsification (electoral) & $+$23.5 & 0.24 & 50.9 & $-$0.138 \\
-  2 & Fraudulent electoral poll & $-$22.6 & 0.46 & 60.0 & --- \\
-  3 & Right of reply & $+$16.4 & 0.62 & 1.1 & $-$3.35 \\
-  4 & Election general (1st round) & $+$15.8 & 0.78 & 1.9 & $-$0.325 \\
-  5 & Multiple party registration & $-$15.4 & 0.93 & 36.5 & --- \\
-  \midrule
-  \multicolumn{2}{l}{\footnotesize Top 5 (of $\sim$30 adversarial topics)} & $+$93.7 & & & \\
-  \multicolumn{6}{l}{\footnotesize HHI\,$=$\,0.34; K$_{\text{eff}} = 1/$HHI\,$\approx$\,3.0. Topics 3--4 have high $\alpha_k$ but near-zero $F_k$: GPS concern.} \\
-  \bottomrule
-\end{tabular}
-\normalsize
-\medskip
+\begin{frame}{What the IV Identifies --- Interpreting the Estimand}
 \begin{columns}[T]
-\begin{column}{0.50\textwidth}
-\begin{block}{GPS concern: high $\alpha$, low $F_k$}
-\footnotesize
-Topics 3--4 (Right of Reply, Election 1st Round) have large Rotemberg weights but $F_k < 2$. These topics contribute to the first-stage numerator but carry little independent identifying variation. Visual IV graph (Appendix E) assesses sign consistency across all topics.
-\end{block}
+\begin{column}{0.55\textwidth}
+The 2SLS coefficient is \textbf{not} a general ``effect of judicialization.'' It is a \textbf{weighted LATE}:
+\begin{itemize}
+  \item \textbf{Weights} ($\alpha_k$) concentrate on the topics that diffuse at the state level --- topics with large state-level growth waves drive the identification
+  \item \textbf{Compliers} are municipalities whose litigation responds to those state-wide waves
+  \item The estimate speaks to \emph{these} kinds of adversarial litigation, in \emph{responsive} municipalities --- not to all litigation everywhere
+\end{itemize}
 \end{column}
-\begin{column}{0.47\textwidth}
-\begin{alertblock}{Well-identified topics}
-\footnotesize
-Topics 1 (doc.\ falsification, $F_k\,=\,50.9$) and 2 (fraudulent poll, $F_k\,=\,60.0$) have both high $|\alpha_k|$ and strong per-topic first stages --- the cleanest contribution to identification.
+\begin{column}{0.43\textwidth}
+\begin{alertblock}{Why this matters for framing}
+  \footnotesize
+  Reporting the LATE honestly disciplines the interpretation: the blank-vote effect is the causal response of \emph{state-diffusing adversarial litigation} among complier municipalities. Magnitudes should be read as complier effects, which IV typically scales up relative to a population average.
 \end{alertblock}
 \end{column}
 \end{columns}
 \end{frame}
 
 
-\begin{frame}{GPS/BHJ Validity Checklist}
+
+
+\begin{frame}{Exposure-Robust Standard Errors (BHJ/AKM)}
+\begin{columns}[T]
+\begin{column}{0.58\textwidth}
 \footnotesize
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{L{4.8cm}L{3.8cm}L{3.6cm}}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{L{2.6cm}rrrr}
   \toprule
-  Requirement & Status & Key result \\
+  Outcome & $\hat\tau$ & SE$_\text{conv}$ & SE$_\text{BHJ}$ & Ratio \\
   \midrule
-  Report Rotemberg weights $\alpha_k$ & \tick~Done & HHI\,=\,0.34; K$_\text{eff}$\,$\approx$\,3 \\
-  Per-topic first-stage $F_k$ & \tick~Done & F$_k$ ranges 1--60 across topics \\
-  Visual IV graph ($\tau_k$ vs $F_k$) & \tick~Done & Appendix E; sign consistency checked \\
-  Balance: $\bZ$ on pre-determined chars & \tick~Done & 3/9 covariates $p < 0.10$; all in controls \\
-  Leave-one-out shifts (LOO) & \tick~Built in & Prevents mechanical correlation \\
-  Exposure-robust (AKM) SEs & \tick~Done & SE ratio $\approx$ 2--3$\times$; K$_\text{eff}$\,=\,3 \\
-  Shift descriptives table (BHJ) & \tick~Done & See \texttt{shift\_descriptives.csv} \\
-  tF correction (Lee et al.\ 2022) & \tick~Done & F\,=\,19.6 $<$ 23.1; tF$_\text{cv}$\,=\,2.18 \\
-  LIML comparison (GPS robustness) & \tick~Done & LIML\,=\,2SLS (exact, K=1) \\
-  Topic share controls (AMV/BHJ) & \tick~Done & Spec \texttt{robustness\_topic\_shares} \\
-  \midrule
-  Pre-period placebo ($2016\to2020$) & \cross~Pending & Requires 2016 lawsuit panel \\
-  TRE judge composition heterogeneity & \cross~Pending & Requires court composition data \\
-  Case outcome (win/loss) as 2nd IV & \cross~Pending & Would overidentify; additional data needed \\
+  $\Delta$ Winner majority & $+$0.140 & 0.090 & 2.062 & 22.9$\times$ \\
+  $\Delta$ Margin          & $+$0.062 & 0.043 & 0.787 & 18.3$\times$ \\
+  $\Delta$ Winner share    & $+$0.031 & 0.025 & 0.546 & 21.8$\times$ \\
+  $\Delta$ Blank rate      & $+$0.013 & 0.005 & 0.055 & 10.4$\times$ \\
   \bottomrule
+  \multicolumn{5}{l}{\scriptsize K$_\text{eff}$\,=\,3.0 (Rotemberg). Source: \texttt{exposure\_robust\_se.csv}.}
 \end{tabular}
 \normalsize
-\bigskip
-\footnotesize\textit{GPS = Goldsmith-Pinkham, Sorkin \& Swift (2020, AER). BHJ = Borusyak, Hull \& Jaravel (2022, ReStud). AKM = Adão, Kolesár \& Morales (2019, QJE).}
+\medskip
+\begin{alertblock}{Implication}
+  \footnotesize
+  With only K$_\text{eff}\approx3$ topics driving identification, BHJ/AKM SEs are \textbf{10--23$\times$} the conventional SEs. Under exposure-robust inference \textbf{no outcome is statistically significant} --- including the blank rate ($t_\text{BHJ}$\,=\,0.23). This reflects the low effective topic count, not a failure of the instrument per se.
+\end{alertblock}
+\end{column}
+\begin{column}{0.40\textwidth}
+\begin{block}{What this means}
+  \footnotesize
+  The tF correction adjusts for \emph{weak instruments}; BHJ/AKM adjusts for \emph{estimated shifts} (few effective topics). Both matter here because K$_\text{eff}$\,=\,3.\\[4pt]
+  \textbf{GPS approach is primary:} with many small municipalities, the GPS share-exogeneity argument holds even at low K$_\text{eff}$. Conventional SEs clustered by zone are appropriate under GPS, and the tF-corrected result holds.\\[4pt]
+  \textbf{Honest disclosure:} under the more conservative BHJ criterion, the blank-rate finding is suggestive, not confirmed. Improving K$_\text{eff}$ is a key agenda item.
+\end{block}
+\end{column}
+\end{columns}
 \end{frame}
 
 
@@ -665,35 +888,46 @@ Topics 1 (doc.\ falsification, $F_k\,=\,50.9$) and 2 (fraudulent poll, $F_k\,=\,
 \end{frame}
 
 
-\begin{frame}{Eight Specifications}
+\begin{frame}{Specifications}
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
 \footnotesize
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{L{4.2cm}L{2.8cm}L{1.8cm}R{2.4cm}R{1.2cm}}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{L{2.6cm}L{2.0cm}R{1.6cm}}
   \toprule
-  Specification & Controls & FE & Sample & $N$ \\
+  Specification & Sample & $N$ \\
   \midrule
-  \texttt{baseline\_state\_fe} & 7 baseline & State (27) & All & 5,560 \\
-  \texttt{baseline\_state\_fe\_sz} & 7 baseline & State (27) & Single-zone & 5,371 \\
-  \texttt{robustness\_full\_controls} & 14 extended & State (27) & All & 5,560 \\
-  \texttt{subsample\_le200k} & 7 baseline & State (27) & $\leq$200k voters & 5,338 \\
-  \texttt{subsample\_open\_seat} & 7 baseline & State (27) & Open seat (46\%) & 2,571 \\
-  \texttt{subsample\_contested\_seat} & 7 baseline & State (27) & Contested (54\%) & 2,989 \\
-  \texttt{robustness\_topic\_shares} & 7 $+$ 4 topic shares & State (27) & Nonzero shares & 2,824 \\
-  \texttt{robustness\_broader\_lawsuits} & 7 $+$ log(lawsuits no-RRC 2020) & State (27) & All & 5,560 \\
+  \textbf{Baseline} & All municipalities & 5,560 \\
+  Single-zone munis & One zone only & 5,371 \\
+  Extended controls & All municipalities & 5,560 \\[3pt]
+  Open seat & 2020 winner term-limited & 2,571 \\
+  Contested seat & Incumbent can run & 2,989 \\[3pt]
+  Broader treatment & All municipalities & 5,560 \\
   \bottomrule
 \end{tabular}
 \normalsize
-\medskip
-\textbf{7 baseline controls:}
-Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 electoral baseline (log valid votes, margin top1--top2, log candidates)
 
-\medskip
-\textbf{14 extended:} baseline $+$ ENP 2016 $+$ candidate composition 2020 (gender, ethnicity, education) $+$ party count
+\vspace{6pt}
+\footnotesize
+\textbf{Controls:}\\
+\textit{Baseline (7):} Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 baseline (log valid votes, margin, log candidates)\\[4pt]
+\textit{Extended (+7):} ENP 2016 $+$ candidate composition 2020 (gender, ethnicity, education) $+$ party count
+\end{column}
 
-\medskip
-\begin{alertblock}{}
-\footnotesize\textbf{Open-seat definition:} a municipality is \emph{open seat} in 2024 if the 2020 winner also won in 2016 (two consecutive terms), making them constitutionally term-limited. This is determined by 2016--2020 outcomes, predating 2024 judicial activity. \textbf{Note on topic-shares spec:} F collapses to $<$1 (mechanical; shares ARE the instrument's variation).
-\end{alertblock}
+\begin{column}{0.42\textwidth}
+\textbf{What each spec tests:}
+\smallskip
+
+\footnotesize
+\begin{itemize}\itemsep4pt
+  \item \textbf{Baseline} --- primary estimates; state FE $+$ 7 controls
+  \item \textbf{Single-zone} --- institutional check: municipalities served by one zone avoid zone-to-municipality aggregation ambiguity
+  \item \textbf{Extended controls} --- controls robustness; adds candidate pool composition and party fragmentation
+  \item \textbf{Open/contested seat} --- mechanism test: blank-vote effect should concentrate where no incumbent anchors voter beliefs
+  \item \textbf{Broader treatment} --- filter robustness; adds log non-RRC lawsuits as a control to verify adversarial measure drives results
+\end{itemize}
+\end{column}
+\end{columns}
 \end{frame}
 
 
@@ -708,16 +942,12 @@ Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 elect
   \toprule
   Specification & Coef. & SE & $t$ & F-stat & tF$_\text{cv}$ & $N$ \\
   \midrule
-  Baseline (state FE) & 1.791 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
-  Baseline, single-zone & 1.801 & 0.422 & 4.27 & \textbf{18.2} & 2.23 & 5,371 \\
-  Full controls & 1.799 & 0.406 & 4.44 & \textbf{19.7} & 2.18 & 5,560 \\
-  $\leq$200k voters & 1.869 & 0.426 & 4.39 & \textbf{19.3} & 2.19 & 5,338 \\
-  Broader lawsuits control & 1.792 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
-  Topic shares control$^{*}$ & $-$0.656 & 0.926 & $-$0.71 & \textbf{0.5} & --- & 2,824 \\
-  \midrule
-  \multicolumn{7}{l}{\footnotesize SE clustered by principal electoral zone. F\,=\,$(t$-stat)$^2$. tF$_\text{cv}$ from Lee et al.\ (2022) Table 1.} \\
-  \multicolumn{7}{l}{\footnotesize $^{*}$Topic-shares spec: F collapses because the 2020 shares ARE the instrument's variation (expected by construction).} \\
+  Baseline              & 1.791 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
+  Single-zone munis     & 1.801 & 0.422 & 4.27 & \textbf{18.2} & 2.23 & 5,371 \\
+  Extended controls     & 1.799 & 0.406 & 4.44 & \textbf{19.7} & 2.18 & 5,560 \\
+  Broader treatment     & 1.792 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
   \bottomrule
+  \multicolumn{7}{l}{\footnotesize SE clustered by principal electoral zone. F\,=\,$(t$-stat)$^2$. tF$_\text{cv}$ from Lee et al.\ (2022) Table 1.} \\
 \end{tabular}
 \normalsize
 \bigskip
@@ -725,7 +955,7 @@ Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 elect
 \begin{column}{0.50\textwidth}
 \begin{block}{Instrument Strength}
   \footnotesize
-  F\,=\,19.6 across all specifications excluding the topic-shares sensitivity (where collapse is mechanical). Stock--Yogo 10\% size distortion critical value $\approx$10; tF threshold for 5\% inference = 23.1. We apply tF correction throughout.
+  F\,=\,19.6, stable across all four specifications. Stock--Yogo 10\% size distortion critical value $\approx$10; tF threshold for 5\% inference = 23.1. We apply tF correction throughout.
 \end{block}
 \end{column}
 \begin{column}{0.47\textwidth}
@@ -771,7 +1001,7 @@ Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 elect
 \begin{column}{0.50\textwidth}
 \begin{block}{Directional pattern (winner consolidation)}
   \footnotesize
-  All competition outcomes point toward winner consolidation: higher majority probability, wider margin, fewer candidates. Direction is consistent across all 6 specifications. \textbf{None survives tF correction} (tF$_\text{cv}$\,=\,2.18; max $|t|$\,=\,1.69).
+  All competition outcomes point toward winner consolidation: higher majority probability, wider margin, fewer candidates. Direction is consistent across all 4 main specifications --- though these share the instrument and sample, so consistency is suggestive, not independent confirmation. \textbf{None survives tF correction} (tF$_\text{cv}$\,=\,2.18; max $|t|$\,=\,1.69).
 \end{block}
 \end{column}
 \begin{column}{0.47\textwidth}
@@ -793,20 +1023,19 @@ Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 elect
   \toprule
   Specification & Coef. & SE & $p$ & F & $N$ \\
   \midrule
-  Baseline (state FE) & $+$0.140 & 0.090 & 0.122 & 19.6 & 5,560 \\
-  Baseline, single-zone & $+$0.131 & 0.093 & 0.160 & 18.2 & 5,371 \\
-  Full controls & $+$0.136 & 0.086 & 0.116 & 19.7 & 5,560 \\
-  $\leq$200k voters & $+$0.128 & 0.091 & 0.161 & 19.3 & 5,338 \\
-  Broader lawsuits control & $+$0.140 & 0.090 & 0.122 & 19.6 & 5,560 \\
+  Baseline          & $+$0.140 & 0.090 & 0.122 & 19.6 & 5,560 \\
+  Single-zone munis & $+$0.131 & 0.093 & 0.160 & 18.2 & 5,371 \\
+  Extended controls & $+$0.136 & 0.086 & 0.116 & 19.7 & 5,560 \\
+  Broader treatment & $+$0.140 & 0.090 & 0.122 & 19.6 & 5,560 \\
   \bottomrule
 \end{tabular}
 \normalsize
 \bigskip
 \begin{itemize}
-  \item Direction and magnitude are remarkably stable: coefficient ranges $+$0.128 to $+$0.140 across all specifications
+  \item Direction and magnitude are remarkably stable: coefficient ranges $+$0.131 to $+$0.140 across all specifications
   \item The result is not driven by control set, sample, or the non-adversarial baseline
   \item The precision gap (not reaching $p < 0.05$) is the fundamental limitation; a larger panel or stronger instrument would be needed to confirm
-  \item \todo{Pre-period placebo (2016$\to$2020 outcomes): required to rule out pre-existing trend confounds}
+  \item \textbf{Pre-period placebo} ($2016\to2020$ outcomes): the ideal test would regress 2016–2020 outcome changes on the 2020–2024 Bartik IV. Requires the 2016 lawsuit panel, which is not yet downloaded. The test would be partial even then (ideal shares would be from 2016, not 2020). \emph{Pending: TSE processual data 2016.}
 \end{itemize}
 \end{frame}
 
@@ -836,8 +1065,8 @@ Census 2010 (log pop, urban share, log income pc) $+$ margin 2016 $+$ 2020 elect
 \begin{column}{0.55\textwidth}
 \begin{alertblock}{Main finding: blank vote rate}
   \footnotesize
-  Adversarial judicialization $\uparrow$ by 1 SD ($\approx$ 0.16 units) $\Rightarrow$ blank rate $\uparrow$ by $0.013 \times 0.16 = 0.2$\,pp. At the mean blank rate of 1.9\%, this is a $\approx$10\% increase.\\[4pt]
-  Effect survives tF correction ($|t|$\,=\,2.36\,$>$\,tF$_\text{cv}$\,=\,2.18). Valid-vote rate ($p$\,=\,0.038) is the accounting mirror and does \emph{not} survive tF. \textbf{Blank rate is the primary identified effect.}
+  2SLS coefficient: $+0.013$ per unit of $\Delta\log(1+\text{lawsuits})$. A municipality whose litigation doubled (log\,$\approx$\,0.69) would see blank rate rise by $\approx$0.9\,pp --- from a base of 1.5\%, a $\approx$60\% relative increase among compliers.\\[4pt]
+  Effect survives tF correction ($|t|$\,=\,2.36\,$>$\,tF$_\text{cv}$\,=\,2.18). Valid-vote rate ($p$\,=\,0.038) is the accounting mirror and does \emph{not} survive tF. \textbf{Blank rate is the primary identified effect; robustness to exposure-robust SEs discussed in Appendix.}
 \end{alertblock}
 \end{column}
 \begin{column}{0.43\textwidth}
@@ -876,8 +1105,37 @@ This is consistent with Lupia \& McCubbins (1998): institutional signals generat
 \bigskip
 \begin{block}{Robustness}
   \footnotesize
-  Effect stable: coefficient 0.012--0.013 across baseline, single-zone, and full-controls specifications.
+  Effect stable: coefficient 0.012--0.013 across baseline, single-zone, and extended-controls specifications.
 \end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}{Interpreting the Magnitude}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\textbf{Scale of the effect}
+\begin{itemize}
+  \item Coefficient: $+0.013$ per unit of $\Delta\log(1+\text{lawsuits})$
+  \item A doubling of lawsuit volume ($\Delta\log\approx0.69$) implies $\approx$0.9\,pp rise in blank rate
+  \item Mean blank rate 2020 $\approx$ 1.5\%: a doubling-induced rise = $+$60\% relative increase for compliers
+  \item Cross-municipal SD of $\Delta$blank rate $= 0.025$; effect of 1 SD of endogenous $\approx 0.006$\,pp --- small in distribution terms, but instrument-driven variation is concentrated in large shocks
+\end{itemize}
+\bigskip
+\textbf{LATE interpretation}\\
+The estimate is a complier LATE: it identifies municipalities pushed into higher adversarial litigation by state-wide institutional waves. Complier effects are typically larger than population-average effects (Angrist \& Pischke 2009).
+\end{column}
+\begin{column}{0.43\textwidth}
+\begin{block}{Benchmark: Ferraz \& Finan (2008)}
+  \footnotesize
+  Publicly released corruption audits increased incumbent loss probability by 7--17\,pp in Brazil. \textbf{Channel difference:} audits provide \emph{directed} information about a specific incumbent's corruption; adversarial litigation provides \emph{diffuse} signals across all candidates. Directed signals change vote shares; diffuse signals increase blank votes. The channels are complementary --- both consistent with information-driven voter responses.
+\end{block}
+\medskip
+\begin{alertblock}{Caveat}
+  \footnotesize
+  Under BHJ/AKM exposure-robust SEs (see previous slide), the blank rate effect does not survive at conventional significance levels. The magnitude interpretation assumes tF-corrected inference is appropriate under GPS identification.
+\end{alertblock}
 \end{column}
 \end{columns}
 \end{frame}
@@ -926,6 +1184,49 @@ This is consistent with Lupia \& McCubbins (1998): institutional signals generat
 \end{frame}
 
 
+\begin{frame}{Additional Heterogeneity: Competitive Races}
+\begin{columns}[T]
+\begin{column}{0.52\textwidth}
+\textbf{Does the blank-rate effect concentrate in close races?}\\
+Hypothesis: judicial noise has higher marginal impact when voter uncertainty is already high (tight race). Split at the median 2020 margin (13.4\,pp).
+
+\medskip
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{L{2.4cm}rrrr}
+  \toprule
+  Sample & Coef. & SE & $p$ & F \\
+  \midrule
+  \multicolumn{5}{l}{\textit{$\Delta$ Blank rate}} \\
+  Competitive & $+$0.006 & 0.004 & 0.139 & 175.9 \\
+  Uncompetitive & $+$0.024 & 0.013 & 0.068 & \phantom{0}73.3 \\[3pt]
+  \multicolumn{5}{l}{\textit{$\Delta$ Log candidates}} \\
+  Competitive & $-$0.071 & 0.043 & 0.096 & 175.9 \\
+  Uncompetitive & $-$0.082 & 0.075 & 0.275 & \phantom{0}73.3 \\
+  \bottomrule
+  \multicolumn{5}{l}{\scriptsize Split at median margin (0.134). Baseline spec.}
+\end{tabular}
+\end{column}
+\begin{column}{0.46\textwidth}
+\begin{alertblock}{Result: opposite to prior hypothesis}
+  \footnotesize
+  The blank-rate effect is \textbf{larger in uncompetitive races} ($+$2.4\,pp, $p$\,=\,0.068) than competitive ones ($+$0.6\,pp, $p$\,=\,0.139). This mirrors the open-seat finding: when voters have less of an anchor (either no incumbent or a dominant candidate), judicial noise translates more readily into blank votes.\\[4pt]
+  Candidate deterrence is directionally similar across groups but imprecise in the uncompetitive subsample.
+\end{alertblock}
+\medskip
+\begin{block}{Pending heterogeneity}
+  \footnotesize
+  \begin{itemize}\itemsep2pt
+    \item \textbf{Information environment:} internet penetration / broadband (IBGE) --- data available, not yet merged
+    \item \textbf{Legal capacity:} OAB lawyer counts by municipality --- data available, not yet merged
+    \item \textbf{TRE enforcement:} state-level variation --- requires judge composition data
+  \end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+
 \begin{frame}{Voter Behavior --- Forest Plot (All Specs)}
 \begin{center}
   \includegraphics[width=\textwidth,height=0.76\textheight,keepaspectratio]{../figures/forest_voter_behavior.pdf}
@@ -950,6 +1251,7 @@ This is consistent with Lupia \& McCubbins (1998): institutional signals generat
   $\Delta$ New-cand.\ vote share (exec.)& $-$0.010 & 0.050 & 0.848 & \\
   $\Delta$ Incumbent vote share (exec.) & $+$0.010 & 0.049 & 0.844 & \\[3pt]
   $\Delta$ Female vote share            & $-$0.093 & 0.048 & 0.052 & \cross \\
+  $\Delta$ Nonwhite vote share          & $-$0.039 & 0.042 & 0.348 & \\
   $\Delta$ Winner is female             & $-$0.123 & 0.063 & 0.052 & \cross \\
   $\Delta$ Winner is new entrant        & $-$0.002 & 0.073 & 0.982 & \\
   \bottomrule
@@ -966,7 +1268,7 @@ This is consistent with Lupia \& McCubbins (1998): institutional signals generat
 \begin{column}{0.47\textwidth}
 \begin{alertblock}{Gender: directional, not robust}
   \footnotesize
-  Female vote share ($-$9.3\,pp, $p$\,=\,0.052) and female winner probability ($-$12.3\,pp, $p$\,=\,0.052) are just below 5\% but do not survive tF correction ($|t|$\,=\,1.94 and 1.94\,$<$\,2.18). Direction is suggestive --- adversarial legal challenges may disadvantage women candidates --- but requires richer candidate-level data to confirm.
+  Female vote share ($-$9.3\,pp, $p$\,=\,0.052) and female winner probability ($-$12.3\,pp, $p$\,=\,0.052) both have $|t|$\,=\,1.94\,$<$\,tF$_\text{cv}$\,=\,2.18; direction is suggestive but not robust. Nonwhite vote share ($-$3.9\,pp, $p$\,=\,0.348) is a precise null --- adversarial litigation does not selectively displace nonwhite candidates.
 \end{alertblock}
 \end{column}
 \end{columns}
@@ -997,7 +1299,7 @@ This is consistent with Lupia \& McCubbins (1998): institutional signals generat
     \midrule
     $\Delta$ New entrant share & $-$0.011 & 0.043 & 0.793 \\
     $\Delta$ Serial challenger & $+$0.007 & 0.026 & 0.802 \\
-    $\Delta$ Cross-cycle ret. & $+$0.005 & 0.025 & 0.861 \\
+    $\Delta$ Cross-cycle ret. & $+$0.004 & 0.025 & 0.861 \\
     \midrule
     \multicolumn{4}{l}{\scriptsize Baseline spec. N\,=\,5,560, F\,=\,19.6.} \\
     \bottomrule
@@ -1076,6 +1378,7 @@ This is consistent with Lupia \& McCubbins (1998): institutional signals generat
   \multicolumn{5}{l}{\textit{Elected composition}} \\
   $\Delta$ Elected female share        & $+$0.013 & 0.022 & 0.554 & \\
   $\Delta$ Elected nonwhite share      & $-$0.027 & 0.026 & 0.288 & \\
+  $\Delta$ Elected higher-ed share     & $+$0.006 & 0.026 & 0.802 & \\
   $\Delta$ Incumbent reelected share   & $+$0.006 & 0.025 & 0.797 & \\[3pt]
   \multicolumn{5}{l}{\textit{Party competition}} \\
   $\Delta$ Party count                 & $-$0.260 & 0.354 & 0.463 & \\
@@ -1169,7 +1472,7 @@ Each $Z_m^f$ instruments the \emph{family-specific} endogenous: $\Delta\log(1+\e
 
 \begin{frame}{Family IV Results --- Primary Outcomes}
 \footnotesize
-\textit{Family-specific Bartik IV instruments family-specific endogenous. Baseline state FE + 7 controls.}
+\textit{Family-specific Bartik IV instruments family-specific endogenous. Baseline specification + 7 controls.}
 \smallskip
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{L{2.6cm}rrrrrr}
@@ -1203,46 +1506,27 @@ Each $Z_m^f$ instruments the \emph{family-specific} endogenous: $\Delta\log(1+\e
 \end{frame}
 
 
+\begin{frame}{Mechanism: Ruling Out Alternative Explanations}
+\begin{description}\itemsep8pt
+  \item[\textbf{Direct disqualification}]
+    If lawsuits primarily remove candidates from the ballot (\emph{cassação}), the operative channel is a mechanical reduction in ballot options rather than voter ambiguity. This predicts directional vote-share shifts toward remaining candidates (incumbents gain, challengers lose). \textbf{Not observed:} incumbent and new-entrant vote shares are precise nulls ($p > 0.84$). Entry deterrence is a candidate-registration decision, not a disqualification outcome. Requires case-outcome data to test directly.
+
+  \item[\textbf{Campaign resource diversion}]
+    Targeted candidates divert legal defense resources away from campaigning, mechanically reducing their vote share. Predicts \emph{individual-level} effects concentrated on targeted candidates. Our municipality-level instrument cannot separate this from the arena-wide noise channel. Proxy test (case complexity as cost measure) requires merging partes data --- pending.
+
+  \item[\textbf{Directed information vs.\ diffuse noise}]
+    If litigation conveys genuine signal about candidate quality, voters should reallocate away from targeted candidates toward untargeted ones. \textbf{Data rules this out:} female vote share ($p$\,=\,0.052), new-entrant share ($p$\,=\,0.848), and incumbent share ($p$\,=\,0.844) all show no systematic reallocation. Voters appear to update toward \emph{all} candidates negatively --- consistent with noise, not signal.
+
+  \item[\textbf{Strategic lawfare}]
+    Suits filed to burden opponents predict larger effects in close races. \textbf{Not confirmed:} blank-rate effect is \emph{larger} in uncompetitive races (previous slide), suggesting the mechanism is not strategic targeting but diffuse arena-wide ambiguity.
+\end{description}
+\end{frame}
+
+
 % ============================================================
 \section{Robustness}
 % ============================================================
 
-\begin{frame}{Robustness: Population Subsamples}
-\begin{columns}[T]
-\begin{column}{0.55\textwidth}
-\textbf{Art.~29-II CF/88:} municipalities with $>$200,000 registered voters hold a mandatory second round if no candidate wins $>$50\%
-\bigskip
-
-\textbf{Two subsamples:}
-\begin{itemize}
-  \item $\leq$200k voters: 5,338 --- strictly single-round; homogeneous institutional regime
-  \item $>$200k voters: 222 --- conditional second round; instrument loses power (F\,$<$\,1)
-\end{itemize}
-\bigskip
-\textbf{Large-city failure:} consistent with instrument design --- larger municipalities tend to dominate their state shifts, so the LOO construction leaves less identifying variation.
-\end{column}
-\begin{column}{0.43\textwidth}
-\begin{block}{$\Delta$ Winner majority by subsample}
-  \footnotesize
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabular}{lrrrr}
-    \toprule
-    Sample & Coef. & SE & $p$ & F \\
-    \midrule
-    All ($N$\,=\,5,560) & $+$0.140 & 0.090 & 0.122 & 19.6 \\
-    $\leq$200k ($N$\,=\,5,338) & $+$0.128 & 0.091 & 0.161 & 19.3 \\
-    $>$200k ($N$\,=\,222) & n.a. & & & $<$1 \\
-    \bottomrule
-  \end{tabular}
-\end{block}
-\bigskip
-\begin{block}{Single-zone municipalities}
-  \footnotesize
-  N\,=\,5,371 (96.6\%): municipality = zone = cluster; exact correspondence. Coefficients essentially identical to full sample; F\,=\,18.2.
-\end{block}
-\end{column}
-\end{columns}
-\end{frame}
 
 
 \begin{frame}{Robustness: Extended Controls and Broader Lawsuits}
@@ -1255,7 +1539,7 @@ Adds ENP 2016, candidate composition (gender, ethnicity, education), party/coali
 \textbf{Caveat:} some extended controls are outcome-adjacent (2020 candidate composition may reflect prior judicialization). Use as sensitivity only.
 \bigskip
 
-\textbf{Broader lawsuits control:}\\
+\textbf{Broader treatment measure:}\\
 Adds $\log(1 + \ell_m^{\text{no-RRC}})$ in 2020 as a covariate --- the broader competition lawsuit stock (excluding only RRC). Tests whether the adversarial IV effect is distinct from general pre-existing litigation activity.
 \end{column}
 \begin{column}{0.43\textwidth}
@@ -1286,18 +1570,55 @@ Adds $\log(1 + \ell_m^{\text{no-RRC}})$ in 2020 as a covariate --- the broader c
 \section{Conclusion}
 % ============================================================
 
+\begin{frame}{Welfare and Normative Implications}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\begin{block}{Framing 1: Healthy accountability}
+  Lawsuits expose genuine candidate misconduct. Rational voters facing a contentious legal environment become more cautious --- blank votes reflect sound democratic skepticism, not manipulation. Under this view, the TSE's enforcement expansion is welfare-improving: it disciplines candidates and informs voters, even if some voters respond with expressed dissatisfaction.\\[4pt]
+  \textit{Prediction:} high conviction rates, meritorious cases. Deterred candidates are those who would have behaved illegally.
+\end{block}
+\end{column}
+\begin{column}{0.48\textwidth}
+\begin{alertblock}{Framing 2: Democratic erosion / lawfare}
+  Strategic litigation manufactures ambiguity without improving candidate quality. Blank votes reflect suppressed valid voter choice. Entry deterrence is an unambiguous welfare cost if deterred candidates are net-positive for democratic representation.\\[4pt]
+  \textit{Prediction:} high dismissal rates, filer identity is opposing party, effects concentrated in competitive races. Our evidence of larger effects in uncompetitive races weakly favors the accountability framing --- but is not conclusive.
+\end{alertblock}
+\end{column}
+\end{columns}
+\bigskip
+\textbf{Distinguishing the two} requires case-outcome data (win/loss rates by topic and filer type) --- currently not merged. A high adversarial dismissal rate would strongly favor the lawfare interpretation. \textbf{Policy implication:} if the TSE's enforcement expansion reduces participation quality (fewer candidates, more disaffection), the institutional trade-off between judicial integrity and electoral dynamism requires explicit policy attention --- regardless of which framing is correct.
+\end{frame}
+
+
+\begin{frame}{External Validity and Scope Conditions}
+\begin{description}\itemsep10pt
+  \item[\textbf{Compulsory voting}]
+    The blank-ballot margin is specific to settings where abstention is penalised. In voluntary-voting systems, the theoretically equivalent response is turnout decline --- voters disengage by not showing up rather than by casting a blank. Brazil's electorate ($\sim$156M registered) is the world's largest compulsory voting system. Replication in voluntary-voting settings (e.g., Colombia's recent municipal elections) would require a turnout outcome as the primary channel.
+
+  \item[\textbf{Pre-election first-instance jurisdiction}]
+    Most electoral courts worldwide act \emph{post-election} (cassação after the fact). Brazil's TRE/TSE system is unusual in adjudicating eligibility and conduct \emph{before} election day. The results speak to this pre-electoral filing process. Post-electoral judicial challenges likely operate through different mechanisms (uncertainty about whether the winner will be seated), which our design cannot identify.
+
+  \item[\textbf{Electoral system}]
+    Blank-rate and candidate-count effects are identified in single-winner plurality (executive) races. The vereadores results (no blank-rate effect, similar candidate deterrence) are consistent with proportional representation dampening the competitive displacement channel. The arena-wide noise mechanism may be system-agnostic; the competitive outcomes are not.
+
+  \item[\textbf{Institutional wave}]
+    The Bartik shifts are driven largely by the 2020--2024 TSE enforcement expansion (disinformation, AI, Bolsonaro ineligibility proceedings). Results speak to this specific wave of judicial activism. Latin American comparanda (Mexico's INE, Colombia's CNE) would allow generalization.
+\end{description}
+\end{frame}
+
+
 \begin{frame}{Summary of Findings}
 \begin{columns}[T]
 \begin{column}{0.57\textwidth}
 \begin{enumerate}
   \item \textbf{Blank vote rate --- main finding:}\\
-  $+$1.3\,pp ($p$\,=\,0.018; survives tF correction). Adversarial judicialization generates voter ambivalence, expressed through deliberate blank votes. Turnout and null rate: precise nulls. No demobilization.
+  $+$1.3\,pp ($p$\,=\,0.018; survives tF correction). Adversarial judicialization generates voter ambivalence, expressed through deliberate blank votes. \emph{Under compulsory voting, exit (abstention) is penalised --- so disaffection surfaces as a blank ballot.} Turnout and null rate: precise nulls. No demobilization.
   \bigskip
   \item \textbf{Candidate pool contraction (marginal):}\\
   $-$6.6\% executive ($p$\,=\,0.092); $-$7.5\% legislative ($p$\,=\,0.066). Consistent across arenas --- entry deterrence is the most robust structural channel.
   \bigskip
   \item \textbf{Winner consolidation (directional):}\\
-  All competition outcomes favor the winner: higher majority, wider margin. Direction stable across all 5 core specifications. Not statistically identified after tF correction.
+  All competition outcomes favor the winner: higher majority, wider margin. Direction stable across all 4 main specifications (which share instrument and sample). Not statistically identified after tF correction.
   \bigskip
   \item \textbf{Open-seat heterogeneity:}\\
   Blank rate effect concentrated in open seats ($+$3.0\,pp, $p$\,=\,0.028) vs.\ contested-seat structural zero ($+$0.3\,pp, $p$\,=\,0.55). Mechanism: no focal incumbent $\Rightarrow$ judicial ambiguity translates directly into blank votes.
@@ -1312,7 +1633,7 @@ Adds $\log(1 + \ell_m^{\text{no-RRC}})$ in 2020 as a covariate --- the broader c
 \begin{alertblock}{Main Takeaway}
   Credibly identified estimates from a Bartik shift-share IV (F\,=\,19.6, tF-corrected inference).
   \medskip\\
-  The primary causal effect of adversarial judicialization on Brazilian municipal elections is voter ambivalence --- a significant rise in blank votes --- rather than competitive displacement or mobilization.
+  The primary identified effect --- a LATE for municipalities pushed into more litigation of the state-diffusing types --- is voter ambivalence: a significant rise in blank votes, rather than competitive displacement or mobilization. Under compulsory voting, this is how disaffection surfaces: a blank ballot, not abstention.
   \medskip\\
   Entry deterrence is the most consistent structural finding across arenas. Winner consolidation is the most economically plausible pattern; it remains statistically underpowered.
 \end{alertblock}
@@ -1334,10 +1655,10 @@ Adds $\log(1 + \ell_m^{\text{no-RRC}})$ in 2020 as a covariate --- the broader c
 \medskip
 \textbf{Open questions requiring new data:}
 \begin{itemize}
-  \item \todo{Pre-period placebo: 2016$\to$2020 outcomes as falsification test}
-  \item \todo{Case outcomes (win/loss rulings) as second instrument}
-  \item \todo{TRE judge composition heterogeneity}
-  \item \todo{Longer panel: 2012--2024 for trend identification}
+  \item \textbf{Pre-period placebo} ($2016\to2020$): needs TSE processual data 2016. Ideal test: regress 2016--2020 outcome changes on a 2016-share Bartik IV. Would rule out pre-existing trends driving the 2020--2024 result.
+  \item \textbf{Case outcomes as second instrument}: win/loss ruling rate by zone creates variation in \emph{realized} judicial outcomes vs.\ mere filings. Would allow overidentification test and separate the filing channel from the verdict channel.
+  \item \textbf{TRE judge composition}: judge turnover, seniority, and appointment origin vary across states. Plausibly exogenous to local competitive conditions; would allow IV on judicial supply rather than litigation demand.
+  \item \textbf{Longer panel (2012--2024)}: adding 2016 cycle enables a proper DiD, pre-trend test, and analysis of whether the 2022 TSE enforcement expansion caused a structural break in the litigation-competition relationship.
 \end{itemize}
 \end{column}
 \begin{column}{0.43\textwidth}
@@ -1352,7 +1673,10 @@ Adds $\log(1 + \ell_m^{\text{no-RRC}})$ in 2020 as a covariate --- the broader c
 \end{block}
 \begin{block}{Literature Connections}
   \footnotesize
-  GPS (2020); BHJ (2022); AKM (2019); Lee et al.\ (2022); Ash, Morelli \& Vannoni (2025); Ferraz \& Finan (2008); Besley \& Coate (1997); Helmke \& Staton (2011)
+  \textit{Methods:} GPS (2020); BHJ (2022); AKM (2019); Lee et al.\ (2022); Ash, Morelli \& Vannoni (2025).\\[2pt]
+  \textit{Judicialization / electoral justice:} Sadek (1995); Taylor (2008); Marchetti (gov.\ eleitoral); Helmke \& Staton (2011).\\[2pt]
+  \textit{Invalid voting \& compulsory voting:} Power \& Roberts (1995); Driscoll et al.; Castro (2025).\\[2pt]
+  \textit{Candidates \& accountability:} Besley \& Coate (1997); Ferraz \& Finan (2008).
 \end{block}
 \end{column}
 \end{columns}
@@ -1374,16 +1698,13 @@ Adversarial filter applied at data construction stage (class and subject-code ex
   \toprule
   Specification & Coef. & SE & $t$ & F-stat & tF$_\text{cv}$ & $N$ \\
   \midrule
-  Baseline (state FE) & 1.791 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
-  Baseline, single-zone & 1.801 & 0.422 & 4.27 & \textbf{18.2} & 2.23 & 5,371 \\
-  Full controls & 1.799 & 0.406 & 4.44 & \textbf{19.7} & 2.18 & 5,560 \\
-  $\leq$200k voters & 1.869 & 0.426 & 4.39 & \textbf{19.3} & 2.19 & 5,338 \\
-  Broader lawsuits ctrl & 1.792 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
-  Topic shares ctrl$^{*}$ & $-$0.656 & 0.926 & $-$0.71 & \textbf{0.5} & --- & 2,824 \\
+  Baseline          & 1.791 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
+  Single-zone munis & 1.801 & 0.422 & 4.27 & \textbf{18.2} & 2.23 & 5,371 \\
+  Extended controls & 1.799 & 0.406 & 4.44 & \textbf{19.7} & 2.18 & 5,560 \\
+  Broader treatment & 1.792 & 0.405 & 4.43 & \textbf{19.6} & 2.18 & 5,560 \\
   \midrule
   \multicolumn{7}{l}{\footnotesize SE clustered by principal electoral zone. F\,=\,$(t$-stat)$^2$.} \\
   \multicolumn{7}{l}{\footnotesize tF$_\text{cv}$: weak-IV-robust critical value (Lee et al.\ 2022, Table 1), 5\% level.} \\
-  \multicolumn{7}{l}{\footnotesize $^{*}$Identification collapses: the 2020 shares ARE the instrument's variation.} \\
   \bottomrule
 \end{tabular}
 \normalsize
@@ -1421,7 +1742,7 @@ Adversarial filter applied at data construction stage (class and subject-code ex
 \begin{frame}[allowframebreaks]{Appendix C: Full IV Table --- Composition}
 \footnotesize
 \renewcommand{\arraystretch}{1.2}
-\textbf{Adversarial instrument. Baseline state FE. N\,=\,5,560.}
+\textbf{Adversarial instrument. Baseline specification. N\,=\,5,560.}
 \smallskip
 \begin{tabular}{L{4.5cm}rrrr}
   \toprule
@@ -1433,8 +1754,6 @@ Adversarial filter applied at data construction stage (class and subject-code ex
   $\Delta$ Incumbent vote share & $+$0.010 & 0.049 & $+$0.20 & 0.844 \\
   $\Delta$ Winner is female & $-$0.123 & 0.063 & $-$1.94 & 0.052 \\
   $\Delta$ Winner is new entrant & $-$0.002 & 0.073 & $-$0.02 & 0.982 \\
-  $\Delta$ Winner ideology & $-$0.168 & 0.205 & $-$0.82 & 0.412 \\
-  Pedersen volatility & $-$0.010 & 0.038 & $-$0.25 & 0.801 \\
   \midrule
   \multicolumn{5}{l}{\footnotesize SE clustered by principal electoral zone. tF$_\text{cv}$\,=\,2.18; no composition outcome survives tF correction.} \\
   \bottomrule
@@ -1448,9 +1767,9 @@ Adversarial filter applied at data construction stage (class and subject-code ex
 \begin{column}{0.55\textwidth}
 \textbf{Competition-relevant adversarial case criteria:}
 \begin{enumerate}
-  \item Mayoral candidate (\emph{prefeito}) is the respondent
-  \item Filed before election day
-  \item Case class and subject are not on the administrative exclusion list
+  \item Filed before election day in the electoral zone
+  \item Case class is not in the administrative exclusion list (DROP\_CLASSES)
+  \item Case subject is not in the procedural exclusion list (DROP\_SUBJECTS)
 \end{enumerate}
 \bigskip
 \textbf{Examples of included subjects:}\\
@@ -1467,7 +1786,7 @@ Abuso do Poder Econ\^{o}mico, Abuso do Poder Pol\'{i}tico, Capta\c{c}\~{a}o Il\'
   \midrule
   Mandatory registration (RRC) & $\sim$994k & $\sim$841k \\
   Coalition registration (DRAP) & $\sim$137k & $\sim$118k \\
-  Adversarial competition cases & $\sim$385k & $\sim$340k \\
+  Adversarial competition cases & $\sim$1.2M & $\sim$1.1M \\
   \bottomrule
 \end{tabular}
 \end{block}
@@ -1480,28 +1799,6 @@ Abuso do Poder Econ\^{o}mico, Abuso do Poder Pol\'{i}tico, Capta\c{c}\~{a}o Il\'
 \end{frame}
 
 
-\begin{frame}{Appendix E: Instrument Distribution, Geography, and Visual IV}
-\begin{columns}[T]
-\begin{column}{0.42\textwidth}
-  \textbf{Figure E1: Distribution of Bartik IV}\\
-  \includegraphics[width=\textwidth,height=0.60\textheight,keepaspectratio]{../figures/bartik_histogram.pdf}
-\end{column}
-\begin{column}{0.56\textwidth}
-  \textbf{Figure E2: Geographic distribution}\\
-  \includegraphics[width=\textwidth,height=0.60\textheight,keepaspectratio]{../figures/bartik_choropleth.pdf}
-\end{column}
-\end{columns}
-\medskip
-\footnotesize\textit{IV residualized on state FE for histogram. Map: raw Bartik IV by municipality (grey = not in sample).}
-\end{frame}
-
-
-\begin{frame}{Appendix E3: Visual IV --- Topic-Level Reduced Forms ($\tau_k$ vs.\ $F_k$)}
-\begin{center}
-  \includegraphics[width=\textwidth,height=0.80\textheight,keepaspectratio]{../figures/visual_iv_grid.pdf}
-\end{center}
-\footnotesize\textit{Each dot is one litigation topic. $\tau_k$: reduced-form coefficient of topic-$k$ shift on outcome (Borusyak, Hull \& Jaravel 2022). $F_k$: first-stage $F$ for that topic's shift. Dot size $\propto |\alpha_k|$ (Rotemberg weight). Positive $\tau_k$ at high $F_k$ indicates topics where the instrument is strong and the effect is in the winner-consolidation direction.}
-\end{frame}
 
 
 \begin{frame}[allowframebreaks]{Appendix F: Balance Table}
@@ -1523,9 +1820,9 @@ Abuso do Poder Econ\^{o}mico, Abuso do Poder Pol\'{i}tico, Capta\c{c}\~{a}o Il\'
   Nonwhite candidate share 2020 & $-0.050$ & $0.067$ & $0.458$ \\
   Log n candidates 2020 & $-0.127$ & $0.084$ & $0.129$ \\
   \midrule
-  \multicolumn{4}{l}{\footnotesize 3 of 9 covariates $p < 0.05$. Correlations reflect that larger, richer,} \\
+  \multicolumn{4}{l}{\footnotesize 4 of 9 covariates $p < 0.05$. Correlations reflect that larger, richer,} \\
   \multicolumn{4}{l}{\footnotesize higher-turnout municipalities had more diverse 2020 litigation portfolios.} \\
-  \multicolumn{4}{l}{\footnotesize \textbf{All three pre-determined controls included in every specification.}} \\
+  \multicolumn{4}{l}{\footnotesize All significant covariates are included in the baseline control set.} \\
   \bottomrule
 \end{tabular}
 \normalsize
@@ -1557,89 +1854,7 @@ Abuso do Poder Econ\^{o}mico, Abuso do Poder Pol\'{i}tico, Capta\c{c}\~{a}o Il\'
 \end{frame}
 
 
-\begin{frame}[fragile]{Appendix H: R Estimation Code (fixest)}
-\begin{columns}[T]
-\begin{column}{0.55\textwidth}
-All main results estimated in \textbf{R} using \texttt{fixest::feols()} v0.14.1:
-\bigskip
-
-\textbf{IV formula (adversarial instrument):}
-\begin{small}
-\begin{verbatim}
-feols(outcome ~ controls | SG_UF |
-  delta_log1p_competition_lawsuits
-    ~ bartik_iv_2020_2024,
-  data, cluster = ~cluster_id)
-\end{verbatim}
-\end{small}
-\bigskip
-
-\textbf{LIML (confirmation only):}
-\begin{small}
-\begin{verbatim}
-feols(..., estimator = "liml")
-# Result: identical to 2SLS (K=1)
-\end{verbatim}
-\end{small}
-\end{column}
-\begin{column}{0.43\textwidth}
-\begin{block}{Key output files}
-  \footnotesize
-  \renewcommand{\arraystretch}{1.2}
-  \begin{tabular}{lcc}
-    \toprule
-    Outcome & 2SLS & LIML \\
-    \midrule
-    $\Delta$ Majority & $+$0.140 & $+$0.140 \\
-    $\Delta$ Blank rate & $+$0.013 & $+$0.013 \\
-    $\Delta$ Log cand. & $-$0.066 & $-$0.066 \\
-    \bottomrule
-    \multicolumn{3}{l}{\scriptsize Max diff = 0.0000 (K\,=\,1 exact)}
-  \end{tabular}
-\end{block}
-\medskip
-\begin{block}{Benchmark}
-  \footnotesize
-  Ash et al.\ (2025) Stata:\\
-  \texttt{ivreghdfe y (endog = instr),}\\
-  \texttt{absorb(state) cl(zone)}
-\end{block}
-\end{column}
-\end{columns}
-\end{frame}
 
 
-\begin{frame}{Appendix I: Constitutional Threshold Detail}
-\begin{columns}[T]
-\begin{column}{0.55\textwidth}
-\textbf{Art.~29-II, Constituição Federal 1988:}
-\begin{quote}
-  \small ``elei\c{c}\~{a}o do Prefeito e do Vice-Prefeito realizada no dia 1.\textordmasculine{} de outubro do ano anterior ao do t\'{e}rmino do mandato dos que devam suceder, aplicadas as regras do art.~77, no caso de Munic\'{i}pios com mais de duzentos mil eleitores.''
-\end{quote}
-\bigskip
-\textbf{Implication:} the 200,000 registered voter threshold determines whether a municipality follows plurality rule (one round) or the two-round runoff. This creates a sharp institutional discontinuity motivating our population subsample.
-\end{column}
-\begin{column}{0.43\textwidth}
-\begin{block}{Sample Split (2024 Registered Voters)}
-  \renewcommand{\arraystretch}{1.2}
-  \footnotesize
-  \begin{tabular}{lrr}
-    \toprule
-     & $N$ & Share \\
-    \midrule
-    $\leq$ 200,000 & 5,338 & 96.0\% \\
-    $>$ 200,000 & 222 & 4.0\% \\
-    \midrule
-    Total & 5,560 & 100\% \\
-    \bottomrule
-  \end{tabular}
-\end{block}
-\medskip
-\begin{alertblock}{Instrument failure in large cities}
-\footnotesize Large municipalities ($>$200k) have F\,$<$\,1 in both the main and subsample specifications --- consistent with near-violation of the LOO assumption when $m$ is itself a large share of its state's litigation pool.
-\end{alertblock}
-\end{column}
-\end{columns}
-\end{frame}
 
 \end{document}

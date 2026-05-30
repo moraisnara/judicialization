@@ -54,7 +54,7 @@ OUTCOMES = [
     "delta_blank_rate_2024_2020",
     "delta_runnerup_vote_share_2024_2020",
 ]
-SPEC    = "baseline_state_fe"
+SPEC    = "baseline"
 VARIANT = "adversarial"
 
 
