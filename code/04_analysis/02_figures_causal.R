@@ -138,13 +138,8 @@ p_bin <- ggplot() +
   geom_hline(yintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
   geom_vline(xintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
   labs(
-    x     = "Bartik IV (residualised on 7 controls + state FE)",
-    y     = expression(Delta*log(1 + lawsuits[non-RRC]) ~ " (residualised)"),
-    title = "First Stage: Bartik IV → Change in Judicialization",
-    caption = sprintf(
-      "30 equal-count bins. Cubic polynomial fit + 95%% CI. Slope ≈ %.2f (OLS residuals). N = %s.",
-      fs_coef, format(fs_N, big.mark = ",")
-    )
+    x = "Bartik IV (residualised on 7 controls + state FE)",
+    y = expression(Delta*log(1 + lawsuits) ~ " (residualised)")
   ) +
   theme_clean()
 
@@ -225,10 +220,8 @@ p_forest <- ggplot(vb_df, aes(x = coef, y = spec_label)) +
   facet_wrap(~ outcome_label, ncol = 3) +
   scale_x_continuous(labels = scales::label_number(accuracy = 0.01)) +
   labs(
-    x       = "IV coefficient (2SLS)",
-    y       = NULL,
-    title   = "Voter Behavior Outcomes — All Specifications",
-    caption = "Thick bars: 90% CI. Thin bars: 95% CI. SE clustered by principal electoral zone."
+    x = "IV coefficient (2SLS)",
+    y = NULL
   ) +
   theme_clean() +
   theme(
@@ -269,13 +262,8 @@ p_hist <- ggplot(hist_df, aes(x = z)) +
   ) +
   scale_y_continuous(labels = scales::comma) +
   labs(
-    x       = "Bartik IV (residualised on state FE)",
-    y       = "Number of municipalities",
-    title   = "Distribution of Bartik Shift-Share IV",
-    caption = sprintf(
-      "N = %s. Residualised on 27 state indicators. Bin width = 0.05.",
-      format(nrow(samp), big.mark = ",")
-    )
+    x = "Bartik IV (residualised on state FE)",
+    y = "Number of municipalities"
   ) +
   theme_clean()
 
@@ -302,8 +290,15 @@ tryCatch({
     colClasses = list(character = c("id_municipio", "id_municipio_tse"))
   ))
   crosswalk$id_municipio_tse <- sprintf("%05d", as.integer(crosswalk$id_municipio_tse))
-  map_df <- samp %>%
-    select(SG_UE, bartik = all_of(INSTR)) %>%
+
+  # Residualise on state FE: within-state variation is what identifies the paper
+  resid_iv <- residuals(
+    feols(as.formula(paste(INSTR, "~ 1 | SG_UF")), data = samp,
+          warn = FALSE, notes = FALSE)
+  )
+  resid_df <- data.frame(SG_UE = samp$SG_UE, bartik_resid = resid_iv)
+
+  map_df <- resid_df %>%
     left_join(crosswalk %>% select(SG_UE = id_municipio_tse, code_muni = id_municipio),
               by = "SG_UE")
 
@@ -311,36 +306,43 @@ tryCatch({
     mutate(code_muni = as.character(code_muni)) %>%
     left_join(map_df, by = "code_muni")
 
-  # winsorise at 1st/99th for colour scale
-  q_lo <- quantile(merged$bartik, 0.01, na.rm = TRUE)
-  q_hi <- quantile(merged$bartik, 0.99, na.rm = TRUE)
-  merged$bartik_w <- pmin(pmax(merged$bartik, q_lo), q_hi)
+  # Quintile bins on the residual (5 groups, equal-count)
+  breaks <- quantile(merged$bartik_resid, probs = seq(0, 1, 0.2), na.rm = TRUE)
+  breaks[1] <- breaks[1] - 1e-9   # open left boundary
+  merged$iv_bin <- cut(
+    merged$bartik_resid,
+    breaks = breaks,
+    labels = c("Bottom 20%", "20–40%", "40–60%", "60–80%", "Top 20%"),
+    include.lowest = TRUE
+  )
 
-  p_map <- ggplot(merged) +
-    geom_sf(aes(fill = bartik_w), color = NA, linewidth = 0) +
-    scale_fill_gradient2(
-      low      = "#c0392b",
-      mid      = "white",
-      high     = COL_BLUE,
-      midpoint = 0,
-      na.value = "grey85",
-      name     = "Bartik IV",
-      labels   = scales::label_number(accuracy = 0.1)
-    ) +
-    labs(
-      title   = "Geographic Distribution of Bartik Shift-Share IV",
-      caption = paste(
-        "Shading = raw Bartik IV value (winsorised at 1st/99th percentile).",
-        "Red = lower-than-average IV (topic mix predicts decline);",
-        "Blue = higher-than-average IV.",
-        "Grey = municipalities not in analysis sample."
-      )
+  # State boundaries for overlay
+  state_sf <- read_state(year = 2020, simplified = TRUE, showProgress = FALSE)
+
+  bin_palette <- c(
+    "Bottom 20%" = "#c0392b",
+    "20–40%"     = "#e8a090",
+    "40–60%"     = "#f5f0eb",
+    "60–80%"     = "#8aaecf",
+    "Top 20%"    = COL_BLUE
+  )
+
+  p_map <- ggplot() +
+    geom_sf(data = merged, aes(fill = iv_bin), color = NA, linewidth = 0) +
+    geom_sf(data = state_sf, fill = NA, color = "grey30", linewidth = 0.25) +
+    scale_fill_manual(
+      values   = bin_palette,
+      na.value = "grey88",
+      name     = "Within-state\npercentile",
+      na.translate = FALSE
     ) +
     theme_void(base_size = 10) +
     theme(
-      plot.title   = element_text(face = "bold", size = 11, hjust = 0.5),
-      plot.caption = element_text(color = "grey50", size = 7, hjust = 0),
-      legend.position = "right"
+      legend.position      = "right",
+      legend.title         = element_text(size = 8, face = "bold"),
+      legend.text          = element_text(size = 8),
+      legend.key.height    = unit(0.55, "cm"),
+      legend.key.width     = unit(0.4, "cm")
     )
 
   ggsave(

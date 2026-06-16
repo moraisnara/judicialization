@@ -102,6 +102,20 @@ AMV identifies mechanisms through **heterogeneity analyses** along four dimensio
 - **Argument**: Brazil's electoral justice model combines administrative and adversarial roles, creating a unique mixture of mandatory filings and genuine challenges — exactly the distinction Nara's adversarial filter addresses
 - **Relevance**: institutional justification for RRC and DRAP exclusion from instrument
 
+**Lambais, G. & Sigstad, H. (2023).** "Judicial Subversion: The Effects of Political Power on Court Outcomes." *Journal of Public Economics* 217: 104788.
+
+- **Finding**: Brazilian mayoral candidates charged with misconduct are 65% less likely to be convicted if they narrowly win the election (close-election RD). Effect driven by districts with few judges and judges with higher career instability — formal independence does not fully insulate the judiciary from political influence
+- **Relevance for Nara**: (a) establishes that Brazil's electoral courts are not politically neutral arbiters — further motivates the endogeneity concern and the need for a shift-share IV; (b) co-authors of this paper (Lambais & Sigstad) are also co-authors of Chin, Lambais & Sigstad (2026), cementing the prior-work lineage; (c) discipline/deterrence channel: if courts are lenient toward winners, the deterrence effect of judicial challenges may be asymmetric — an open question Nara's design can speak to
+- **Cite as**: `lambais2023`
+
+**Assumpcao, A. (2019).** "Electoral Crime Under Democracy: Information Effects from Judicial Decisions in Brazil." arXiv:1912.10958.
+
+- **Design**: panel of local candidates running for office 2004–2016; exploits variation in publicly disclosed electoral court convictions
+- **Finding**: conviction for an electoral crime reduces candidate's probability of election by 10.3pp and vote share by 12.9pp; larger penalty for severe crimes (6.5pp additional); results hold controlling for candidate and voter behavior changes over the electoral process
+- **Relevance for Nara**: direct empirical support for the information/accountability channel — voters demonstrably respond to judicial disclosures about candidates in Brazil. Complements Ferraz & Finan (2008) by focusing specifically on electoral court information (not audit disclosures). Supports citing when discussing the accountability/screening channel in the motivation.
+- **Key contrast with Nara**: Assumpcao studies effects of *specific conviction disclosures* on *individual candidate vote shares*; Nara studies aggregate pre-election lawsuit exposure on *blank rates and candidate entry* — different margin, different mechanism, fully complementary
+- **Cite as**: `assumpcao2019`
+
 **Ferraz, C. & Finan, F. (2008).** "Exposing Corrupt Politicians: The Effects of Brazil's Publicly Released Audits on Electoral Outcomes." *Quarterly Journal of Economics* 123(2): 703–745.
 
 - **Instrument**: randomly assigned municipal audits (quasi-experiment)
@@ -113,6 +127,46 @@ AMV identifies mechanisms through **heterogeneity analyses** along four dimensio
 
 - **Finding**: politicians facing re-election incentives steal less; electoral accountability disciplines behavior
 - **Relevance**: establishes the discipline channel; judicial challenges could operate similarly — the threat of public legal proceedings disciplines candidates even before any ruling
+
+### 2.3 Electoral litigation as campaign strategy — closest related paper
+
+**Chin, M., Lambais, G., & Sigstad, H. (2026).** "Electoral Litigation in Political Campaigns." SSRN Working Paper 5183038. [April 17, 2026]
+
+- **What they do**: Study 27,260 electoral lawsuits filed in Brazil's 2020 municipal elections matched to 19,358 mayoral candidates. Build and test a **contest model** in which campaigns compete in two arenas simultaneously: the electoral arena (votes) and the judicial arena (disqualifications). Distinct from Nara's paper in level of analysis (candidate × lawsuit → candidate vote share) and in empirical design (DiD and RD exploiting exact filing dates vs. Nara's Bartik shift-share IV at municipality level).
+- **Key findings**:
+  - 30% of mayoral candidates are involved in lawsuits; 11% of campaign budgets spent on lawyers
+  - Lawsuits are filed strategically as **campaign tools**, not genuine legal grievances: (a) runner-up candidates file more against front-runners; (b) pre-election filings are judicially weaker — 30% less likely to lead to disqualification; (c) filings bunch sharply in the final days before the election; (d) post-filing Facebook activity by filers amplifies the "lawsuit signal" to voters, often without disclosing the filer's identity (hiding the adversarial origin)
+  - 4% disqualification rate for politician-filed ineligibility cases — low judicial success confirms strategic/harassment motive
+  - **Minimal average effect on vote intentions**: DiD estimate +0.020 (SE=0.019); RD estimate −0.011 (SE=0.020). No detectable shift in a specific candidate's poll numbers from a single lawsuit
+- **Data**: TSE processos eleitorais 2020 + polling data (Datafolha, IBOPE, AtlasIntel) + Facebook Ads Library. Candidate-level panel.
+- **Mechanism identified**: main welfare costs are **dissipative** — court congestion, diversion of campaign resources to litigation, distortion of campaign content; not direct disqualification
+- **Relevance for Nara — four connections**:
+  1. *Motivation/endogeneity*: CLS provide the definitive empirical evidence that pre-election lawsuits are strategically timed and targeted, directly justifying Nara's Bartik IV. Replace weak `lehoucq2003`/`murillo2010` citations for the strategic-harassment channel with this paper.
+  2. *Complementary scope*: CLS work at the **candidate level** — does lawsuit X shift candidate Y's polling? Nara works at the **municipality level** — does aggregate judicial exposure shift aggregate voter behavior (blank rate, candidate entry)? The null individual-level effect and the positive aggregate blank rate are *consistent*: individual-level noise across many simultaneous lawsuits can still shift voters' overall evaluation of the electoral environment without shifting any single candidate's share.
+  3. *Channel ruling-out*: CLS's 4% disqualification rate (politician-filed) supports Nara ruling out the direct-disqualification channel — the blank rate result is about information/uncertainty, not about specific candidates being removed.
+  4. *Gap CLS acknowledge*: CLS explicitly note they "cannot credibly assess" effects on voter turnout or blank voting at the aggregate level (p. 23). Nara's Bartik design fills this gap precisely.
+- **Key contrast**: CLS use lawsuit-level variation within a single cycle (2020 only); Nara uses cross-municipality variation in the *change* in aggregate judicial exposure from 2020 to 2024. Different variation, different estimand — they answer complementary questions.
+- **Cite as**: `chin2026` — add to `.bib` as `@unpublished{chin2026, ...}`
+- **Motivation improvement**: The abstract's sentence "may be deployed strategically to harass incumbents or viable challengers" currently cites `lehoucq2003` and `murillo2010`. CLS is a much stronger, Brazil-specific citation: cite as "Chin, Lambais and Sigstad (2026) document that in Brazil's 2020 municipal elections, pre-election lawsuits are judicially weaker, timed to the final days of campaigns, and publicly amplified by filers — consistent with strategic deployment rather than genuine legal grievance."
+
+**Nakaguma, M.Y. & Souza, D. (September 2025).** "Electoral Campaign Attacks: Theory and Evidence." Sao Paulo School of Economics–FGV / University of São Paulo. [Working paper]
+
+- **What they do**: Study 69,252 ordered candidate pairs from 10,461 electoral races across the 2012 and 2016 Brazilian municipal elections. The *unit of observation* is a directed candidate pair (i→j): candidate i has the *opportunity* to attack j via a *direito de resposta* (right-of-reply) lawsuit, in which a candidate slandered or defamed by a rival can petition for equal media time within 72 hours. This is a distinct subclass of adversarial filings — it is a **campaign-conduct** lawsuit, not an eligibility or registration challenge. The authors build and estimate a formal logit contest success function model in which attack decisions are binary choices under competitive pressure. Two quasi-experimental designs: (1) RD on virtual ties between 2nd/3rd place candidates — runners-up are ~2pp more likely to receive an attack in the next election (+160% relative); (2) RD on Brazil's 200k registered-voter threshold for dual-ballot elections — under the runoff system, 3rd place candidates become ~16.7pp more aggressive (+150% relative) and attacks between 2nd and 3rd place increase ~12.3pp, as predicted by the contest model when the 2nd-round prize increases.
+- **Key findings**:
+  - Strategic attack decisions are highly sensitive to relative rank and electoral system — the electoral contest structure shapes litigation behavior
+  - Under single ballot (most municipalities): 2nd place attacks front-runner most aggressively; 3rd place is comparatively passive
+  - Under dual ballot (200k+ municipalities): 3rd place becomes the most aggressive attacker (gunning for the runoff slot) and 2nd–3rd aggression spikes
+  - A strong 3rd candidate dilutes 1st–2nd aggression (confirmed theoretically and empirically), showing that lawsuit filing responds to opponent competitiveness, not just bilateral conflict
+  - Overall RR lawsuit frequency is low — filings are selective, targeted instruments, not mass campaigns
+- **Relevance for Nara — four connections**:
+  1. *Endogeneity motivation*: N&S provide additional empirical confirmation — using earlier election cycles (2012/2016) — that adversarial filings are strategically timed and targeted at rivals, reinforcing the reverse-causality problem Nara's Bartik IV addresses. Complementary to CLS (2026) which uses 2020 data; together they span three electoral cycles.
+  2. *RR lawsuits are a subclass of Nara's treatment*: Nara's adversarial category (AIJE, AIME, RCAND, RE, RP) is broader than RR lawsuits — it includes eligibility and registration challenges in addition to campaign-conduct filings. N&S study only one campaign-conduct subtype (direito de resposta). This distinction matters: N&S show the *strategic targeting* logic is operative even at this narrower filing type; Nara captures the full adversarial exposure at the municipality level.
+  3. *Candidate deterrence mechanism*: N&S model attacks as costly interventions (legal fees, reputational exposure). This directly supports Nara's candidate-deterrence channel — if filing a lawsuit is costly to the *attacker*, facing a municipality-wide elevated litigation environment imposes costs on potential *entrants*, deterring candidacy at the margin.
+  4. *Institutional context — the 200k threshold*: N&S exploit the same Brazilian constitutional discontinuity (dual ballot above 200k registered voters) used elsewhere in the Brazilian political economy literature. Nara's full sample includes both ballot types; this institutional detail provides useful background for the institutional-context section.
+- **Key contrast with Nara**: N&S measure direito de resposta lawsuits as proxies for *campaign-period attacks between candidate pairs*; Nara measures all pre-election adversarial filings (including eligibility and registration challenges) aggregated to the municipality level. Different measurement unit (directed pair vs. municipality aggregate), different filing scope (RR only vs. all adversarial classes), different research question (who attacks whom → Nara's aggregate: does the litigation environment affect the electoral outcome). Fully complementary.
+- **Section placement**: Section 2.3 (Electoral litigation as campaign strategy), after CLS (2026). N&S provide the earlier Brazilian empirical foundation (2012/2016 cycles) for the strategic-filing logic that CLS extend to 2020.
+- **Cite as**: `nakaguma2025` — add to `.bib` as `@unpublished{nakaguma2025, ...}`
+- **Abstract integration**: (a) In Motivation, alongside `chin2026`, when establishing that filings are strategic — N&S provide cross-cycle evidence predating CLS; (b) In Mechanism section, if elaborating on the fixed-cost deterrence channel — N&S show that attack costs are real (even the aggressor bears them); (c) In Contribution, to distinguish Nara's aggregate municipal IV design from pair-level analysis.
 
 ---
 

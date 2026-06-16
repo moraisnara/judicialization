@@ -1,0 +1,255 @@
+% ============================================================
+% Extended Abstract — BREAD Mexico 2026
+% When It Gets to Court: Judicial Intervention and
+% Electoral Participation in Brazil
+% Nara Morais (FEA-USP)
+%
+% Compile:
+%   pdflatex extended_abstract.tex
+%   bibtex   extended_abstract
+%   pdflatex extended_abstract.tex
+%   pdflatex extended_abstract.tex
+%
+% ALL numbers come from \input{../tables/tex/abstract_macros.tex}
+% ============================================================
+
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+% ---- Match the paper template's typography (font + encoding) ----
+\usepackage[T1]{fontenc}
+\usepackage{palatino}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[authoryear,round]{natbib}
+
+\definecolor{myblue}{RGB}{0,90,156}
+
+% ---- Load all numbers from the auto-generated macro file ----
+\input{../tables/tex/abstract_macros}
+
+% ---- Typography ----
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0pt}
+\doublespacing
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+\begin{center}
+  {\large\bfseries When It Gets to Court:\\
+  The Electoral Costs of Judicialization}\\[8pt]
+  {\normalsize Nara Morais}\\
+  {\small FEA--USP \quad naraliviamorais@usp.br}\\[6pt]
+  {\small\textit{Extended Abstract --- BREAD Mexico 2026}}
+\end{center}
+
+\medskip
+\noindent\textbf{Keywords:} electoral courts, candidate entry, blank votes,
+Bartik instrument, compulsory voting, Brazil
+
+\bigskip
+
+% ============================================================
+\noindent\textbf{1. \quad Introduction}
+% ============================================================
+
+\medskip
+Electoral courts are an increasingly central institution in developing
+democracies, yet their causal effects on democratic participation remain poorly
+understood \citep{helmke2011,fasone2024}. Pre-election adversarial lawsuits cut
+in two directions. They can improve accountability by screening unfit candidates
+and deterring abuses of power \citep{assumpcao2019,ferraz2008}; but they can also
+generate reputational noise that voters cannot readily evaluate, impose legal
+costs on potential candidates, and be deployed strategically to harass rivals
+\citep{lehoucq2003,nakaguma2025,chin2026}. The net effect is theoretically
+ambiguous, and identification is difficult because competitive races attract
+both more lawsuits and more candidates --- a simultaneity that defeats naive
+comparisons.
+
+Brazil is a natural laboratory. Its three-tier \textit{Justiça Eleitoral}
+adjudicates eligibility and conduct cases \emph{before} election day across
+\NMunis{} municipalities that vote simultaneously every four years. Adversarial
+filings reached \AdvLawsuitsTwenty{}M in 2020 ---
+\AdvPerCandidateTwenty{} per mayoral candidate --- and grew to
+\AdvLawsuitsFortyFour{}M in 2024, making judicial involvement a pervasive
+feature of municipal competition rather than an exceptional event. Brazil's
+\emph{compulsory} voting (\TurnoutRateTwenty\% turnout in 2020) supplies a
+distinctive channel: when abstention is penalized, voter disaffection cannot
+exit as non-participation but surfaces instead as a deliberate blank ballot
+\citep{power1995}. This yields a clean behavioral marker of disengagement from
+the candidate slate that voluntary-voting systems do not provide.
+
+\textit{Research question:} do pre-election adversarial challenges causally
+affect voter behavior and candidate entry, and through which mechanism? Three
+channels generate distinct signatures. Under \textbf{information} effects,
+lawsuits alter the signal voters receive --- credibly exposing misconduct
+(accountability) or merely raising opaque, strategically motivated noise
+(degradation). Under \textbf{strategic targeting (lawfare)}, litigation is a
+directed weapon, concentrated in the most competitive races and shifting vote
+shares away from targeted rivals. Under \textbf{direct judicial action},
+disqualifications mechanically remove candidates and reallocate vote shares.
+The documented nature of Brazilian pre-election litigation points to
+degradation: attack filings cluster among runners-up targeting front-runners,
+are timed to the campaign's final days, rarely produce disqualifications, and
+are difficult for voters to evaluate without legal expertise
+\citep{nakaguma2025,chin2026,besley1997}. The evidence below favors this channel
+over both lawfare and direct judicial action.
+
+\bigskip
+
+% ============================================================
+\noindent\textbf{2. \quad Methodology}
+% ============================================================
+
+\medskip
+All data come from the TSE (\textit{Tribunal Superior Eleitoral}) for the 2020
+and 2024 municipal cycles. The treatment is the change in pre-election
+adversarial litigation: I retain first-instance cases filed before election day
+in adversarial classes --- eligibility challenges (AIJE, AIME), registration
+objections (RCAND), and conduct violations (RE, RP) --- and drop appellate and
+administrative filings that carry no adversarial signal. Filings are recorded at
+the electoral-zone level and aggregated to municipalities, giving the endogenous
+variable $\Delta\log(1+\ell_m)=\log(1+\ell_{m,2024})-\log(1+\ell_{m,2020})$.
+Outcomes span voter behavior (blank, null, turnout, and valid vote rates),
+candidate entry (log candidate counts and composition in both the executive and
+legislative arenas), and electoral competition (winner--runner-up margin,
+runner-up vote share, winner majority). I control for Census 2010 demographics
+and 2016/2020 electoral baselines, with 27 state fixed effects.
+
+OLS is biased in two directions: competitive races attract disproportionately
+more lawsuits (simultaneity), and unobserved municipal characteristics jointly
+shift litigation and electoral outcomes. To recover exogenous variation I use a
+\textbf{Bartik shift-share instrument} \citep{gps2020,borusyak2022}, following
+\citet{ash2025}, who apply the identical structure to U.S.\ state legislative
+output and growth. Each municipality's 2020 \emph{portfolio} of adversarial
+lawsuits across legal topics is interacted with \emph{topic-level shocks}
+originating above the municipality:
+
+\[
+  Z_m^{\textsc{b}} \;=\; \sum_{k \in \mathcal{K}} s_{m,k,2020}\;\cdot\;g_{\sigma(m),k,-m},
+\]
+
+where $s_{m,k,2020}$ is municipality $m$'s 2020 share of adversarial lawsuits in
+topic $k$ and $g_{\sigma(m),k,-m}$ is the leave-one-out log growth of topic $k$
+at the state level. Identification rests on two pillars: the 2020 portfolio is
+predetermined relative to 2024 outcomes, and topic-level growth reflects
+\textit{Tribunal Regional Eleitoral} jurisprudence and \textit{Ministério
+Público Eleitoral} enforcement operating above the municipality, with the
+leave-one-out construction ensuring no municipality drives its own shift. The
+first stage is strong --- a one-unit increase in $Z_m^{\textsc{b}}$ raises
+$\Delta\log(1+\ell_m)$ by \FSCoef{} (SE = \FSSE{}; $F = \FSF{}$), comfortably
+above conventional weak-instrument thresholds. All specifications are estimated
+by 2SLS with standard errors clustered by principal electoral zone.
+
+\bigskip
+
+% ============================================================
+\noindent\textbf{3. \quad Results}
+% ============================================================
+
+\medskip
+\textbf{Voter behavior.} The headline 2SLS estimate is a \BlankCoef{}-point
+increase in the blank vote rate ($p = \BlankP{}$; Table~\ref{tab:results}),
+significant at the 5\% level --- a \BlankRelEffect\% increase relative to the
+\BlankRateTwenty\% baseline. Its mechanical complement, the valid vote rate,
+falls by \ValidCoef{} ($p = \ValidP{}$). Turnout ($p = \TurnoutP{}$) and the
+null rate ($p = \NullP{}$) are precise nulls: judicialization neither
+demobilizes voters nor pushes them toward spoiled ballots. The response is
+confined to the blank margin --- voters who attend the polls, as compulsory
+voting requires, but withhold a choice from the candidate field --- exactly the
+signature predicted by information degradation. The effect is stable in sign,
+magnitude, and significance across all six specifications
+(Figure~\ref{fig:forest}).
+
+\textbf{Candidate entry, competition, and gender.} Executive candidates fall by
+\CandExecPct\% in log terms ($p = \CandExecP{}$) and city-council candidates by
+\LegCandPct\% ($p = \LegCandP{}$), consistent with elevated legal-exposure costs
+deterring entry; composition shares (new entrants, serial challengers, returners)
+are indistinguishable from zero, indicating a quantity effect rather than
+selection. Female vote share falls by \FemaleVSCoef{} ($p = \FemaleVSP{}$) and
+the probability of a female winner by \FemaleWinCoef{} ($p = \FemaleWinP{}$);
+these marginal estimates may operate through overall deterrence. The competition
+margins --- winner--runner-up margin ($p = \MarginP{}$), runner-up vote share
+($p = \RunnerUpP{}$), and winner majority ($p = \WinMajP{}$) --- are all precise
+nulls, ruling out the direct disqualification channel, which would widen margins
+as removed candidates' votes reallocate.
+
+\textbf{Heterogeneity.} The blank-vote effect concentrates in open-seat
+municipalities, where the 2020 winner was term-limited and no incumbent appears
+in 2024: \OpenBlankCoef{} ($p = \OpenBlankP{}$, $N = \OpenN{}$) versus a
+near-zero \ContBlankCoef{} ($p = \ContBlankP{}$) where an incumbent defends the
+seat. This is the mirror image of lawfare, which predicts the largest effects in
+high-stakes incumbency races; it is precisely what information degradation
+implies, since open-seat voters have no incumbent track record against which to
+discount an adversarial filing.
+
+\begin{table}[h!]
+\centering
+\caption{Main 2SLS Results --- Adversarial Electoral Judicialization}
+\label{tab:results}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\input{../tables/tex/abstract_table}
+\end{table}
+
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.70\textwidth]{../figures/forest_voter_behavior.pdf}
+\caption{2SLS estimates for voter-behavior outcomes (blank rate, null rate,
+  turnout) across four specifications. Bars show 90\% (thick) and 95\% (thin)
+  confidence intervals. The blank rate is positive and significant at the 5\%
+  level under all specifications; turnout and null rate are precise nulls
+  throughout.}
+\label{fig:forest}
+\end{figure}
+
+\bigskip
+
+% ============================================================
+\noindent\textbf{4. \quad Conclusion}
+% ============================================================
+
+\medskip
+This paper provides the first credibly identified estimates of how pre-election
+electoral-court activity affects democratic participation and candidate entry.
+Exploiting a shift-share instrument built from Brazil's administrative processual
+records, I find that adversarial judicialization raises blank voting, deters
+candidate entry across both executive and legislative arenas, and leaves vote
+margins and the composition of the candidate pool unchanged. The pattern ---
+disengagement directed at the candidate field rather than at the act of voting,
+nulls on competition margins, and effects concentrated where voters lack an
+incumbent benchmark --- is consistent with information degradation and
+inconsistent with both strategic lawfare and direct judicial removal.
+
+Two lessons generalize beyond Brazil. First, where voting is compulsory,
+political disengagement is channeled into blank ballots rather than abstention,
+making the blank margin an observable equilibrium response to information
+degradation that voluntary-voting systems obscure. Second, that the same
+candidate-deterrence effect appears in plurality (mayoral) and open-list
+proportional (council) elections points to fixed legal and reputational costs of
+candidacy under elevated litigation. The policy implication is direct: expanding
+judicial enforcement in the electoral domain --- a standard governance reform ---
+carries measurable participation costs, and the trade-off between legal integrity
+and democratic dynamism deserves explicit attention, particularly under
+compulsory voting. The design identifies the effect of differential growth in
+adversarial filings rather than the level of judicialization, and the estimates
+should be read accordingly.
+
+\bigskip
+
+% ============================================================
+\noindent\textbf{References}
+% ============================================================
+
+\bibliographystyle{apalike}
+\bibliography{extended_abstract}
+
+\end{document}

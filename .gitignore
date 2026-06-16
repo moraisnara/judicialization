@@ -15,6 +15,26 @@ data/clean/candidate_vote_panel.csv
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.blg
+
+# ── Overleaf whitelist ────────────────────────────────────────────────────────
+# Ignore everything under output/, then re-add the source files (and the
+# figures/tables folders) that the Overleaf-linked repo must track.
+# output/paper/ holds written documents: extended_abstract now, full paper later.
+output/*
+!output/paper/
+output/paper/*
+!output/paper/*.tex
+!output/paper/*.bib
+!output/paper/*.bbl
+!output/presentation/
+output/presentation/*
+!output/presentation/slides_full.tex
+!output/presentation/slides_conference.tex
+!output/presentation/references.bib
+!output/presentation/*.bib
+!output/figures/
+!output/tables/
 
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/

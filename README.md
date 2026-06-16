@@ -159,12 +159,12 @@ Design assembly and IV estimation. All regression estimation is done in R via `f
 
 | Spec | Description |
 |---|---|
-| `baseline_state_fe` | Baseline controls + state FE |
-| `baseline_state_fe_sz` | Same, restricted to single-zone municipalities |
-| `robustness_full_controls` | Adds demographic composition controls |
-| `subsample_le200k` | Municipalities with ≤ 200k registered voters |
-| `robustness_topic_shares` | Adds 2020 baseline shares for top-4 Rotemberg-weight topics as controls (executive only) |
-| `robustness_broader_lawsuits` | Adds `log1p_lawsuits_no_rrc_2020` as a covariate (broader competition activity control) |
+| `baseline` | Baseline controls + state FE (primary) |
+| `single_zone` | Same, restricted to single-zone municipalities |
+| `extended_controls` | Adds 7 demographic/composition controls |
+| `open_seat` | 2020 winner was term-limited (no incumbent in 2024) |
+| `contested_seat` | Incumbent can seek reelection in 2024 |
+| `broader_treatment` | Baseline + `log1p_lawsuits_no_rrc_2020` as covariate |
 
 ### `code/04_analysis/`
 
@@ -172,11 +172,12 @@ GPS (2020) and BHJ (2022/2024) required diagnostics, causal figures, and robustn
 
 | Script | Purpose | Output |
 |---|---|---|
-| `01_figures_descriptive.py` | Descriptive figures: family composition, topic family HHI | `family_composition_2020_2024.png`, `topic_family_hhi.png` |
+| `00_candidate_descriptives.py` | Candidate and elected pool descriptives by cycle | summary CSVs in `output/tables/descriptives/` |
+| `02_descriptives_overview.py` | Overview tables: lawsuits, voters, candidates (scale of phenomenon) | `overview_lawsuits.csv`, `overview_voters.csv`, `overview_candidates.csv` |
 | `02_figures_causal.R` | Causal figures: binscatter first stage, forest plot, IV histogram, choropleth | `binscatter_first_stage.pdf`, `forest_voter_behavior.pdf`, `bartik_histogram.pdf`, `bartik_choropleth.pdf` |
+| `03_map_data_universe.R` | Electoral zone map: municipalities per zone, colored by zone size | `map_data_universe.pdf` |
 | `05_rotemberg_weights.py` | GPS Rotemberg α_k weights and per-topic F_k statistics | `rotemberg_weights.csv`, `rotemberg_weights.md` |
 | `08_gps_balance_tests.py` | GPS share balance: covariate R² and pre-trend tests for top topics | `gps_balance_tests.csv`, `gps_balance_tests.md` |
-| `09_visual_iv.py` | GPS visual IV graph: τ_k vs F_k, sized by \|α_k\| | `visual_iv_grid.pdf`, `visual_iv_*.pdf` |
 | `10_shift_descriptives.py` | BHJ shift distribution table: g_k, mean shares, HHI contribution | `shift_descriptives.csv`, `shift_descriptives.md` |
 | `11_exposure_robust_se.py` | BHJ/AKM exposure-robust standard errors (shift-level clustering) | `exposure_robust_se.csv`, `exposure_robust_se.md` |
 
@@ -197,12 +198,7 @@ R scripts are called via `Rscript`; Python scripts via `sys.executable`.
 | `forest_voter_behavior.pdf` | `02_figures_causal.R` | Forest plot: voter behavior outcomes across specs |
 | `bartik_histogram.pdf` | `02_figures_causal.R` | Distribution of the IV (residualized on state FE) |
 | `bartik_choropleth.pdf` | `02_figures_causal.R` | Geographic distribution of the IV across Brazil |
-| `family_composition_2020_2024.png` | `01_figures_descriptive.py` | Case composition by litigation family, 2020 vs 2024 |
-| `topic_family_hhi.png` | `01_figures_descriptive.py` | HHI of lawsuit concentration by topic family |
-| `visual_iv_grid.pdf` | `09_visual_iv.py` | GPS visual IV: τ_k vs F_k for all primary outcomes |
-| `visual_iv_margin_top1_top2.pdf` | `09_visual_iv.py` | Visual IV for margin outcome |
-| `visual_iv_winner_majority.pdf` | `09_visual_iv.py` | Visual IV for winner majority outcome |
-| `visual_iv_winner_vote_share.pdf` | `09_visual_iv.py` | Visual IV for winner vote share outcome |
+| `map_data_universe.pdf` | `03_map_data_universe.R` | Electoral zones colored by number of municipalities per zone |
 
 ### `output/tables/regressions/`
 
@@ -239,8 +235,9 @@ R scripts are called via `Rscript`; Python scripts via `sys.executable`.
 
 | File | Contents |
 |---|---|
-| `electoral_judicialization.tex` | Beamer source |
-| `electoral_judicialization.pdf` | Compiled presentation |
+| `electoral_judicialization.tex` | Full report presentation (56 frames) — Beamer source |
+| `electoral_judicialization.pdf` | Compiled full presentation |
+| `electoral_judicialization_short.tex` | Short conference version (10 slides) — Beamer source |
 | `biblio.bib` | Bibliography |
 
 ---

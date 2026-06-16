@@ -1,0 +1,132 @@
+% =============================================================
+%  When It Gets to Court: The Electoral Costs of Judicialization
+%
+%  HOW TO BUILD (from this directory):
+%    pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper
+%
+%  Figures        ../figures/*.pdf
+%  Table fragments../tables/tex/*.tex
+%  Numbers        ../tables/tex/abstract_macros.tex (auto-generated)
+%  References     references.bib
+%  Template       ../../../templates/paper/  (phd-thesis standard)
+% =============================================================
+
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage{comment}
+
+% ── References ───────────────────────────────────────────────
+\usepackage{natbib}
+\bibliographystyle{apalike}
+\setcitestyle{authoryear,open={(},close={)}}
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=., citecolor=., filecolor=., urlcolor=.}
+\urlstyle{same}
+
+\usepackage[T1]{fontenc}
+\usepackage{authblk}
+\usepackage{indentfirst}
+
+% ── Tables and figures ───────────────────────────────────────
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[pdftex]{graphicx}
+\graphicspath{{../figures/}{../tables/}{../tables/tex/}}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{tabularx}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{adjustbox}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{longtable}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage[normalem]{ulem}
+
+\newcommand{\tinytableTabularrayUnderline}[1]{\underline{#1}}
+\newcommand{\tinytableTabularrayStrikeout}[1]{\sout{#1}}
+\ExplSyntaxOn
+\cs_if_exist:NF \tbl_save_outer_table_cols: {
+  \cs_new:Nn \tbl_save_outer_table_cols: {}
+}
+\ExplSyntaxOff
+
+% ── TikZ / math / formatting ─────────────────────────────────
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,decorations.pathreplacing}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{setspace}
+\doublespacing
+\usepackage{palatino}
+\usepackage{fullpage}
+
+% ── Colors ───────────────────────────────────────────────────
+\usepackage{xcolor}
+\definecolor{myblue}{RGB}{0,90,156}
+\definecolor{myred}{RGB}{180,30,30}
+\definecolor{mygreen}{RGB}{0,120,60}
+\definecolor{mygray}{RGB}{120,120,120}
+\definecolor{mylightblue}{RGB}{220,235,248}
+\newcommand{\se}[1]{{\small\textcolor{mygray}{(#1)}}}
+
+% ── Auto-generated numbers (shared with extended abstract) ───
+\IfFileExists{../tables/tex/abstract_macros.tex}{%
+  \input{../tables/tex/abstract_macros.tex}%
+}{}
+
+% =============================================================
+\begin{document}
+% =============================================================
+
+\title{When It Gets to Court:\\
+       The Electoral Costs of Judicialization%
+       \thanks{Preliminary results. Comments welcome.}}
+\author{Nara Morais\thanks{FEA/USP. E-mail: naraliviamorais@usp.br}}
+\date{\the\year}
+\maketitle
+\thispagestyle{empty}
+
+% ── Abstract ─────────────────────────────────────────────────
+\begin{abstract}
+\noindent
+ABSTRACT GOES HERE. One paragraph: question, design, data and sample size,
+headline result, contribution.
+
+\medskip\noindent\textbf{JEL Codes:} XXX
+
+\medskip\noindent\textbf{Keywords:} judicialization; electoral competition;
+candidates; voters; Brazil
+\end{abstract}
+
+\newpage
+
+\section{Introduction}\label{sec:intro}
+
+\section{Institutional Background}\label{sec:background}
+
+\section{Data}\label{sec:data}
+
+\section{Empirical Strategy}\label{sec:strategy}
+
+\section{Results}\label{sec:results}
+
+\section{Robustness}\label{sec:robustness}
+
+\section{Conclusion}\label{sec:conclusion}
+
+% ── References ───────────────────────────────────────────────
+\newpage
+\bibliography{references}
+
+% ── Appendix ─────────────────────────────────────────────────
+\appendix
+\section{Additional Tables and Figures}\label{sec:appendix}
+
+\end{document}
