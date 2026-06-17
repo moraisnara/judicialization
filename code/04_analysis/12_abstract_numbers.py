@@ -71,6 +71,22 @@ fs   = pd.read_csv(os.path.join(REG,  'executive_margin_first_stage_fixest.csv')
 leg  = pd.read_csv(os.path.join(REG,  'legislative_iv_fixest.csv'))
 er   = pd.read_csv(os.path.join(REG,  'exposure_robust_se.csv'))
 
+# Estimation panels (for dependent-variable means over the estimation sample)
+EST       = os.path.join(ROOT, 'data', 'estimation')
+panel_ex  = pd.read_csv(os.path.join(EST, 'executive_margin_design.csv'))
+panel_leg = pd.read_csv(os.path.join(EST, 'legislative_design.csv'))
+TREAT = 'delta_log1p_competition_lawsuits_2024_2020'
+INSTR = 'bartik_iv_2020_2024'
+
+def dvmean(panel, outcome, extra=None):
+    """Mean of the dependent variable over the estimation sample (non-missing
+    treatment, instrument, and outcome). `extra` is an optional boolean mask
+    (e.g. open-seat subsample) aligned to `panel`."""
+    m = panel[TREAT].notna() & panel[INSTR].notna() & panel[outcome].notna()
+    if extra is not None:
+        m = m & extra
+    return panel.loc[m, outcome].mean()
+
 # ── Helper: pull one row from IV results ──────────────────────────────────────
 def get_iv(spec, outcome, variant='adversarial'):
     row = iv.loc[(iv['spec'] == spec) & (iv['outcome'] == outcome) &
@@ -135,8 +151,9 @@ r_blank_open = get_iv('open_seat',     'delta_blank_rate_2024_2020')
 r_blank_cont = get_iv('contested_seat','delta_blank_rate_2024_2020')
 
 # IV — composition: female
-r_female_vs  = get_iv('baseline', 'delta_female_vote_share_2024_2020')
-r_female_win = get_iv('baseline', 'delta_winner_is_female_2024_2020')
+r_female_vs   = get_iv('baseline', 'delta_female_vote_share_2024_2020')
+r_female_win  = get_iv('baseline', 'delta_winner_is_female_2024_2020')
+r_female_cand = get_iv('baseline', 'delta_female_share_2024_2020')
 
 # Legislative
 r_leg_cand = get_leg('baseline', 'delta_log1p_total_candidates_2024_2020')
@@ -173,6 +190,7 @@ M['ExecCandsFortyFour']      = big(ce24['total_candidates'])
 M['LegCandsTwenty']          = big(cl20['total_candidates'])
 M['LegCandsFortyFour']       = big(cl24['total_candidates'])
 M['FemaleShareExecTwenty']   = pct1(ce20['female_share_pct'])
+M['FemaleShareExecFortyFour']= pct1(ce24['female_share_pct'])
 
 # --- First stage ---
 M['NMunis']      = big(int(fs_base['nobs']))
@@ -246,6 +264,11 @@ M['FemaleWinSE']   = se_par(r_female_win['se'])
 M['FemaleWinP']    = pval(r_female_win['p'])
 M['FemaleWinTF']   = tick_cross(r_female_win['reject_tF_5pct'])
 
+M['FemaleCandCoef'] = coef(r_female_cand['coef'])
+M['FemaleCandSE']   = se_par(r_female_cand['se'])
+M['FemaleCandP']    = pval(r_female_cand['p'])
+M['FemaleCandTF']   = tick_cross(r_female_cand['reject_tF_5pct'])
+
 # --- Open seat heterogeneity ---
 M['OpenBlankCoef'] = coef(r_blank_open['coef'])
 M['OpenBlankSE']   = se_par(r_blank_open['se'])
@@ -273,6 +296,41 @@ M['BlankRatioBHJ'] = f'{ratio_bhj:.1f}'
 blank_rate_base = v20['blank_rate_pct'] / 100   # convert pct to rate (e.g. 0.034)
 M['BlankRelEffect'] = f1(100 * r_blank['coef'] / blank_rate_base)  # % relative increase
 
+# --- Percentage-point versions (share outcomes; unsigned, prose carries direction) ---
+# A share coefficient of 0.01 = 1 percentage point. abs() so prose says
+# "rises/falls by X.X percentage points" without a redundant +/- in the number.
+M['BlankCoefPP']    = f1(abs(r_blank['coef'])      * 100)
+M['ValidCoefPP']    = f1(abs(r_valid['coef'])      * 100)
+M['TurnoutCoefPP']  = f1(abs(r_turnout['coef'])    * 100)
+M['NullCoefPP']     = f1(abs(r_null['coef'])       * 100)
+M['FemaleVSCoefPP'] = f1(abs(r_female_vs['coef'])   * 100)
+M['FemaleWinCoefPP']= f1(abs(r_female_win['coef'])  * 100)
+M['FemaleCandCoefPP']= f1(abs(r_female_cand['coef']) * 100)
+M['OpenBlankCoefPP']= f1(abs(r_blank_open['coef']) * 100)
+M['ContBlankCoefPP']= f1(abs(r_blank_cont['coef']) * 100)
+
+# --- Dependent-variable means (over estimation sample) ---
+def m3(x):
+    """Mean, signed, 3 dp."""
+    return f'{x:.3f}'
+
+open_mask = panel_ex['open_seat_2024'] == 1
+cont_mask = panel_ex['open_seat_2024'] == 0
+M['BlankMean']     = m3(dvmean(panel_ex,  'delta_blank_rate_2024_2020'))
+M['ValidMean']     = m3(dvmean(panel_ex,  'delta_valid_vote_rate_2024_2020'))
+M['TurnoutMean']   = m3(dvmean(panel_ex,  'delta_turnout_rate_2024_2020'))
+M['NullMean']      = m3(dvmean(panel_ex,  'delta_null_rate_2024_2020'))
+M['CandExecMean']  = m3(dvmean(panel_ex,  'delta_log1p_n_candidates_with_votes_2024_2020'))
+M['MarginMean']    = m3(dvmean(panel_ex,  'delta_margin_top1_top2_2024_2020'))
+M['RunnerUpMean']  = m3(dvmean(panel_ex,  'delta_runnerup_vote_share_2024_2020'))
+M['WinMajMean']    = m3(dvmean(panel_ex,  'delta_winner_majority_2024_2020'))
+M['FemaleVSMean']  = m3(dvmean(panel_ex,  'delta_female_vote_share_2024_2020'))
+M['FemaleWinMean'] = m3(dvmean(panel_ex,  'delta_winner_is_female_2024_2020'))
+M['FemaleCandMean']= m3(dvmean(panel_ex,  'delta_female_share_2024_2020'))
+M['LegCandMean']   = m3(dvmean(panel_leg, 'delta_log1p_total_candidates_2024_2020'))
+M['OpenBlankMean'] = m3(dvmean(panel_ex,  'delta_blank_rate_2024_2020', extra=open_mask))
+M['ContBlankMean'] = m3(dvmean(panel_ex,  'delta_blank_rate_2024_2020', extra=cont_mask))
+
 # ── Write abstract_macros.tex ─────────────────────────────────────────────────
 macros_path = os.path.join(TEX, 'abstract_macros.tex')
 with open(macros_path, 'w', encoding='utf-8') as f:
@@ -287,63 +345,62 @@ with open(macros_path, 'w', encoding='utf-8') as f:
 print(f'Wrote {len(M)} macros to {macros_path}')
 
 # ── Write abstract_table.tex ──────────────────────────────────────────────────
-def row(label, c, s, p, bold=False):
+def row(label, c, s, p, mean, bold=False):
     """Build one table row."""
     cv = f'\\textbf{{{c}}}' if bold else c
     sv = f'\\textbf{{{s}}}' if bold else s
     pv = f'\\textbf{{{p}}}' if bold else p
-    return f'  {label} & {cv} & {sv} & {pv} \\\\\n'
+    mv = f'\\textbf{{{mean}}}' if bold else mean
+    return f'  {label} & {cv} & {sv} & {pv} & {mv} \\\\\n'
 
 table_path = os.path.join(TEX, 'abstract_table.tex')
 with open(table_path, 'w', encoding='utf-8') as f:
     f.write('% abstract_table.tex — auto-generated by 12_abstract_numbers.py\n')
     f.write('% DO NOT EDIT MANUALLY.\n\n')
 
-    f.write('\\begin{tabular}{lrrr}\n')
+    f.write('\\begin{tabular}{lrrrr}\n')
     f.write('  \\toprule\n')
-    f.write('  Outcome & Coef. & SE & $p$ \\\\\n')
+    f.write('  Outcome & Coef. & SE & $p$ & Dep.\\ mean \\\\\n')
     f.write('  \\midrule\n')
 
     # Panel A
-    f.write('  \\multicolumn{4}{l}{\\textit{Panel A: Voter Behavior}} \\\\\n')
+    f.write('  \\multicolumn{5}{l}{\\textit{Panel A: Voter Behavior}} \\\\\n')
     f.write(row('\\quad $\\Delta$ Blank vote rate',
-                M['BlankCoef'], M['BlankSE'], M['BlankP'], bold=True))
+                M['BlankCoef'], M['BlankSE'], M['BlankP'], M['BlankMean'], bold=True))
     f.write(row('\\quad $\\Delta$ Valid vote rate',
-                M['ValidCoef'], M['ValidSE'], M['ValidP']))
+                M['ValidCoef'], M['ValidSE'], M['ValidP'], M['ValidMean']))
     f.write(row('\\quad $\\Delta$ Turnout rate',
-                M['TurnoutCoef'], M['TurnoutSE'], M['TurnoutP']))
+                M['TurnoutCoef'], M['TurnoutSE'], M['TurnoutP'], M['TurnoutMean']))
     f.write(row('\\quad $\\Delta$ Null vote rate',
-                M['NullCoef'], M['NullSE'], M['NullP']))
+                M['NullCoef'], M['NullSE'], M['NullP'], M['NullMean']))
     f.write('  \\midrule\n')
 
-    # Panel B
-    f.write('  \\multicolumn{4}{l}{\\textit{Panel B: Electoral Competition}} \\\\\n')
+    # Panel B — candidate performance (competition + gender composition)
+    f.write('  \\multicolumn{5}{l}{\\textit{Panel B: Candidate Performance}} \\\\\n')
     f.write(row('\\quad $\\Delta$ Log candidates (exec.)',
-                M['CandExecCoef'], M['CandExecSE'], M['CandExecP']))
+                M['CandExecCoef'], M['CandExecSE'], M['CandExecP'], M['CandExecMean']))
     f.write(row('\\quad $\\Delta$ Log candidates (leg.)',
-                M['LegCandCoef'], M['LegCandSE'], M['LegCandP']))
+                M['LegCandCoef'], M['LegCandSE'], M['LegCandP'], M['LegCandMean']))
     f.write(row('\\quad $\\Delta$ Margin (W$-$RU)',
-                M['MarginCoef'], M['MarginSE'], M['MarginP']))
+                M['MarginCoef'], M['MarginSE'], M['MarginP'], M['MarginMean']))
     f.write(row('\\quad $\\Delta$ Runner-up vote share',
-                M['RunnerUpCoef'], M['RunnerUpSE'], M['RunnerUpP']))
+                M['RunnerUpCoef'], M['RunnerUpSE'], M['RunnerUpP'], M['RunnerUpMean']))
     f.write(row('\\quad $\\Delta$ Winner majority',
-                M['WinMajCoef'], M['WinMajSE'], M['WinMajP']))
-    f.write('  \\midrule\n')
-
-    # Panel C — gender
-    f.write('  \\multicolumn{4}{l}{\\textit{Panel C: Gender}} \\\\\n')
+                M['WinMajCoef'], M['WinMajSE'], M['WinMajP'], M['WinMajMean']))
+    f.write(row('\\quad $\\Delta$ Female candidate share',
+                M['FemaleCandCoef'], M['FemaleCandSE'], M['FemaleCandP'], M['FemaleCandMean']))
     f.write(row('\\quad $\\Delta$ Female vote share',
-                M['FemaleVSCoef'], M['FemaleVSSE'], M['FemaleVSP']))
+                M['FemaleVSCoef'], M['FemaleVSSE'], M['FemaleVSP'], M['FemaleVSMean']))
     f.write(row('\\quad $\\Delta$ Winner is female',
-                M['FemaleWinCoef'], M['FemaleWinSE'], M['FemaleWinP']))
+                M['FemaleWinCoef'], M['FemaleWinSE'], M['FemaleWinP'], M['FemaleWinMean']))
     f.write('  \\midrule\n')
 
-    # Panel D — open seat heterogeneity
-    f.write('  \\multicolumn{4}{l}{\\textit{Panel D: Open-Seat Heterogeneity --- $\\Delta$ Blank Rate}} \\\\\n')
+    # Panel C — heterogeneity (open vs contested seats)
+    f.write('  \\multicolumn{5}{l}{\\textit{Panel C: Heterogeneity --- $\\Delta$ Blank Rate}} \\\\\n')
     f.write(row(f'\\quad Open seat ($N={M["OpenN"]}$)',
-                M['OpenBlankCoef'], M['OpenBlankSE'], M['OpenBlankP']))
+                M['OpenBlankCoef'], M['OpenBlankSE'], M['OpenBlankP'], M['OpenBlankMean']))
     f.write(row(f'\\quad Contested ($N={M["ContN"]}$)',
-                M['ContBlankCoef'], M['ContBlankSE'], M['ContBlankP']))
+                M['ContBlankCoef'], M['ContBlankSE'], M['ContBlankP'], M['ContBlankMean']))
     f.write('  \\bottomrule\n')
     f.write('\\end{tabular}\n')
 
@@ -354,7 +411,7 @@ with open(table_path, 'w', encoding='utf-8') as f:
     f.write(f'\\textit{{Notes:}} Baseline specification: state FE + 7 pre-determined controls. ')
     f.write(f'First-stage $F={M["FSF"]}$, $N={M["NMunis"]}$, ')
     f.write(f'{M["NZones"]} clusters (electoral zones). SE clustered by principal zone. ')
-    f.write(f'Panel~D open-seat sub-sample first-stage $F={M["OpenSeatF"]}$.\n')
+    f.write(f'Panel~C open-seat sub-sample first-stage $F={M["OpenSeatF"]}$.\n')
     f.write('\\end{minipage}\n')
 
 print(f'Wrote table to {table_path}')

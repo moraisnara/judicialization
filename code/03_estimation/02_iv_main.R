@@ -89,6 +89,7 @@ SECONDARY_OUTCOMES <- c(
 )
 COMPOSITION_OUTCOMES <- c(
   "delta_female_vote_share_2024_2020",
+  "delta_female_share_2024_2020",
   "delta_nonwhite_vote_share_2024_2020",
   "delta_new_candidate_vote_share_2024_2020",
   "delta_incumbent_candidate_vote_share_2024_2020",
