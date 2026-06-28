@@ -1,0 +1,35 @@
+# Office-Specific Shift-Share Setup
+
+This setup uses only first-instance (`NR_INSTANCIA == 1`) electoral lawsuits,
+which correspond to local `zonas eleitorais`, and maps them to municipalities.
+
+## Core Choices
+
+- exposure unit: municipality, aggregated from first-instance zona-eleitoral outputs
+- treatment universe: adversarial lawsuits only (administrative and procedural
+  classes/subjects excluded via DROP_CLASSES and DROP_SUBJECTS in 02_bartik_inputs.py)
+- outcome panels are separated by office sought
+- executive office: `PREFEITO`
+- legislative office: `VEREADOR`
+
+## Derived Files
+
+- `data/clean/office_candidate_outcomes_panel.csv`
+- `data/clean/municipality_competition_subject_panel.csv`
+- `data/clean/municipality_bartik_components.csv`
+- `data/clean/executive_shift_share_design.csv`
+- `data/clean/legislative_shift_share_design.csv`
+
+## Coverage
+
+- office outcome rows: 22,274
+- executive design municipalities: 5,571
+- legislative design municipalities: 5,571
+
+## Notes
+
+- `new_candidate_*` and `incumbent_*` variables are defined only relative to 2020 and
+  therefore are substantively meaningful for 2024 outcomes.
+- candidate-file-based concentration metrics (`candidate_hhi_party`,
+  `effective_party_count_candidates`) are useful fragmentation proxies, but not a full
+  ideological polarization measure.

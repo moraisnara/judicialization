@@ -1,0 +1,10 @@
+variable,mean_covered,mean_uncovered,std_diff,p_value
+Population (2010),9.658,8.753,0.905,0.0
+Urban share (2010),0.664,0.569,0.444,0.0
+Income per capita (2010),558.06,586.272,-0.108,0.0003
+Higher-educ. share (2010),0.057,0.05,0.21,0.0
+N candidates (2016),3.028,2.485,0.428,0.0
+Win margin (2016),0.182,0.192,-0.044,0.1564
+Eff. n. parties (2016),2.28,2.108,0.268,0.0
+Turnout rate (2020),0.818,0.847,-0.482,0.0
+Blank rate (2020),0.014,0.016,-0.068,0.0428

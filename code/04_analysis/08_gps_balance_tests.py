@@ -1,28 +1,32 @@
 """
-GPS (2020) Section V.A balance tests on topic shares.
+GPS (2020) Section V.A balance tests on topic-FAMILY shares.
 
-For each topic k (top-10 by |alpha_k| + DRAP 12044 + all 6 information environment topics):
+The shift-share instrument is built at the topic-family level (SIG family
+crosswalk, headline rung theme9 = 9 kept families). Shares = municipality 2020
+family portfolio (share2020). For each family k we test:
 
   Test 1 — Covariate balance
     OLS: s_ik ~ state_FE + 7_baseline_controls
     Report R², F-stat, p-value.
-    A large R² means the share correlates with observables (endogeneity concern).
+    A large R² means the family share correlates with observables
+    (endogeneity concern).
 
   Test 2 — Pre-trend test (placebo)
-    OLS: delta_outcome_2016_2020 ~ s_ik + state_FE
-    (after partialling state_FE out of both variables)
-    Report coefficient, SE, p-value for three pre-period outcomes:
+    OLS: delta_outcome_2016_2020 ~ s_ik | state_FE
+    (state FE partialled out of both variables first)
+    Pre-period outcomes:
       - delta_margin_2020_2016  = margin_top1_top2_2020 - margin_2016
       - delta_top1_2020_2016    = winner_vote_share_2020 - top1_share_2016
       - delta_ncand_2020_2016   = total_candidates_2020 - n_candidates_2016
     Under share exogeneity (parallel trends), all coefficients should be ~0.
 
-Information environment focus: all 6 IE topics are tested explicitly in a
-dedicated section, regardless of whether they appear in the top-10 by |alpha|.
+All 9 theme9 families are tested (the build-stage crosswalk already drops the
+mandatory-filing classes — RRC/DRAP/prestação de contas — so no share
+re-normalisation is needed here).
 
 Inputs:
-  data/estimation/executive_margin_design.csv
-  data/clean/municipality_bartik_components.csv
+  data/estimation/act_design.csv
+  data/clean/municipality_act_components.csv  (SIG family components, long)
   output/tables/descriptives/rotemberg_weights.csv
 
 Outputs:
@@ -38,12 +42,12 @@ import pandas as pd
 from scipy import stats
 
 PROJECT_ROOT    = Path(__file__).resolve().parents[2]
-DESIGN_PATH     = PROJECT_ROOT / "data" / "estimation" / "executive_margin_design.csv"
-COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_bartik_components.csv"
+DESIGN_PATH     = PROJECT_ROOT / "data" / "estimation" / "act_design.csv"
+COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_act_components.csv"
+RUNG            = "act"   # headline family taxonomy (matches HEADLINE_RUNG)
 ROTEMBERG_PATH  = PROJECT_ROOT / "output" / "tables" / "descriptives" / "rotemberg_weights.csv"
 OUT_DIR         = PROJECT_ROOT / "output" / "tables" / "descriptives"
 
-EXCLUDE_RRC_DRAP = {"11618", "12044"}
 FE_COL    = "state"
 CONTROLS  = [
     "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
@@ -51,9 +55,6 @@ CONTROLS  = [
     "log1p_total_valid_votes_2020", "margin_top1_top2_2020",
     "log1p_total_candidates_2020",
 ]
-N_TOP = 10   # top topics by |alpha_k|
-# All information environment topic codes — tested in dedicated section
-IE_TOPICS = {"11484", "11679", "12635", "12637", "12638", "12639"}
 
 # Pre-trend outcomes: constructed from design matrix columns
 # (column_name, label, formula expressed as tuple (col_a, col_b) -> col_a - col_b)
@@ -64,17 +65,10 @@ PRETREND_DEFS = [
 ]
 
 
-def resid_on_fe(x: np.ndarray, fe_dummies: np.ndarray) -> np.ndarray:
-    """Partial out FE dummies from vector x via OLS (returns residuals)."""
-    coef, _, _, _ = np.linalg.lstsq(fe_dummies, x, rcond=None)
-    return x - fe_dummies @ coef
-
-
 def ols_stats(y: np.ndarray, X: np.ndarray):
     """
-    OLS of y on X (no constant — X should include a constant or be FE-demeaned).
-    Returns: (coefs, residuals, R2, F, p_F).
-    Uses heteroskedasticity-robust F approximation.
+    OLS of y on X (X should be FE-demeaned / include a constant).
+    Returns: (coefs, residuals, R2, F, p_F). Homoskedastic F.
     """
     N, K = X.shape
     coef, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
@@ -83,8 +77,6 @@ def ols_stats(y: np.ndarray, X: np.ndarray):
     ss_res = resid @ resid
     ss_tot = (y - y.mean()) @ (y - y.mean())
     r2 = 1.0 - ss_res / ss_tot if ss_tot > 1e-20 else 0.0
-    # Robust F (heteroskedasticity-robust Wald for all coefs except constant)
-    # For simplicity use homoskedastic F
     df_model = K
     df_res   = N - K
     ms_model = (ss_tot - ss_res) / df_model if df_model > 0 else np.nan
@@ -95,24 +87,11 @@ def ols_stats(y: np.ndarray, X: np.ndarray):
 
 
 def main() -> None:
-    # ---- 1. Load Rotemberg weights to get top-N topics ----
+    # ---- 1. Load Rotemberg weights for family alpha map ----
     rw = pd.read_csv(ROTEMBERG_PATH, dtype={"topic_code": str})
-    rw["abs_alpha"] = rw["alpha"].abs()
-    top_topics = rw.nlargest(N_TOP, "abs_alpha")["topic_code"].tolist()
-
-    # Always include DRAP (diagnostic) and all 6 IE topics
-    drap_code = "12044"
-    extra_codes = [drap_code] + [k for k in sorted(IE_TOPICS) if k not in top_topics and k != drap_code]
-    all_topics = top_topics + [k for k in extra_codes if k not in top_topics]
-    print(f"Testing {len(top_topics)} top topics + extras: {all_topics}")
+    alpha_map = rw.set_index("topic_code")["alpha"].to_dict()
 
     # ---- 2. Load design matrix ----
-    needed_design = (
-        ["municipality_id_tse", FE_COL]
-        + CONTROLS
-        + ["winner_vote_share_2020", "margin_top1_top2_2020",
-           "winner_vote_share_2024", "total_candidates_2020"]
-    )
     design = pd.read_csv(
         DESIGN_PATH,
         dtype={"municipality_id_tse": str},
@@ -135,38 +114,30 @@ def main() -> None:
     samp_ids = set(samp["municipality_id_tse"])
     print(f"Sample after dropping NAs: {len(samp):,} municipalities")
 
-    # ---- 3. Load components, build share matrix for selected topics ----
+    # ---- 3. Load components, build family share matrix (2020 portfolio) ----
     comp = pd.read_csv(
         COMPONENTS_PATH,
-        dtype={"municipality_id_tse": str, "main_subject_code": str},
+        dtype={"id_municipio_tse": str},
         low_memory=False,
     )
-    comp["municipality_id_tse"] = comp["municipality_id_tse"].str.zfill(5)
+    comp["municipality_id_tse"] = comp["id_municipio_tse"].str.strip().str.zfill(5)
+    comp = comp[comp["rung"] == RUNG].copy()
     comp = comp[comp["municipality_id_tse"].isin(samp_ids)].copy()
-    comp["n_lawsuits"] = pd.to_numeric(comp["n_lawsuits"], errors="coerce").fillna(0)
 
-    # Compute re-normalised shares (exclude RRC+DRAP from denominator for
-    # the main spec; include DRAP when testing DRAP itself)
-    base_no_rrc_drap = comp[~comp["main_subject_code"].isin(EXCLUDE_RRC_DRAP)] \
-                           .groupby("municipality_id_tse")["n_lawsuits"].sum()
-    base_all         = comp.groupby("municipality_id_tse")["n_lawsuits"].sum()
-
-    shares = {}
-    for k in all_topics:
-        sub = comp[comp["main_subject_code"] == k][["municipality_id_tse", "n_lawsuits"]]
-        sub = sub.rename(columns={"n_lawsuits": "n_k"})
-        if k == drap_code:
-            # DRAP: denominator = all competition lawsuits incl. RRC+DRAP
-            denom = base_all
-        else:
-            denom = base_no_rrc_drap
-        sub = sub.set_index("municipality_id_tse").reindex(list(samp_ids), fill_value=0.0)
-        sub["share"] = sub["n_k"] / denom.reindex(sub.index).replace(0, np.nan)
-        sub["share"] = sub["share"].fillna(0.0)
-        shares[k] = sub["share"]
-
-    share_df = pd.DataFrame(shares).reindex(samp["municipality_id_tse"].values)
+    # share2020 is the municipality's 2020 family-portfolio share (kept families)
+    share_long = (
+        comp.drop_duplicates(["municipality_id_tse", "family"])
+        .pivot_table(
+            index="municipality_id_tse",
+            columns="family",
+            values="share2020",
+            fill_value=0.0,
+        )
+    )
+    families = sorted(share_long.columns)
+    share_df = share_long.reindex(samp["municipality_id_tse"].values).fillna(0.0)
     share_df.index = samp.index
+    print(f"Testing {len(families)} families: {families}")
 
     # ---- 4. Build FE dummies and partial-out matrix ----
     fe_dummies = pd.get_dummies(samp[FE_COL], drop_first=True).astype(float).values
@@ -180,52 +151,34 @@ def main() -> None:
         coef, _, _, _ = np.linalg.lstsq(W, y_raw, rcond=None)
         pretrend_resid[col] = y_raw - W @ coef
 
-    # ---- 5. Run tests for each topic ----
-    topic_meta = (
-        comp[["main_subject_code", "main_subject_name"]]
-        .drop_duplicates("main_subject_code")
-        .set_index("main_subject_code")["main_subject_name"]
-    )
-    family_meta = (
-        comp[["main_subject_code", "topic_family"]]
-        .drop_duplicates("main_subject_code")
-        .set_index("main_subject_code")["topic_family"]
-    )
-    alpha_map = rw.set_index("topic_code")["alpha"].to_dict()
-
+    # ---- 5. Run tests for each family ----
     rows = []
-    for k in all_topics:
+    for k in families:
         s_raw = share_df[k].values.astype(float)
 
         # --- Test 1: covariate balance (regress s_ik on controls + FE) ---
         coef_cov, resid_cov, r2_cov, f_cov, p_cov = ols_stats(s_raw, W)
 
-        # --- Partial out FE (only FE, not controls) for pre-trend tests ---
-        # GPS style: partial out state FE from s_ik, then regress demeaned
-        # pre-trend on demeaned share
+        # --- Partial out FE only for the pre-trend tests ---
         coef_fe_s, _, _, _ = np.linalg.lstsq(fe_dummies, s_raw, rcond=None)
         s_tilde = s_raw - fe_dummies @ coef_fe_s   # share residualised on state FE
 
         row: dict = {
-            "topic_code":    k,
-            "topic_name":    topic_meta.get(k, ""),
-            "topic_family":  family_meta.get(k, ""),
-            "alpha":         alpha_map.get(k, np.nan),
-            "is_drap":       (k == drap_code),
-            "is_ie":         (k in IE_TOPICS),
+            "topic_family":   k,
+            "alpha":          alpha_map.get(k, np.nan),
             "r2_cov_balance": r2_cov,
             "f_cov_balance":  f_cov,
             "p_cov_balance":  p_cov,
         }
 
         for col in pretrend_cols:
-            y_tilde = pretrend_resid[col]   # pre-trend residualised on W
+            y_tilde = pretrend_resid[col]
             N = len(s_tilde)
-            # OLS: y_tilde ~ s_tilde (through origin, both demeaned)
-            beta = (s_tilde @ y_tilde) / (s_tilde @ s_tilde) if (s_tilde @ s_tilde) > 1e-20 else np.nan
+            sts = s_tilde @ s_tilde
+            beta = (s_tilde @ y_tilde) / sts if sts > 1e-20 else np.nan
             resid = y_tilde - beta * s_tilde
             s2    = (resid @ resid) / (N - 1)
-            se    = np.sqrt(s2 / (s_tilde @ s_tilde)) if (s_tilde @ s_tilde) > 1e-20 else np.nan
+            se    = np.sqrt(s2 / sts) if sts > 1e-20 else np.nan
             t     = beta / se if se and se > 0 else np.nan
             p     = 2 * (1 - stats.t.cdf(abs(t), df=N - 1)) if not np.isnan(t) else np.nan
             label = col.replace("delta_", "").replace("_2020_2016", "")
@@ -242,28 +195,26 @@ def main() -> None:
     out_csv = OUT_DIR / "gps_balance_tests.csv"
     df.to_csv(out_csv, index=False, encoding="utf-8-sig")
     print(f"\nSaved: {out_csv.relative_to(PROJECT_ROOT)}")
-    print(df[["topic_code", "topic_name", "alpha", "r2_cov_balance", "p_cov_balance"]].to_string(index=False))
+    print(df[["topic_family", "alpha", "r2_cov_balance", "p_cov_balance"]].to_string(index=False))
 
     # ---- 7. Markdown ----
     md = []
-    md.append("# GPS (2020) Balance Tests on Topic Shares")
+    md.append("# GPS (2020) Balance Tests on Topic-Family Shares")
     md.append("")
-    md.append("Tests share exogeneity for the adversarial-only instrument (no-RRC, no-DRAP).")
-    md.append("DRAP (12044) is included as a diagnostic even though excluded from the main spec.")
+    md.append("Tests share exogeneity for the family-level shift-share instrument")
+    md.append("(SIG family crosswalk, headline rung theme9 = 9 kept families; mandatory-filing classes dropped at build stage).")
     md.append("")
     md.append("## Test 1: Covariate Balance (OLS: s_ik ~ state FE + 7 controls)")
     md.append("")
-    md.append("High R² indicates the share correlates with observables (endogeneity concern).")
+    md.append("High R² indicates the family share correlates with observables (endogeneity concern).")
     md.append("")
-    hdr1 = ["Rank", "Code", "Topic", "alpha", "R²", "F", "p"]
+    hdr1 = ["Rank", "Family", "alpha", "R²", "F", "p"]
     md.append("| " + " | ".join(hdr1) + " |")
     md.append("| " + " | ".join(["---"] * len(hdr1)) + " |")
     for i, r in df.iterrows():
-        tag = " *(DRAP)*" if r["is_drap"] else ""
         md.append("| " + " | ".join([
             str(i + 1),
-            r["topic_code"] + tag,
-            r["topic_name"][:40],
+            r["topic_family"],
             f"{r['alpha']:+.3f}" if not np.isnan(r["alpha"]) else "—",
             f"{r['r2_cov_balance']:.3f}",
             f"{r['f_cov_balance']:.1f}",
@@ -273,25 +224,23 @@ def main() -> None:
     md.append("")
     md.append("## Test 2: Pre-trend Balance (OLS: delta_outcome_2016_2020 ~ s_ik | state FE)")
     md.append("")
-    md.append("Under share exogeneity, topic shares should not predict 2016→2020 electoral trends.")
+    md.append("Under share exogeneity, family shares should not predict 2016→2020 electoral trends.")
     md.append("")
     for col in pretrend_cols:
         label = col.replace("delta_", "").replace("_2020_2016", "")
         md.append(f"### Outcome: {col}")
         md.append("")
-        hdr2 = ["Rank", "Code", "Topic", "alpha", "beta", "SE", "p"]
+        hdr2 = ["Rank", "Family", "alpha", "beta", "SE", "p"]
         md.append("| " + " | ".join(hdr2) + " |")
         md.append("| " + " | ".join(["---"] * len(hdr2)) + " |")
         for i, r in df.iterrows():
-            tag = " *(DRAP)*" if r["is_drap"] else ""
             b = r.get(f"beta_{label}", np.nan)
             s = r.get(f"se_{label}", np.nan)
             p = r.get(f"p_{label}", np.nan)
             sig = " *" if (not np.isnan(p) and p < 0.05) else ""
             md.append("| " + " | ".join([
                 str(i + 1),
-                r["topic_code"] + tag,
-                r["topic_name"][:40],
+                r["topic_family"],
                 f"{r['alpha']:+.3f}" if not np.isnan(r["alpha"]) else "—",
                 f"{b:+.4f}" if not np.isnan(b) else "—",
                 f"{s:.4f}"  if not np.isnan(s) else "—",
@@ -299,41 +248,11 @@ def main() -> None:
             ]) + " |")
         md.append("")
 
-    # ---- Information environment focused section ----
-    ie_df = df[df["is_ie"]].copy()
-    md.append("## Information Environment Focus (all 6 topics)")
-    md.append("")
-    md.append("The preferred instrument (`bartik_iv_information_environment`) is built from these 6 topics.")
-    md.append("Share exogeneity must hold for each individual topic for the family IV to be valid.")
-    md.append("")
-    hdr_ie = ["Code", "Topic", "alpha", "Family", "R²(cov)", "p(cov)", "p(margin)", "p(top1)", "p(ncand)"]
-    md.append("| " + " | ".join(hdr_ie) + " |")
-    md.append("| " + " | ".join(["---"] * len(hdr_ie)) + " |")
-    for _, r in ie_df.iterrows():
-        def _p(col):
-            v = r.get(col, np.nan)
-            if np.isnan(v): return "—"
-            return (f"{v:.3f}" + (" *" if v < 0.05 else ""))
-        md.append("| " + " | ".join([
-            r["topic_code"],
-            r["topic_name"][:45],
-            f"{r['alpha']:+.3f}" if not np.isnan(r["alpha"]) else "—",
-            r["topic_family"],
-            f"{r['r2_cov_balance']:.3f}",
-            _p("p_cov_balance"),
-            _p("p_margin"),
-            _p("p_top1"),
-            _p("p_ncand"),
-        ]) + " |")
-    md.append("")
-    md.append("(*) significant at 5% — signals potential share endogeneity.")
-    md.append("")
-
     md.append("## Notes")
     md.append("- All regressions include state fixed effects. State FE are partialled out before the pre-trend regression.")
+    md.append("- Family shares = baseline_share_2020 (municipality 2020 family portfolio).")
     md.append("- Pre-trends: delta_margin = margin_top1_top2_2020 - margin_2016; delta_top1 = winner_vote_share_2020 - top1_share_2016; delta_ncand = total_candidates_2020 - n_candidates_2016.")
-    md.append("- DRAP (12044) is excluded from the adversarial-only instrument but shown here to evaluate its share exogeneity.")
-    md.append("  Low R² and non-significant pre-trend coefficients for DRAP would support its inclusion as an instrument.")
+    md.append("- (*) significant at 5% — signals potential share endogeneity.")
 
     out_md = OUT_DIR / "gps_balance_tests.md"
     out_md.write_text("\n".join(md), encoding="utf-8")

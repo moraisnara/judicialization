@@ -48,6 +48,10 @@ __pycache__/
 .Rproj.user/
 *.Rproj
 
+# ── Credentials (never commit) ────────────────────────────────────────────────
+.env
+.Renviron
+
 # ── Claude Code ───────────────────────────────────────────────────────────────
 .claude/
 

@@ -11,8 +11,8 @@ For each topic k, report:
 Summary: HHI, K_eff = 1/HHI, n positive vs negative shocks.
 
 Inputs:
-  data/clean/municipality_bartik_components.csv
-  data/estimation/executive_margin_design.csv  (for sample N)
+  data/clean/municipality_act_components.csv  (SIG family components, long)
+  data/estimation/act_design.csv  (for sample N)
 
 Outputs:
   output/tables/descriptives/shift_descriptives.csv
@@ -26,8 +26,9 @@ import numpy as np
 import pandas as pd
 
 PROJECT_ROOT    = Path(__file__).resolve().parents[2]
-COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_bartik_components.csv"
-DESIGN_PATH     = PROJECT_ROOT / "data" / "estimation" / "executive_margin_design.csv"
+COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_act_components.csv"
+DESIGN_PATH     = PROJECT_ROOT / "data" / "estimation" / "act_design.csv"
+RUNG            = "act"   # headline family taxonomy (matches HEADLINE_RUNG)
 OUT_DIR         = PROJECT_ROOT / "output" / "tables" / "descriptives"
 
 def main() -> None:
@@ -36,41 +37,39 @@ def main() -> None:
         DESIGN_PATH,
         dtype={"municipality_id_tse": str},
         low_memory=False,
-        usecols=["municipality_id_tse", "bartik_iv_2020_2024"],
+        usecols=["municipality_id_tse", "bartik_iv_act"],
     )
     design["municipality_id_tse"] = design["municipality_id_tse"].astype(str).str.zfill(5)
-    samp_ids = set(design.dropna(subset=["bartik_iv_2020_2024"])["municipality_id_tse"])
+    samp_ids = set(design.dropna(subset=["bartik_iv_act"])["municipality_id_tse"])
     N = len(samp_ids)
     print(f"Analysis sample: {N:,} municipalities")
 
-    # ---- 2. Load components (adversarial filter applied at build stage) ----
+    # ---- 2. Load family components (kept families only, by construction) ----
     comp = pd.read_csv(
         COMPONENTS_PATH,
-        dtype={"municipality_id_tse": str, "main_subject_code": str},
+        dtype={"id_municipio_tse": str},
         low_memory=False,
     )
-    comp["municipality_id_tse"] = comp["municipality_id_tse"].str.zfill(5)
+    comp["municipality_id_tse"] = comp["id_municipio_tse"].str.strip().str.zfill(5)
+    comp = comp[comp["rung"] == RUNG].copy()
 
     # Keep only rows in sample
     comp = comp[comp["municipality_id_tse"].isin(samp_ids)].copy()
 
-    comp["n_lawsuits"] = pd.to_numeric(comp["n_lawsuits"], errors="coerce").fillna(0)
-    comp["shock"]      = pd.to_numeric(
-        comp["shock_log_growth_2020_2024"], errors="coerce"
-    ).fillna(0)
+    # share2020 = municipality 2020 family-mix share; shift_leavestate = g_{k,-state}
+    comp["share"] = pd.to_numeric(comp["share2020"], errors="coerce")
+    comp["shock"] = pd.to_numeric(comp["shift_leavestate"], errors="coerce").fillna(0)
+    # rename to the family-label column the rest of the script expects
+    comp = comp.rename(columns={"family": "topic_family"})
 
-    # Compute shares
-    base_totals = comp.groupby("municipality_id_tse")["n_lawsuits"].transform("sum")
-    comp["share"] = comp["n_lawsuits"] / base_totals.replace(0, np.nan)
-
-    topics = sorted(comp["main_subject_code"].unique())
+    topics = sorted(comp["topic_family"].unique())
     K = len(topics)
-    print(f"Topics after exclusion: {K}")
+    print(f"Families: {K}")
 
-    # ---- 3. Per-topic statistics ----
+    # ---- 3. Per-family statistics ----
     rows = []
     for k in topics:
-        sub = comp[comp["main_subject_code"] == k].copy()
+        sub = comp[comp["topic_family"] == k].copy()
         # Drop rows where municipality had 0 total lawsuits (undefined share)
         sub = sub.dropna(subset=["share"])
 
@@ -89,13 +88,10 @@ def main() -> None:
         g_p75   = sub["shock"].quantile(0.75)
         g_p90   = sub["shock"].quantile(0.90)
 
-        topic_name   = sub["main_subject_name"].iloc[0]
-        topic_family = sub["topic_family"].iloc[0] if "topic_family" in sub.columns else ""
-
         rows.append({
             "topic_code":   k,
-            "topic_name":   topic_name,
-            "topic_family": topic_family,
+            "topic_name":   k,
+            "topic_family": k,
             "n_munis":      n_munis,
             "g_mean":       g_mean,
             "g_sd":         g_sd,
@@ -113,7 +109,7 @@ def main() -> None:
     # Build full municipality × topic share matrix (zeros for absent topics)
     pivot = comp.pivot_table(
         index="municipality_id_tse",
-        columns="main_subject_code",
+        columns="topic_family",
         values="share",
         fill_value=0.0,
     ).reindex(list(samp_ids), fill_value=0.0)

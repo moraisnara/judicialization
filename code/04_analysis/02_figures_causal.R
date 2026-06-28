@@ -55,7 +55,7 @@ theme_clean <- function(...) {
 # ── load design ───────────────────────────────────────────────────────────────
 cat("Loading design...\n")
 df <- as.data.frame(fread(
-  file.path(ESTIMATION, "executive_margin_design.csv"),
+  file.path(ESTIMATION, "act_design.csv"),
   colClasses = list(character = c("state", "municipality_id_tse", "cluster_id"))
 ))
 # Rename to match FE and choropleth variable names used throughout the script
@@ -65,8 +65,8 @@ if ("municipality_id_tse" %in% names(df) && !"SG_UE" %in% names(df))
   names(df)[names(df) == "municipality_id_tse"] <- "SG_UE"
 cat(sprintf("  N = %d municipalities\n", nrow(df)))
 
-ENDOG <- "delta_log1p_competition_lawsuits_2024_2020"
-INSTR <- "bartik_iv_2020_2024"
+ENDOG <- "delta_log1p_act_lawsuits"
+INSTR <- "bartik_iv_act"
 CTRLS <- c(
   "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
   "margin_2016",
@@ -105,38 +105,49 @@ set.seed(42)
 bs <- binsreg(
   y = bs_df$y, x = bs_df$x,
   nbins = 30,
-  line    = c(3, 3),   # cubic polynomial line
-  ci      = c(3, 3),   # CI around bins
+  line    = c(1, 1),   # linear fit within the binscatter
+  ci      = c(1, 1),   # CI around bins
   cb      = NULL,
   plotxrange = quantile(bs_df$x, c(0.01, 0.99))
 )
 
 # extract bin means
 bin_df <- bs$data.plot$`Group Full Sample`$data.dots
-line_df <- bs$data.plot$`Group Full Sample`$data.line
 
-# OLS slope (= first-stage coef in residualised space)
-fs_coef <- coef(lm(y ~ x, data = bs_df))["x"]
+# OLS slope (= first-stage coef in residualised space) — the regression line
+fs_lm   <- lm(y ~ x, data = bs_df)
+fs_coef <- coef(fs_lm)["x"]
+fs_int  <- coef(fs_lm)["(Intercept)"]
 fs_N    <- nrow(samp)
 
+# annotation: slope + first-stage F (read from the IV estimation output,
+# never hardcoded — the figure must track whatever the current build produces)
+# Read the baseline first-stage F from the current (G8rh) voter-behaviour
+# engine — the archived whole-grid CSV is superseded.
+fs_csv <- file.path(REGRESSIONS, "voter_first_stage.csv")
+fs_F_val <- tryCatch({
+  fst <- as.data.frame(fread(fs_csv))
+  fst$F[fst$spec == "baseline"][1]
+}, error = function(e) NA_real_)
+ann_lab <- sprintf("First stage: slope = %.2f\nF = %.1f,  N = %s",
+                   fs_coef, fs_F_val, format(fs_N, big.mark = ","))
+x_rng <- quantile(bs_df$x, c(0.01, 0.99))
+
 p_bin <- ggplot() +
-  geom_ribbon(
-    data = bs$data.plot$`Group Full Sample`$data.ci,
-    aes(x = x, ymin = ci.l, ymax = ci.r),
-    fill = COL_BLUE, alpha = 0.15
-  ) +
-  geom_line(
-    data = line_df,
-    aes(x = x, y = fit),
-    color = COL_BLUE, linewidth = 0.9
-  ) +
   geom_point(
     data = bin_df,
     aes(x = x, y = fit),
-    color = COL_BLUE, size = 2.2
+    color = COL_BLUE, size = 2.2, alpha = 0.85
+  ) +
+  geom_abline(
+    intercept = fs_int, slope = fs_coef,
+    color = COL_BLUE, linewidth = 1.0
   ) +
   geom_hline(yintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
   geom_vline(xintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
+  annotate("label", x = x_rng[1], y = Inf, hjust = 0, vjust = 1.2,
+           label = ann_lab, size = 3.4, label.size = 0,
+           fill = "white", color = COL_BLUE) +
   labs(
     x = "Bartik IV (residualised on 7 controls + state FE)",
     y = expression(Delta*log(1 + lawsuits) ~ " (residualised)")

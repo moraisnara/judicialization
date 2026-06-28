@@ -1,0 +1,129 @@
+# 23_mde_power.R
+# -----------------------------------------------------------------------------
+# Minimum detectable effect (MDE) + bounding table for the null defense.
+#
+# A null is only credible if the design could have detected a policy-relevant
+# effect. For each estimated outcome we report:
+#   - the weak-IV-robust 95% CI:           coef +/- tF_cv * SE
+#   - the MDE at 80% power, 5% size:        (tF_cv + z_0.80) * SE
+#       (uses the per-row tF critical value, so the bound is honest about the
+#        weak-instrument problem rather than using the naive 1.96)
+#   - two benchmarks the MDE is expressed against:
+#       (a) |mean_delta| -- the realized 2020->2024 change in the outcome
+#       (b) |mean_2020|  -- the baseline level
+#
+# Reading: if MDE / |mean_delta| < 1, the design could detect an effect as small
+# as the realized national trend -> the null is INFORMATIVE for that outcome.
+# If >> 1, the CI is too wide to distinguish "no effect" from "an effect the size
+# of the observed trend" -> that outcome is UNDERPOWERED and the null is weak.
+#
+# Inputs (already estimated, current-language):
+#   output/tables/regressions/voter_behavior_iv.csv
+#   output/tables/regressions/candidate_outcomes_iv.csv
+# Outputs:
+#   output/tables/regressions/mde_power.csv
+#   output/tables/tex/mde_power.tex
+# -----------------------------------------------------------------------------
+
+suppressPackageStartupMessages({
+  user_lib <- "C:/Users/naral/R/win-library/4.6"
+  if (dir.exists(user_lib)) .libPaths(c(user_lib, .libPaths()))
+  library(data.table)
+})
+
+SCRIPT_DIR <- tryCatch({
+  args <- commandArgs(trailingOnly = FALSE)
+  dirname(normalizePath(sub("^--file=", "", grep("^--file=", args, value = TRUE)[1])))
+}, error = function(e) getwd())
+ROOT    <- normalizePath(file.path(SCRIPT_DIR, "..", ".."))
+REG_DIR <- file.path(ROOT, "output", "tables", "regressions")
+TEX_DIR <- file.path(ROOT, "output", "tables", "tex")
+
+Z_POWER <- qnorm(0.80)   # 0.8416, one-sided 80% power
+
+vot <- fread(file.path(REG_DIR, "voter_behavior_iv.csv"))
+can <- fread(file.path(REG_DIR, "candidate_outcomes_iv.csv"))
+vot <- vot[spec == "baseline"]
+vot[, `:=`(group = "Voter behaviour", office = "voter", label = outcome)]
+# Candidate CSV is now organised by vote-share THEME (T1-T4) x office x outcome
+# (the rebuilt all-vote-share design); carry the theme as the group label.
+can[, `:=`(group = theme, label = outcome)]
+
+cols <- c("group", "office", "label", "coef", "se", "tF_cv", "first_F",
+          "mean_2020", "mean_delta", "N")
+dt <- rbindlist(list(vot[, ..cols], can[, ..cols]), use.names = TRUE)
+
+dt[, ci_lo := coef - tF_cv * se]
+dt[, ci_hi := coef + tF_cv * se]
+dt[, mde   := (tF_cv + Z_POWER) * se]                 # weak-IV-honest 80%-power MDE
+dt[, mde_over_delta := mde / pmax(abs(mean_delta), .Machine$double.eps)]
+dt[, mde_over_base  := mde / pmax(abs(mean_2020),  .Machine$double.eps)]
+# Primary power verdict uses the BASELINE LEVEL as the scale: the realized-trend
+# benchmark (mde_over_delta) is unstable when the trend is ~0, so it is kept in
+# the CSV for context only. "Well-powered" = MDE smaller than half the baseline
+# level (we could detect an effect that moves the outcome by >50% of its 2020
+# value).
+dt[, well_powered := mde_over_base < 0.5]
+
+setorder(dt, group, office, label)
+fwrite(dt, file.path(REG_DIR, "mde_power.csv"))
+
+f3 <- function(x) sprintf("%.3f", x); f2 <- function(x) sprintf("%.2f", x)
+
+# Pretty outcome labels (voter + candidate vote-share outcomes)
+nice <- c(null_share_cast = "Null votes", blank_share_cast = "Blank votes",
+          invalid_share_cast = "Non-valid votes",
+          turnout_rate = "Turnout", abstention_rate = "Abstention",
+          Female = "Female", `Non-white` = "Non-white", `Higher-ed` = "Higher-ed",
+          `New cand.` = "New candidates", Incumbent = "Incumbents",
+          `Eff.\\ N` = "Eff.\\ N", HHI = "HHI",
+          `Eff.\\ N cand.` = "Eff.\\ N cand.", `HHI cand.` = "HHI cand.",
+          `Eff.\\ N party` = "Eff.\\ N party", `HHI party` = "HHI party",
+          `Winner VS` = "Winner vote share", `Runner-up VS` = "Runner-up vote share",
+          Margin = "Top-two margin")
+disp_of <- function(l) ifelse(l %in% names(nice), nice[l], l)
+
+# ---- candidate MDE table (all vote-share outcomes), panelled by office ------
+# Reading: MDE/base < 0.5 => the design could detect an effect that moves the
+# outcome by <50% of its 2020 level -> the null is INFORMATIVE for that outcome.
+cand <- dt[group %like% "^T[1-4] "]
+cand[, panel := ifelse(office == "executive", "Mayoral race", "Council race")]
+cand[, disp := disp_of(label)]
+cand[, theme_ord := as.integer(substr(group, 2, 2))]
+# Mayoral (executive) panel first to match the result frames; "executive" sorts
+# before "legislative" ascending, so plain order puts the mayoral race on top.
+setorder(cand, office, theme_ord)
+
+mk_mde_table <- function(d, file, src) {
+  lines <- c(
+    sprintf("%% Auto-generated by code/04_analysis/23_mde_power.R -- do not edit. %s", src),
+    "\\begin{tabular}{ll D{.}{.}{-1} c D{.}{.}{-1} D{.}{.}{-1} D{.}{.}{-1}}",
+    "\\hline\\hline",
+    " & & \\multicolumn{1}{c}{$\\hat\\beta$} & \\multicolumn{1}{c}{95\\% CI ($tF$)} & \\multicolumn{1}{c}{MDE} & \\multicolumn{1}{c}{Base} & \\multicolumn{1}{c}{MDE/} \\\\",
+    " & & & & \\multicolumn{1}{c}{(80\\%)} & \\multicolumn{1}{c}{2020} & \\multicolumn{1}{c}{base} \\\\",
+    "\\hline")
+  cur <- ""
+  for (i in seq_len(nrow(d))) {
+    r <- d[i]
+    if (r$panel != cur) {
+      lines <- c(lines, sprintf("\\multicolumn{7}{l}{\\textit{%s}} \\\\", r$panel)); cur <- r$panel
+    }
+    lines <- c(lines, paste0(
+      " & ", r$disp, " & ", f3(r$coef),
+      " & ", sprintf("$[%s,\\,%s]$", f3(r$ci_lo), f3(r$ci_hi)),
+      " & ", f3(r$mde), " & ", f3(r$mean_2020), " & ", f2(r$mde_over_base), " \\\\"))
+  }
+  c(lines, "\\hline\\hline", "\\end{tabular}")
+}
+writeLines(mk_mde_table(cand, NULL, "Candidate vote-share outcomes."),
+           file.path(TEX_DIR, "candidate_mde.tex"))
+
+cat("\n==== MDE / BOUNDING (weak-IV-honest, 80% power) ====\n")
+print(dt[, .(group, office, label, coef = round(coef,4), se = round(se,4),
+             mde = round(mde,4), base = round(mean_2020,4),
+             mde_over_base = round(mde_over_base,2), well_powered)])
+cat(sprintf("\nWell-powered (MDE < 50%% of baseline): %d of %d outcomes (candidates: %d of %d)\n",
+            sum(dt$well_powered), nrow(dt),
+            sum(cand$well_powered), nrow(cand)))
+cat("Wrote:\n  ", file.path(REG_DIR, "mde_power.csv"),
+    "\n  ", file.path(TEX_DIR, "candidate_mde.tex"), "\n")

@@ -9,7 +9,7 @@
 # Sources:
 #   data/raw/lista-zonas-municipios-10-07-24.csv  — TSE zone→municipality list
 #   data/raw/bd_municipio_tse_ibge.csv            — TSE ↔ IBGE crosswalk
-#   data/estimation/executive_margin_design.csv   — sample size (for subtitle)
+#   data/estimation/act_design.csv   — sample size (for subtitle)
 #   geobr::read_municipality(2020)                — municipality polygons
 #   geobr::read_state(2020)                       — state borders
 
@@ -81,7 +81,7 @@ zone_lookup <- lista %>%
 
 # ── sample totals (for subtitle) ──────────────────────────────────────────────
 design <- as.data.frame(fread(
-  file.path(ESTIMATION, "executive_margin_design.csv"),
+  file.path(ESTIMATION, "act_design.csv"),
   colClasses = list(character = c("state", "municipality_id_tse")),
   select = c("state", "municipality_id_tse", "principal_zone")
 ))

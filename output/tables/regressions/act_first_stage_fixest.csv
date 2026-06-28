@@ -1,0 +1,2 @@
+instrument,endogenous,coef,se,t,p,first_stage_F,tF_cv,nobs,n_clusters
+bartik_iv_act,delta_log1p_act_lawsuits,-1.0816121176921,0.209335960421563,-5.16687202482525,2.42157621547552e-05,26.6965665209217,1.96,5009,26

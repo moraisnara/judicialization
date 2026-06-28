@@ -1,0 +1,697 @@
+"ano","sigla_uf","nome_municipio","n_polls"
+2020,"AL","Maceió",9
+2020,"MT","Cuiabá",7
+2020,"CE","Fortaleza",13
+2020,"AM","Manaus",15
+2024,"SC","Florianópolis",1
+2024,"PI","Teresina",4
+2000,"RJ","Campos dos Goytacazes",2
+2000,"RJ","Duque de Caxias",3
+2000,"RJ","Petrópolis",2
+2000,"RJ","São Gonçalo",4
+2000,"RJ","São João do Meriti",2
+2000,"RJ","Volta Redonda",3
+2000,"SP","São Paulo",66
+2000,"BA","Salvador",21
+2000,"PE","Olinda",6
+2000,"PE","Recife",39
+2000,"RJ","Nova Iguaçu",6
+2000,"RJ","Rio de Janeiro",47
+2000,"RN","Natal",7
+2000,"RS","Porto Alegre",41
+2000,"AL","Maceió",22
+2000,"MA","São Luís",16
+2000,"MG","Belo Horizonte",30
+2000,"SP","Campinas",21
+2000,"SP","Santos",20
+2000,"SP","São José do Rio Preto",13
+2000,"SP","São José dos Campos",16
+2000,"CE","Fortaleza",26
+2000,"PR","Curitiba",32
+2000,"SP","Diadema",22
+2000,"SP","Guarulhos",20
+2000,"SP","Osasco",13
+2000,"SP","Ribeirão Preto",13
+2000,"SP","Santo André",15
+2000,"SP","São Bernardo do Campo",16
+2000,"SP","São Caetano do Sul",16
+2000,"PE","Petrolina",3
+2000,"MG","Contagem",4
+2000,"MA","Imperatriz",6
+2000,"PA","Belém",9
+2000,"GO","Goiânia",14
+2000,"PB","Campina Grande",4
+2000,"PE","Jaboatão dos Guararapes",4
+2000,"RJ","Niterói",11
+2000,"SC","Florianópolis",8
+2000,"GO","Anapolis",3
+2000,"MG","Juiz de Fora",5
+2000,"SP","Taubaté",3
+2000,"MG","Ipatinga",4
+2000,"SP","Mauá",9
+2000,"MG","Betim",3
+2000,"MG","Governador Valadares",4
+2000,"MG","Montes Claros",5
+2000,"SP","Jacareí",4
+2000,"TO","Palmas",6
+2000,"MS","Campo Grande",5
+2000,"MT","Cuiabá",4
+2000,"SE","Aracajú",8
+2000,"RS","Caxias do Sul",13
+2000,"AC","Rio Branco",4
+2000,"AM","Manaus",10
+2000,"SC","Criciúma",6
+2000,"CE","Juazeiro do Norte",3
+2000,"SP","Presidente Prudente",5
+2000,"MG","Coronel Fabriciano",2
+2000,"SP","Ribeirão Pires",3
+2000,"SP","Rio Grande da Serra",2
+2000,"RS","Pelotas",12
+2000,"ES","Cariacica",2
+2000,"SP","Presidente Venceslau",1
+2000,"MG","Uberaba",2
+2000,"PR","Ponta Grossa",8
+2000,"RS","Cruz Alta",3
+2000,"RS","Santa Maria",4
+2000,"SC","Joinville",5
+2000,"SC","Blumenau",6
+2000,"RS","Passo Fundo",2
+2000,"ES","Vitória",4
+2000,"SP","Guarujá",1
+2000,"RS","Novo Hamburgo",1
+2000,"RS","São Leopoldo",1
+2000,"SP","Araçatuba",3
+2000,"SC","Chapecó",3
+2000,"RS","Bagé",5
+2000,"BA","Feira de Santana",4
+2000,"AP","Macapá",2
+2000,"MG","Uberlândia",5
+2000,"PR","Londrina",5
+2000,"PR","Maringá",5
+2000,"PB","João Pessoa",4
+2000,"PI","Teresina",1
+2000,"SP","Bauru",3
+2000,"PR","Foz do Iguaçu",2
+2000,"RS","Rio Grande",2
+2000,"SP","Piracicaba",3
+2000,"SP","São Carlos",4
+2000,"SP","Araraquara",3
+2000,"SP","Jundiaí",1
+2000,"SP","Limeira",1
+2000,"SP","Sorocaba",3
+2000,"RO","Porto Velho",2
+2000,"RR","Boa Vista",2
+2000,"MG","Poços de Caldas",2
+2000,"SP","Franca",3
+2000,"SP","Mogi das Cruzes",4
+2000,"SP","Praia Grande",1
+2000,"BA","Ilhéus",1
+2000,"MG","Itabira",1
+2000,"MS","Dourados",1
+2000,"MS","Três Lagoas",1
+2000,"PA","Altamira",1
+2000,"PA","Santarém",1
+2000,"RS","Canoas",6
+2000,"SP","Botucatu",2
+2000,"SP","Catanduva",1
+2000,"SP","Matão",1
+2000,"BA","Itabuna",2
+2000,"CE","Quixadá",3
+2000,"BA","Vitória da Conquista",3
+2000,"RS","Santa Rosa",1
+2000,"MG","Timóteo",2
+2000,"MS","Ponta Porã",1
+2000,"PR","Mandaguaçu",1
+2000,"RS","Uruguaiana",1
+2000,"SP","Marília",1
+2004,"ES","Serra",4
+2004,"SC","Florianópolis",16
+2004,"SC","Joinville",4
+2004,"SP","Santo André",9
+2004,"CE","Fortaleza",18
+2004,"SC","Blumenau",5
+2004,"SP","Diadema",5
+2004,"SP","São Caetano do Sul",5
+2004,"BA","Juazeiro",3
+2004,"SP","São Bernando do Campo",7
+2004,"PB","Campina Grande",8
+2004,"RN","Natal",9
+2004,"SE","Aracaju",6
+2004,"SP","Mauá",7
+2004,"MG","Belo Horizonte",18
+2004,"RJ","Rio de Janeiro",20
+2004,"SC","Criciuma",6
+2004,"SP","Araraquara",4
+2004,"SP","Campinas",11
+2004,"SP","Franca",4
+2004,"SP","Sertãozinho",2
+2004,"SP","São Carlos",4
+2004,"MT","Cuiabá",13
+2004,"AM","Manaus",7
+2004,"AP","Macapá",4
+2004,"BA","Salvador",12
+2004,"ES","Vitória",12
+2004,"MA","São Luís",11
+2004,"PB","João Pessoa",12
+2004,"PI","Teresina",6
+2004,"RO","Porto Velho",8
+2004,"RR","Boa Vista",5
+2004,"RS","Porto Alegre",23
+2004,"SP","São Paulo",38
+2004,"TO","Palmas",13
+2004,"SC","Chapecó",2
+2004,"PR","Colombo",1
+2004,"PR","Londrina",9
+2004,"PR","Ponta Grossa",7
+2004,"SC","São José",3
+2004,"PR","Maringá",5
+2004,"PR","Cascavél",5
+2004,"PE","Recife",20
+2004,"PA","Belém",11
+2004,"PI","Parnaíba",1
+2004,"RS","Bagé",1
+2004,"PR","Guarapuava",4
+2004,"BA","Camaçari",3
+2004,"PE","Jaboatão dos Guararapes",6
+2004,"GO","Goiânia",19
+2004,"SC","Itajaí",1
+2004,"PR","Toledo",5
+2004,"SC","Palhoça",1
+2004,"BA","Jequié",2
+2004,"ES","Vila Velha",6
+2004,"PR","Curitiba",13
+2004,"SP","Santos",5
+2008,"SC","Blumenau",4
+2008,"SC","Joinville",5
+2008,"SP","São Paulo",32
+2008,"RJ","Rio de Janeiro",38
+2008,"SP","São José dos Campos",9
+2008,"RS","Porto Alegre",26
+2008,"MG","Belo Horizonte",24
+2008,"SP","Carapicuíba",2
+2008,"SP","Guarulhos",4
+2008,"SE","Aracaju",4
+2008,"MG","Betim",6
+2008,"MG","Nova Lima",1
+2008,"BA","Feira de Santana",3
+2008,"RS","Novo Hamburgo",1
+2008,"RS","Santa Cruz do Sul",1
+2008,"AC","Cruzeiro do Sul",1
+2008,"RJ","Duque de Caxias",5
+2008,"MG","Montes Claros",3
+2008,"MG","Contagem",2
+2012,"MG","Belo Horizonte",27
+2012,"MG","Betim",6
+2012,"MG","Contagem",7
+2012,"AM","Manaus",16
+2012,"SC","Joinville",13
+2012,"MT","Cuiabá",17
+2012,"AC","Rio Branco",7
+2012,"SP","Sorocaba",6
+2012,"RS","Porto Alegre",20
+2012,"RS","Canoas",3
+2012,"RS","Caxias do Sul",6
+2012,"RS","Pelotas",5
+2012,"SP","Santo André",8
+2012,"SE","Aracaju",13
+2012,"PA","Ananindeua",4
+2012,"PB","Campina Grande",12
+2012,"PA","Belém",19
+2012,"PE","Recife",19
+2012,"MA","São Luís",22
+2012,"MS","Campo Grande",12
+2012,"SP","Santos",8
+2012,"PB","João Pessoa",16
+2012,"SP","Limeira",4
+2012,"SP","Guarulhos",6
+2012,"MG","Curvelo",1
+2012,"MG","Nova Lima",1
+2012,"SC","Florianópolis",20
+2012,"RJ","Niterói",7
+2012,"GO","Anápolis",3
+2012,"PI","Teresina",22
+2012,"PR","Cascavél",7
+2012,"PR","Londrina",9
+2012,"MG","Juiz de Fora",8
+2012,"MG","Montes Claros",3
+2012,"SP","Carapicuíba",3
+2016,"SP","Santos",14
+2016,"PI","Teresina",21
+2016,"RN","Natal",14
+2016,"GO","Luziânia",3
+2016,"MA","São Luis",51
+2016,"BA","Camaçari",5
+2016,"MT","Cuiabá",34
+2016,"PA","Belém",37
+2016,"SP","Guarulhos",15
+2016,"MS","Campo Grande",45
+2016,"RS","Porto Alegre",20
+2016,"PA","Ananindeua",6
+2016,"PB","João Pessoa",12
+2016,"SP","Barueri",4
+2016,"SP","Pirapora do Bom Jesus",1
+2016,"SP","Cotia",1
+2016,"SP","Itapevi",2
+2016,"SP","Jandira",2
+2016,"SP","Santana de Parnaíba",1
+2016,"PR","Francisco Beltrão",2
+2016,"PA","Tucurui",2
+2016,"BA","Salvador",13
+2016,"PR","Foz do Iguaçu",1
+2016,"PA","Santarém",5
+2016,"SP","Barretos",1
+2016,"RS","Uruguaiana",1
+2016,"MT","Várzea Grande",2
+2016,"PA","Parauapebas",1
+2016,"AC","Rio Branco",8
+2016,"RS","Canoas",4
+2016,"TO","Palmas",29
+2016,"BA","Macaubas",1
+2016,"PR","Londrina",11
+2016,"ES","Serra",5
+2016,"RS","Pelotas",2
+2016,"SP","Limeira",2
+2016,"RO","Porto Velho",17
+2016,"GO","Aparecida de Goiânia",3
+2016,"MG","Betim",3
+2016,"MG","Uberaba",9
+2016,"MG","Governador Valadares",2
+2016,"SP","Mogi das Cruzes",4
+2016,"AM","Manaus",41
+2016,"SC","Blumenau",1
+2016,"MG","Contagem",6
+2016,"PE","Recife",34
+2016,"SC","Joinville",8
+2016,"SE","Aracaju",13
+2016,"SP","Suzano",1
+2016,"GO","Goiânia",34
+2016,"SP","Santo André",12
+2016,"SP","Diadema",5
+2016,"SP","Osasco",3
+2016,"RS","Caxias do Sul",4
+2004,"ES","Cariacica",3
+2004,"ES","Colatina",4
+2004,"ES","Linhares",2
+2004,"MG","Uberaba",3
+2004,"RS","Cachoeirinha",2
+2004,"ES","Guarapari",2
+2004,"GO","Rio Verde",1
+2004,"SP","Ribeirão Preto",5
+2004,"RS","Gravataí",1
+2008,"MG","Governador Valadares",2
+2008,"SP","Pindamonhangaba",1
+2012,"PE","Olinda",3
+2012,"PE","Jaboatão dos Guararapes",2
+2012,"ES","Vitória",13
+2012,"SP","Franca",6
+2012,"SP","Piracicaba",3
+2012,"MG","Uberaba",7
+2012,"ES","Cariacica",10
+2016,"SP","Mauá",4
+2016,"SP","Ribeirão Pires",3
+2016,"SP","São Bernardo do Campo",14
+2016,"MA","Timon",3
+2016,"SP","São Caetano do Sul",2
+2016,"SP","Rio Grande da Serra",2
+2016,"RJ","Rio de Janeiro",38
+2016,"MA","Caxias",2
+2016,"ES","Vila Velha",6
+2016,"ES","Linhares",1
+2016,"ES","Cachoeiro de Itaperimim",1
+2016,"ES","Viana",1
+2016,"ES","Cariacica",5
+2016,"ES","Vitória",13
+2016,"PR","Cascavél",4
+2016,"SP","São José do Rio Preto",4
+2016,"MG","Uberlândia",6
+2020,"SP","Santos",9
+2020,"SP","Jundiaí",2
+2008,"SP","Botucatu",3
+2008,"SP","Jacareí",4
+2008,"GO","Goiânia",12
+2008,"ES","Cachoeiro do Itapemirim",1
+2008,"ES","Vila Velha",4
+2016,"SP","São Paulo",24
+2020,"SC","Blumenau",3
+2024,"GO","Luziânia",1
+2020,"SE","Aracaju",8
+2004,"RS","São Leopoldo",1
+2008,"RS","Santa Maria",3
+2008,"MS","Campo Grande",4
+2008,"RS","Pelotas",2
+2008,"MS","Dourados",4
+2008,"RS","Caxias do Sul",4
+2008,"RS","Canoas",3
+2008,"BA","Salvador",19
+2012,"SP","São Vicente",5
+2012,"SP","Mongaguá",1
+2012,"SP","Guarujá",7
+2012,"SP","Peruíbe",1
+2012,"SP","Itanhaém",1
+2012,"BA","Salvador",10
+2012,"CE","Fortaleza",17
+2012,"RJ","Rio de Janeiro",15
+2012,"SP","São Paulo",34
+2012,"AL","Maceió",7
+2012,"RN","Natal",17
+2012,"PR","Curitiba",19
+2012,"RJ","São João de Meriti",1
+2012,"RJ","São Gonçalo",4
+2016,"CE","Fortaleza",18
+2016,"MG","Juiz de Fora",9
+2016,"AL","Maceió",14
+2016,"SP","Praia Grande",1
+2016,"SP","São Vicente",1
+2016,"SP","Guarujá",2
+2016,"MG","Montes Claros",6
+2020,"AC","Rio Branco",8
+2020,"SP","São Paulo",38
+2020,"PE","Recife",21
+2020,"MG","Belo Horizonte",20
+2020,"PA","Belém",8
+2020,"PR","Curitiba",4
+2020,"RS","Porto Alegre",12
+2020,"RR","Boa Vista",5
+2020,"RN","Natal",10
+2020,"SP","Guarulhos",7
+2020,"RJ","Campos dos Goytacazes",3
+2020,"PR","Ponta Grossa",1
+2020,"SP","Praia Grande",1
+2020,"SP","Campinas",8
+2020,"MG","Uberaba",1
+2020,"RJ","Niterói",1
+2020,"BA","Salvador",14
+2020,"TO","Palmas",8
+2020,"SP","São Bernardo do Campo",2
+2020,"BA","Feira de Santana",2
+2020,"SP","Itaquaquecetuba",1
+2020,"SP","Santo André",1
+2020,"SP","Osasco",1
+2024,"AL","Maceió",3
+2024,"SP","São Paulo",5
+2024,"RN","Natal",6
+2024,"GO","Goiânia",7
+2024,"MT","Cuiabá",7
+2024,"TO","Palmas",1
+2024,"MA","São Luís",2
+2008,"PE","Recife",12
+2016,"MG","Belo Horizonte",38
+2008,"PR","Curitiba",11
+2016,"PB","Campina Grande",3
+2008,"SP","Araçatuba",2
+2008,"SP","Osasco",4
+2008,"TO","Palmas",8
+2008,"GO","Anápolis",5
+2012,"GO","Aparecida de Goiânia",4
+2012,"GO","Goiânia",14
+2012,"SC","Blumenau",8
+2004,"MS","Dourados",2
+2008,"GO","Caldas Novas",1
+2016,"ES","Colatina",1
+2020,"SC","Joinville",2
+2004,"AL","Maceió",7
+2004,"MS","Campo Grande",5
+2004,"PE","Caruaru",6
+2004,"SP","Barueri",4
+2004,"SP","Cotia",4
+2016,"GO","Anápolis",5
+2016,"SP","Bauru",3
+2016,"SP","Jundiaí",3
+2008,"PE","Jaboatão dos Guararapes",3
+2004,"MG","Juiz de Fora",8
+2004,"MG","Uberlândia",6
+2008,"MT","Cuiabá",8
+2008,"MT","Várzea Grande",3
+2008,"MA","São Luís",5
+2008,"PE","Olinda",3
+2012,"SP","São Caetano do Sul",9
+2016,"AL","Palmeira dos Índios",1
+2024,"MT","Campo Grande",1
+2008,"PI","Teresina",6
+2012,"MG","Uberlândia",6
+2008,"ES","Vitória",6
+2016,"SP","Campinas",5
+2020,"SP","São José dos Campos",3
+2020,"PR","Maringá",3
+2012,"SP","Campinas",7
+2024,"BA","Salvador",1
+2024,"SP","Campinas",2
+2012,"ES","Serra",5
+2012,"PR","Maringá",7
+2020,"RJ","Rio de Janeiro",29
+2024,"AM","Manaus",5
+2008,"CE","Fortaleza",13
+2004,"MA","Imperatriz",3
+2004,"MG","Varginha",3
+2004,"SP","Bauru",4
+2004,"SP","Rio Claro",4
+2004,"SP","Suzano",1
+2004,"SP","São José dos Campos",6
+2004,"SP","Itapevi",1
+2004,"CE","Crato",2
+2004,"SP","São Vicente",3
+2014,"SP","Guarujá",4
+2004,"PE","Petrolina",4
+2004,"SP","Cubatão",3
+2008,"SP","Diadema",6
+2008,"SP","Mauá",6
+2008,"SP","Santo André",6
+2008,"SP","São Bernardo do Campo",9
+2008,"SP","São Caetano do Sul",6
+2008,"SP","Cubatão",2
+2008,"PB","Campina Grande",3
+2008,"PR","Cascavél",2
+2008,"SP","Sorocaba",4
+2008,"SP","Taubaté",4
+2008,"AC","Rio Branco",2
+2008,"PA","Belém",7
+2008,"CE","Juazeiro do Norte",1
+2008,"MG","Juiz de Fora",3
+2008,"MG","Varginha",2
+2008,"SP","Araraquara",3
+2008,"SP","Taboão da Serra",1
+2008,"MS","Corumbá",2
+2008,"PR","Umuarama",2
+2008,"RJ","Campos dos Goytacazes",3
+2008,"SP","Franca",4
+2008,"SP","Piracicaba",3
+2008,"SP","Registro",2
+2008,"SP","Santos",4
+2008,"SC","Florianópolis",6
+2008,"SP","Bauru",2
+2008,"SP","Mogi das Cruzes",3
+2008,"SP","São José do Rio Preto",3
+2008,"SP","Itapetininga",2
+2008,"AM","Manaus",10
+2008,"MG","Poços de Caldas",3
+2008,"PA","Tucuruí",1
+2008,"PR","Maringá",3
+2008,"SP","Campinas",4
+2008,"SP","Ribeirão Preto",4
+2008,"RJ","Niterói",4
+2008,"RN","Natal",5
+2008,"SP","Rio Claro",1
+2008,"PB","João Pessoa",4
+2008,"SP","São Vicente",4
+2008,"MT","Sinop",3
+2008,"SP","Guarujá",6
+2008,"PR","Foz do Iguaçu",3
+2008,"SP","Praia Grande",2
+2008,"AP","Macapá",4
+2012,"PR","Ponta Grossa",7
+2012,"SP","Jundiaí",2
+2012,"SP","Ribeirão Preto",5
+2012,"SP","São José dos Campos",4
+2012,"RR","Boa Vista",3
+2016,"SP","Ribeirão Preto",6
+2016,"AP","Macapá",5
+2016,"RR","Boa Vista",3
+2016,"SC","Florianópolis",9
+2016,"BA","Feira de Santana",2
+2016,"SP","São José dos Campos",3
+2020,"MA","São Luís",13
+2002,"RS","Porto Alegre",1
+2020,"CE","Caucaia",3
+2020,"SC","Florianópolis",3
+2024,"PR","Curitiba",2
+2020,"RO","Porto Velho",10
+2012,"RO","Porto Velho",14
+2024,"PA","Belém",7
+2024,"CE","Fortaleza",3
+2024,"RS","Porto Alegre",2
+2012,"RJ","Campos dos Goytacazes",4
+2024,"AP","Macapá",1
+2004,"SP","Osasco",4
+2004,"GO","Anápolis",3
+2004,"AL","Arapiraca",1
+2004,"PE","Olinda",1
+2008,"AL","Rio Largo",1
+2008,"PA","Santarém",1
+2012,"RN","Mossoró",1
+2012,"BA","Vitória da Conquista",2
+2020,"GO","Anápolis",3
+2020,"GO","Aparecida de Goiânia",2
+2020,"AP","Macapá",6
+2020,"RJ","Duque de Caxias",1
+2012,"ES","Vila Velha",8
+2016,"BA","Vitória da Conquista",5
+2020,"PB","João Pessoa",5
+2024,"RJ","Rio de Janeiro",5
+2024,"PE","Recife",3
+2024,"AC","Rio Branco",2
+2008,"RJ","São João de Meriti",1
+2020,"SP","Taubaté",2
+2020,"ES","Recife",1
+2004,"SP","Mogi das Cruzes",6
+2020,"SP","Bauru",1
+2020,"RS","Santa Maria",1
+2024,"RO","Porto Velho",1
+2004,"SP","Taboão da Serra",1
+2004,"SP"," Zona Eleitoral""",1
+2004,"AC","Rio Branco",3
+2004,"MG","Betim",1
+2004,"RJ","Niterói",5
+2004,"MT","Rondonópolis",4
+2004,"RS","Caxias do Sul",8
+2004,"RJ","Campos dos Goytacazes",2
+2004,"RJ","Nova Iguaçu",4
+2004,"SP","Guarulhos",3
+2004,"RJ","São Gonçalo",3
+2004,"RJ","Duque de Caxias",4
+2004,"MT","Várzea Grande",3
+2004,"PA","Ananindeua",2
+2004,"RJ","Macaé",1
+2004,"MG","Montes Claros",5
+2004,"SP","Itapetininga",3
+2004,"SP","Praia Grande",3
+2004,"SP","São José do Rio Preto",4
+2004,"BA","Vitória da Conquista",1
+2004,"SP","Presidente Prudente",4
+2004,"SP","Sorocaba",4
+2004,"BA","Feira de Santana",2
+2004,"SP","Piracicaba",5
+2004,"SP","Jundiaí",1
+2004,"MG","Ipatinga",1
+2004,"PA","Santarém",1
+2004,"MG","Governador Valadares",3
+2004,"PR","Feira de Santana",2
+2004,"PR","Foz do Iguaçu",2
+2004,"RJ","Volta Redonda",1
+2004,"PA","Castanhal",1
+2004,"RJ","Petrópolis",1
+2004,"PE","Vitória de Santo Antão",1
+2004,"RJ","Cabo Frio",1
+2008,"PA","Parauapebas",2
+2008,"PR","Ponta Grossa",2
+2008,"MA","Imperatriz",1
+2012,"SP","Osasco",8
+2020,"ES","Vila Velha",3
+2020,"ES","Serra",4
+2020,"ES","Cariacica",2
+2012,"BA","Camaçari",1
+2012,"BA","Ribeira do Pombal",1
+2024,"MG","Belo Horizonte",3
+2020,"MG","Juiz de Fora",1
+2024,"SP","Guarulhos",1
+2024,"PB","João Pessoa",1
+2020,"GO","Goiânia",13
+2024,"SP","Ribeirão Preto",1
+2024,"SP","Santo André",1
+2024,"SP","Santos",2
+2008,"SP","Penápolis",1
+2008,"SP","Santa Bárbara D`Oeste",1
+2008,"SP","São Sebastião",1
+2016,"SP","Piracicaba",1
+2020,"PE","Caruaru",1
+2004,"SP","Taubaté",3
+2004,"CE","Maracanaú",1
+2004,"RJ","Nilópolis",1
+2008,"RR","Boa Vista",3
+2008,"SP","Rio Grande da Serra",2
+2008,"RO","Porto Velho",3
+2008,"MG","Pouso Alegre",3
+2008,"BA","Porto Seguro",1
+2008,"PR","Apucarana",1
+2008,"SC","Balneário Camboriú",1
+2008,"MG","Uberaba",2
+2008,"RJ","Araruama",1
+2008,"PR"," Paranavaí",1
+2012,"SP","Mogi das Cruzes",3
+2012,"MG","Araxá",1
+2012,"BA","Feira de Santana",3
+2012,"SP","Barueri",1
+2016,"CE","Caucaia",3
+2020,"SP","Ribeirão Preto",3
+2020,"MG","Uberlândia",2
+2004,"RS","Pelotas",3
+2008,"RJ","Volta Redonda",2
+2016,"GO","Catalão",1
+2024,"ES","Vitória",2
+2004,"RS","Santa Maria",3
+2004,"RS","Canoas",2
+2008,"SP","Americana",1
+2024,"SE","Aracaju",2
+2004,"SP","Catanduva",1
+2008,"SP","Atibaia",2
+2008,"SP","Guaratinguetá",1
+2008,"SP","Catanduva",1
+2008,"RJ","São Gonçalo",1
+2012,"RJ","Nova Iguaçu",1
+2004,"SP","Jacareí",1
+2004,"SP","Pindamonhangaba",1
+2008,"SP","Jundiaí",1
+2012,"SP","Ribeirão Pires",2
+2012,"SP","Mauá",7
+2012,"SP","Diadema",5
+2012,"SP","São Bernardo do Campo",3
+2004,"TO","Araguaína",1
+2004,"SP","Limeira",1
+2004,"GO","Aparecida de Goiânia",2
+2004,"GO","Luziânia",1
+2004,"RJ","Itaboraí",1
+2004,"PE","Paulista",1
+2008,"AL","Maceió",4
+2008,"ES","Serra",3
+2008,"RJ","Maricá",2
+2008,"RJ","Nova Friburgo",1
+2008,"RJ","Petrópolis",1
+2012,"SP","Taubaté",3
+2012,"RJ","Duque de Caxias",1
+2012,"SP","Itaquaquecetuba",1
+2016,"SP","Taubaté",2
+2020,"ES","Vitória",7
+2020,"SP","Limeira",1
+2024,"MS","Campo Grande",1
+2020,"PI","Teresina",8
+2020,"MS","Campo Grande",8
+2024,"MS",NA,1
+2008,"GO","Aparecida de Goiânia",2
+2008,"GO","Trindade",1
+2008,"GO","Rio Verde",1
+2008,"GO","Luziânia",1
+2004,"CE","Juazeiro do Norte",1
+2004,"CE","Sobral",1
+2004,"RJ","Barra Mansa",1
+2004,"MG","Poços de Caldas",3
+2004,"CE","Caucaia",2
+2008,"PA","Ananindeua",2
+2008,"PR","Londrina",2
+2008,"SP","Poá",1
+2008,"MS","Ponta Porã",1
+2008,"PR","Campo Mourão",1
+2008,"SP","São Carlos",1
+2008,"SP","Paulínia",1
+2008,"PR","Pato Branco",2
+2008,"SP","Presidente Prudente",2
+2008,"SC","Lages",1
+2012,"AP","Macapá",5
+2012,"PE","Petrolina",1
+2012,"SP","Bauru",2
+2020,"RJ","Campo dos Goytacazes",1
+2020,"RS","Caxias do Sul",1
+2020,"CE","Recife",1
+2008,"ES","Cariacica",2
+2008,"BA","Candeias",1
+2020,"MG","Betim",1
+2020,"SP","São José do Rio Preto",1
+2008,"SP","Sumaré",1

@@ -1,0 +1,172 @@
+bucket,classe,class_proc,assunto,assunto_share_in_class
+adversarial_keep,REPRESENTACAO,91775,Propaganda Política - Propaganda Eleitoral - Extemporânea/Antecipada,0.1174
+adversarial_keep,REPRESENTACAO,91775,Propaganda Política - Propaganda Eleitoral - Divulgação de Notícia  Sabidamente Falsa,0.0939
+adversarial_keep,REPRESENTACAO,91775,Propaganda Política - Propaganda Eleitoral - Internet,0.0747
+adversarial_keep,REPRESENTACAO,91775,Pesquisa Eleitoral - Divulgação de Pesquisa Eleitoral Fraudulenta,0.0741
+adversarial_keep,REPRESENTACAO,91775,Propaganda Política - Propaganda Eleitoral - Redes Sociais,0.07
+adversarial_keep,REPRESENTACAO,91775,Propaganda Política - Propaganda Eleitoral - Alto-falante/Amplificador de Som,0.0392
+adversarial_keep,NOTICIA DE IRREGULARIDADE EM PROPAGANDA ELEITORAL,23097,Propaganda Política - Propaganda Eleitoral - Internet,0.1374
+adversarial_keep,NOTICIA DE IRREGULARIDADE EM PROPAGANDA ELEITORAL,23097,Propaganda Política - Propaganda Eleitoral - Banner/Cartaz/Faixa,0.1363
+adversarial_keep,NOTICIA DE IRREGULARIDADE EM PROPAGANDA ELEITORAL,23097,Propaganda Política - Propaganda Eleitoral - Adesivo,0.0746
+adversarial_keep,NOTICIA DE IRREGULARIDADE EM PROPAGANDA ELEITORAL,23097,Propaganda Política - Propaganda Eleitoral - Extemporânea/Antecipada,0.0713
+adversarial_keep,NOTICIA DE IRREGULARIDADE EM PROPAGANDA ELEITORAL,23097,Propaganda Política - Propaganda Eleitoral - Alto-falante/Amplificador de Som,0.0677
+adversarial_keep,NOTICIA DE IRREGULARIDADE EM PROPAGANDA ELEITORAL,23097,Propaganda Política - Propaganda Eleitoral - Redes Sociais,0.0637
+adversarial_keep,ACAO DE INVESTIGACAO JUDICIAL ELEITORAL,14272,Abuso - De Poder Econômico,0.3358
+adversarial_keep,ACAO DE INVESTIGACAO JUDICIAL ELEITORAL,14272,Abuso - De Poder Político/Autoridade,0.237
+adversarial_keep,ACAO DE INVESTIGACAO JUDICIAL ELEITORAL,14272,Candidatura Fictícia,0.1527
+adversarial_keep,ACAO DE INVESTIGACAO JUDICIAL ELEITORAL,14272,Inelegibilidade - Abuso do Poder Econômico ou Político,0.0988
+adversarial_keep,ACAO DE INVESTIGACAO JUDICIAL ELEITORAL,14272,Abuso - Uso Indevido de Meio de Comunicação Social,0.051
+adversarial_keep,ACAO DE INVESTIGACAO JUDICIAL ELEITORAL,14272,Inelegibilidade - Representação ou Ação de Investigação Judicial Eleitoral Jugada Procedente pela Justiça Eleitoral,0.032
+adversarial_keep,DIREITO DE RESPOSTA,8347,Propaganda Política - Propaganda Eleitoral - Divulgação de Notícia  Sabidamente Falsa,0.3269
+adversarial_keep,DIREITO DE RESPOSTA,8347,Cargo - Prefeito,0.1127
+adversarial_keep,DIREITO DE RESPOSTA,8347,Propaganda Política - Propaganda Eleitoral - Internet,0.1118
+adversarial_keep,DIREITO DE RESPOSTA,8347,Propaganda Política - Propaganda Eleitoral - Redes Sociais,0.0727
+adversarial_keep,DIREITO DE RESPOSTA,8347,Propaganda Política - Propaganda Eleitoral - Televisão,0.0637
+adversarial_keep,DIREITO DE RESPOSTA,8347,Propaganda Política - Propaganda Eleitoral - Horário Eleitoral Gratuito/Inserções de Propaganda,0.0628
+adversarial_keep,REPRESENTACAO ESPECIAL,6563,Doação de Recursos Acima do Limite Legal - Pessoa Física,0.4455
+adversarial_keep,REPRESENTACAO ESPECIAL,6563,Conduta Vedada ao Agente Público,0.2555
+adversarial_keep,REPRESENTACAO ESPECIAL,6563,Captação ou Gasto Ilícito de Recursos Financeiros de Campanha Eleitoral,0.0734
+adversarial_keep,REPRESENTACAO ESPECIAL,6563,Captação Ilícita de Sufrágio,0.0687
+adversarial_keep,REPRESENTACAO ESPECIAL,6563,Doação de Recursos Acima do Limite Legal,0.0431
+adversarial_keep,REPRESENTACAO ESPECIAL,6563,Inelegibilidade - Abuso do Poder Econômico ou Político,0.0286
+adversarial_keep,ACAO DE IMPUGNACAO DE MANDATO ELETIVO,1117,Candidatura Fictícia,0.3617
+adversarial_keep,ACAO DE IMPUGNACAO DE MANDATO ELETIVO,1117,Abuso - De Poder Econômico,0.2766
+adversarial_keep,ACAO DE IMPUGNACAO DE MANDATO ELETIVO,1117,Abuso - De Poder Político/Autoridade,0.0654
+adversarial_keep,ACAO DE IMPUGNACAO DE MANDATO ELETIVO,1117,Cargo - Vereador,0.0573
+adversarial_keep,ACAO DE IMPUGNACAO DE MANDATO ELETIVO,1117,Inelegibilidade - Abuso do Poder Econômico ou Político,0.0376
+adversarial_keep,ACAO DE IMPUGNACAO DE MANDATO ELETIVO,1117,Cargo - Prefeito,0.0331
+adversarial_keep,TUTELA CAUTELAR ANTECEDENTE,1215,Cautelar Inominada - De Produção Antecipada de Provas,0.0971
+adversarial_keep,TUTELA CAUTELAR ANTECEDENTE,1215,Cautelar Inominada - De Busca e Apreensão,0.0872
+adversarial_keep,TUTELA CAUTELAR ANTECEDENTE,1215,Cautelar Inominada - Preparatória,0.0774
+adversarial_keep,TUTELA CAUTELAR ANTECEDENTE,1215,Cautelar Inominada - Incidental,0.0642
+adversarial_keep,TUTELA CAUTELAR ANTECEDENTE,1215,Propaganda Política - Propaganda Eleitoral - Comício/Showmício,0.0494
+adversarial_keep,TUTELA CAUTELAR ANTECEDENTE,1215,Cargo - Prefeito,0.0436
+adversarial_keep,TUTELA ANTECIPADA ANTECEDENTE,1170,Tutela de Urgência,0.0855
+adversarial_keep,TUTELA ANTECIPADA ANTECEDENTE,1170,Liminar,0.059
+adversarial_keep,TUTELA ANTECIPADA ANTECEDENTE,1170,Propaganda Política - Propaganda Eleitoral - Comício/Showmício,0.0504
+adversarial_keep,TUTELA ANTECIPADA ANTECEDENTE,1170,Cautelar Inominada - Incidental,0.041
+adversarial_keep,TUTELA ANTECIPADA ANTECEDENTE,1170,Cargo - Prefeito,0.0368
+adversarial_keep,TUTELA ANTECIPADA ANTECEDENTE,1170,Requerimento,0.0359
+criminal_toggle,ACAO PENAL ELEITORAL,3445,Corrupção Eleitoral,0.1518
+criminal_toggle,ACAO PENAL ELEITORAL,3445,Arregimentação de Eleitor ou Boca de Urna,0.1318
+criminal_toggle,ACAO PENAL ELEITORAL,3445,Falsidade Ideológica,0.0685
+criminal_toggle,ACAO PENAL ELEITORAL,3445,Calúnia na Propaganda Eleitoral,0.0592
+criminal_toggle,ACAO PENAL ELEITORAL,3445,Divulgação de Propaganda Eleitoral no Dia da Eleição,0.0508
+criminal_toggle,ACAO PENAL ELEITORAL,3445,Inscrição Fraudulenta,0.0508
+criminal_toggle,REPRESENTACAO CRIMINAL/NOTICIA DE CRIME,6159,Calúnia na Propaganda Eleitoral,0.1133
+criminal_toggle,REPRESENTACAO CRIMINAL/NOTICIA DE CRIME,6159,Arregimentação de Eleitor ou Boca de Urna,0.093
+criminal_toggle,REPRESENTACAO CRIMINAL/NOTICIA DE CRIME,6159,Corrupção Eleitoral,0.0721
+criminal_toggle,REPRESENTACAO CRIMINAL/NOTICIA DE CRIME,6159,Calúnia,0.0682
+criminal_toggle,REPRESENTACAO CRIMINAL/NOTICIA DE CRIME,6159,Difamação na Propaganda Eleitoral,0.0552
+criminal_toggle,REPRESENTACAO CRIMINAL/NOTICIA DE CRIME,6159,Divulgação de Propaganda Eleitoral no Dia da Eleição,0.0526
+criminal_toggle,INQUERITO POLICIAL,8599,Corrupção Eleitoral,0.1497
+criminal_toggle,INQUERITO POLICIAL,8599,Falsidade Ideológica,0.0914
+criminal_toggle,INQUERITO POLICIAL,8599,Captação ilícita de votos ou corrupção eleitoral,0.0822
+criminal_toggle,INQUERITO POLICIAL,8599,Inscrição Fraudulenta,0.0559
+criminal_toggle,INQUERITO POLICIAL,8599,Arregimentação de Eleitor ou Boca de Urna,0.0474
+criminal_toggle,INQUERITO POLICIAL,8599,Calúnia na Propaganda Eleitoral,0.0469
+criminal_toggle,TERMO CIRCUNSTANCIADO,4015,Arregimentação de Eleitor ou Boca de Urna,0.2787
+criminal_toggle,TERMO CIRCUNSTANCIADO,4015,Boca de urna,0.1235
+criminal_toggle,TERMO CIRCUNSTANCIADO,4015,Divulgação de Propaganda Eleitoral no Dia da Eleição,0.1054
+criminal_toggle,TERMO CIRCUNSTANCIADO,4015,Desobediência a Ordens ou Instruções da Justiça Eleitoral,0.0653
+criminal_toggle,TERMO CIRCUNSTANCIADO,4015,Violação do Sigilo do Voto,0.0553
+criminal_toggle,TERMO CIRCUNSTANCIADO,4015,Difamação na Propaganda Eleitoral,0.0431
+mandatory_drop,REGISTRO DE CANDIDATURA,1145572,Registro de Candidatura - RRC - Candidato,0.8677
+mandatory_drop,REGISTRO DE CANDIDATURA,1145572,Registro de Candidatura - DRAP Partido/Coligação,0.1027
+mandatory_drop,REGISTRO DE CANDIDATURA,1145572,Registro de Candidatura - Preenchimento de Vaga Remanescente,0.0098
+mandatory_drop,REGISTRO DE CANDIDATURA,1145572,Registro de Candidatura - Substituição de Candidato - Por Cancelamento de Registro,0.007
+mandatory_drop,REGISTRO DE CANDIDATURA,1145572,Impugnação ao Registro de Candidatura,0.0069
+mandatory_drop,REGISTRO DE CANDIDATURA,1145572,Registro de Candidatura - RRCI - Candidato Individual,0.0049
+mandatory_drop,PRESTACAO DE CONTAS ELEITORAIS,1091559,Cargo - Vereador,0.8366
+mandatory_drop,PRESTACAO DE CONTAS ELEITORAIS,1091559,Partido Político - Órgão de Direção Municipal,0.1119
+mandatory_drop,PRESTACAO DE CONTAS ELEITORAIS,1091559,Cargo - Prefeito,0.0291
+mandatory_drop,PRESTACAO DE CONTAS ELEITORAIS,1091559,Prestação de Contas - De Candidato,0.0125
+mandatory_drop,PRESTACAO DE CONTAS ELEITORAIS,1091559,Prestação de Contas - de Partido Político,0.0032
+mandatory_drop,PRESTACAO DE CONTAS ELEITORAIS,1091559,Contas - Não Apresentação das Contas,0.003
+mandatory_drop,REQUERIMENTO DE REGULARIZACAO DE OMISSAO DE PRESTACAO DE CONTAS ELEITORAIS,16729,Cargo - Vereador,0.3289
+mandatory_drop,REQUERIMENTO DE REGULARIZACAO DE OMISSAO DE PRESTACAO DE CONTAS ELEITORAIS,16729,Partido Político - Órgão de Direção Municipal,0.2734
+mandatory_drop,REQUERIMENTO DE REGULARIZACAO DE OMISSAO DE PRESTACAO DE CONTAS ELEITORAIS,16729,Requerimento de Regularização da Situação de Inadimplência de Prestação de Contas,0.2099
+mandatory_drop,REQUERIMENTO DE REGULARIZACAO DE OMISSAO DE PRESTACAO DE CONTAS ELEITORAIS,16729,Regularização de Contas Eleitorais,0.09
+mandatory_drop,REQUERIMENTO DE REGULARIZACAO DE OMISSAO DE PRESTACAO DE CONTAS ELEITORAIS,16729,Prestação de Contas - De Candidato,0.0267
+mandatory_drop,REQUERIMENTO DE REGULARIZACAO DE OMISSAO DE PRESTACAO DE CONTAS ELEITORAIS,16729,Contas - Não Apresentação das Contas,0.0246
+mandatory_drop,FILIACAO PARTIDARIA,19633,Filiação Partidária - Lista Especial,0.3146
+mandatory_drop,FILIACAO PARTIDARIA,19633,Filiação Partidária - Coexistência,0.2602
+mandatory_drop,FILIACAO PARTIDARIA,19633,Filiação Partidária - Cancelamento,0.2245
+mandatory_drop,FILIACAO PARTIDARIA,19633,Reversão de Desfiliação,0.1017
+mandatory_drop,FILIACAO PARTIDARIA,19633,Filiação Partidária - Exclusão,0.048
+mandatory_drop,FILIACAO PARTIDARIA,19633,Requerimento,0.0226
+mandatory_drop,LISTA DE APOIAMENTO PARA CRIACAO DE PARTIDO POLITICO,2717,Criação do Partido Político,0.9875
+mandatory_drop,LISTA DE APOIAMENTO PARA CRIACAO DE PARTIDO POLITICO,2717,Requerimento,0.0118
+mandatory_drop,LISTA DE APOIAMENTO PARA CRIACAO DE PARTIDO POLITICO,2717,DIREITO ELEITORAL,0.0007
+admin_drop,COMPOSICAO DE MESA RECEPTORA,40352,Ausência ou Abandono aos Trabalhos Eleitorais,0.912
+admin_drop,COMPOSICAO DE MESA RECEPTORA,40352,Eleições - 1° Turno,0.0391
+admin_drop,COMPOSICAO DE MESA RECEPTORA,40352,Pedido de Dispensa de Convocação para Trabalhos Eleitorais,0.0234
+admin_drop,COMPOSICAO DE MESA RECEPTORA,40352,Requerimento de justificativa por ausência ou abandono dos trabalhos eleitorais,0.0113
+admin_drop,COMPOSICAO DE MESA RECEPTORA,40352,Impugnação - Nomeação de Membro da Mesa Receptora,0.0059
+admin_drop,COMPOSICAO DE MESA RECEPTORA,40352,Requerimento,0.0053
+admin_drop,APURACAO DE ELEICAO,8362,Apuração/Totalização de Votos,0.9274
+admin_drop,APURACAO DE ELEICAO,8362,Eleições - 1° Turno,0.0515
+admin_drop,APURACAO DE ELEICAO,8362,Eleições - Eleição Majoritária,0.01
+admin_drop,APURACAO DE ELEICAO,8362,Requerimento,0.003
+admin_drop,APURACAO DE ELEICAO,8362,Eleições - Eleição Suplementar,0.0019
+admin_drop,APURACAO DE ELEICAO,8362,Matéria Administrativa,0.0013
+admin_drop,RECURSO/IMPUGNACAO DE ALISTAMENTO ELEITORAL,4632,Impugnação - Transferência de Domicílio Eleitoral,0.5184
+admin_drop,RECURSO/IMPUGNACAO DE ALISTAMENTO ELEITORAL,4632,Alistamento Eleitoral - Domicílio Eleitoral,0.35
+admin_drop,RECURSO/IMPUGNACAO DE ALISTAMENTO ELEITORAL,4632,Alistamento Eleitoral - Cancelamento,0.057
+admin_drop,RECURSO/IMPUGNACAO DE ALISTAMENTO ELEITORAL,4632,Alistamento Eleitoral - Inscrição Eleitoral,0.0345
+admin_drop,RECURSO/IMPUGNACAO DE ALISTAMENTO ELEITORAL,4632,Impugnação - Inscrição Eleitoral,0.0162
+admin_drop,RECURSO/IMPUGNACAO DE ALISTAMENTO ELEITORAL,4632,Requerimento,0.0125
+admin_drop,CARTA PRECATORIA CIVEL,2954,Citação,0.5108
+admin_drop,CARTA PRECATORIA CIVEL,2954,Requerimento,0.215
+admin_drop,CARTA PRECATORIA CIVEL,2954,Intimação,0.2102
+admin_drop,CARTA PRECATORIA CIVEL,2954,Diligências,0.0322
+admin_drop,CARTA PRECATORIA CIVEL,2954,Oitiva,0.0193
+admin_drop,CARTA PRECATORIA CIVEL,2954,Atos executórios,0.0105
+admin_drop,CARTA PRECATORIA CRIMINAL,1482,Citação,0.276
+admin_drop,CARTA PRECATORIA CRIMINAL,1482,Intimação,0.2362
+admin_drop,CARTA PRECATORIA CRIMINAL,1482,Requerimento,0.1019
+admin_drop,CARTA PRECATORIA CRIMINAL,1482,Transação,0.0877
+admin_drop,CARTA PRECATORIA CRIMINAL,1482,Condicional do processo,0.081
+admin_drop,CARTA PRECATORIA CRIMINAL,1482,Interrogatório,0.0445
+admin_drop,CARTA DE ORDEM CIVEL,1201,Intimação,0.3863
+admin_drop,CARTA DE ORDEM CIVEL,1201,Citação,0.3789
+admin_drop,CARTA DE ORDEM CIVEL,1201,Requerimento,0.1482
+admin_drop,CARTA DE ORDEM CIVEL,1201,Oitiva,0.0475
+admin_drop,CARTA DE ORDEM CIVEL,1201,Diligências,0.0325
+admin_drop,CARTA DE ORDEM CIVEL,1201,Atos executórios,0.005
+admin_drop,PET-ADM,1105,Matéria Administrativa,0.7231
+admin_drop,PET-ADM,1105,DIREITO ELEITORAL,0.1041
+admin_drop,PET-ADM,1105,COVID-19,0.086
+admin_drop,PET-ADM,1105,Requerimento,0.0652
+admin_drop,PET-ADM,1105,Convenção Partidária,0.0054
+admin_drop,PET-ADM,1105,Prestação de Contas - De Exercício Financeiro,0.0036
+admin_drop,PROCESSO ADMINISTRATIVO,1057,Matéria Administrativa,0.7323
+admin_drop,PROCESSO ADMINISTRATIVO,1057,Requerimento,0.2337
+admin_drop,PROCESSO ADMINISTRATIVO,1057,NI,0.0189
+admin_drop,PROCESSO ADMINISTRATIVO,1057,DIREITO ELEITORAL,0.0028
+admin_drop,PROCESSO ADMINISTRATIVO,1057,Providência,0.0028
+admin_drop,PROCESSO ADMINISTRATIVO,1057,Alteração Estatutária de Partido Político em Matéria Administrativa,0.0019
+admin_drop,EXECUCAO DE MEDIDAS ALTERNATIVAS NO JUIZO COMUM,1925,Transação Penal,0.1564
+admin_drop,EXECUCAO DE MEDIDAS ALTERNATIVAS NO JUIZO COMUM,1925,Arregimentação de Eleitor ou Boca de Urna,0.1553
+admin_drop,EXECUCAO DE MEDIDAS ALTERNATIVAS NO JUIZO COMUM,1925,Acordo de Não Persecução Penal,0.1361
+admin_drop,EXECUCAO DE MEDIDAS ALTERNATIVAS NO JUIZO COMUM,1925,Divulgação de Propaganda Eleitoral no Dia da Eleição,0.0925
+admin_drop,EXECUCAO DE MEDIDAS ALTERNATIVAS NO JUIZO COMUM,1925,Corrupção Eleitoral,0.0504
+admin_drop,EXECUCAO DE MEDIDAS ALTERNATIVAS NO JUIZO COMUM,1925,Crimes contra a Propaganda Eleitoral,0.0343
+admin_drop,PETICAO CIVEL,24296,Requerimento,0.1129
+admin_drop,PETICAO CIVEL,24296,Requerimento de Acesso ao Sistema Interno de Controle e Dados de Pesquisas Eleitorais,0.0774
+admin_drop,PETICAO CIVEL,24296,Requerimento de Regularização da Situação de Inadimplência de Prestação de Contas,0.073
+admin_drop,PETICAO CIVEL,24296,Autorização de Divulgação de Publicidade Institucional,0.0654
+admin_drop,PETICAO CIVEL,24296,Registro de Candidatura - RRC - Candidato,0.0356
+admin_drop,PETICAO CIVEL,24296,Cargo - Vereador,0.0297
+admin_drop,CUMPRIMENTO DE SENTENCA,37839,Execução - Cumprimento de Sentença,0.6364
+admin_drop,CUMPRIMENTO DE SENTENCA,37839,Cargo - Vereador,0.2684
+admin_drop,CUMPRIMENTO DE SENTENCA,37839,Cargo - Prefeito,0.0385
+admin_drop,CUMPRIMENTO DE SENTENCA,37839,Prestação de Contas - De Candidato,0.0124
+admin_drop,CUMPRIMENTO DE SENTENCA,37839,Partido Político - Órgão de Direção Municipal,0.0099
+admin_drop,CUMPRIMENTO DE SENTENCA,37839,Propaganda Política - Propaganda Eleitoral - Extemporânea/Antecipada,0.0059
+admin_drop,SUSPENSAO DE ORGAO PARTIDARIO,5726,Contas - Não Apresentação das Contas,0.4834
+admin_drop,SUSPENSAO DE ORGAO PARTIDARIO,5726,Partido Político - Órgão de Direção Municipal,0.4797
+admin_drop,SUSPENSAO DE ORGAO PARTIDARIO,5726,Partido Político - Órgão de Direção Estadual,0.0199
+admin_drop,SUSPENSAO DE ORGAO PARTIDARIO,5726,Requerimento,0.0093
+admin_drop,SUSPENSAO DE ORGAO PARTIDARIO,5726,Partido Político - Órgão de Direção Zonal,0.0052
+admin_drop,SUSPENSAO DE ORGAO PARTIDARIO,5726,Contas,0.001

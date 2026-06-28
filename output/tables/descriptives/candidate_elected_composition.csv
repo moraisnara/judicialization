@@ -1,0 +1,65 @@
+office,year,group,variable,value,n
+executive,2020,candidates,N,18121.0,18121
+executive,2020,candidates,Female,0.136,18121
+executive,2020,candidates,Non-white,0.36,18121
+executive,2020,candidates,Higher education,0.6191,18121
+executive,2020,candidates,Married,0.6848,18121
+executive,2020,candidates,New entrant (vs 2020),,18121
+executive,2020,candidates,Incumbent (from 2020),,18121
+executive,2020,candidates,Mean age,50.04,18121
+executive,2020,elected,N,5494.0,5494
+executive,2020,elected,Female,0.1207,5494
+executive,2020,elected,Non-white,0.3242,5494
+executive,2020,elected,Higher education,0.6032,5494
+executive,2020,elected,Married,0.7181,5494
+executive,2020,elected,New entrant (vs 2020),,5494
+executive,2020,elected,Incumbent (from 2020),,5494
+executive,2020,elected,Mean age,49.77,5494
+executive,2024,candidates,N,15032.0,15032
+executive,2024,candidates,Female,0.1546,15032
+executive,2024,candidates,Non-white,0.3562,15032
+executive,2024,candidates,Higher education,0.6404,15032
+executive,2024,candidates,Married,0.6748,15032
+executive,2024,candidates,New entrant (vs 2020),0.6592,15032
+executive,2024,candidates,Incumbent (from 2020),0.1865,15032
+executive,2024,candidates,Mean age,50.78,15032
+executive,2024,elected,N,5535.0,5535
+executive,2024,elected,Female,0.1322,5535
+executive,2024,elected,Non-white,0.3375,5535
+executive,2024,elected,Higher education,0.641,5535
+executive,2024,elected,Married,0.71,5535
+executive,2024,elected,New entrant (vs 2020),0.4743,5535
+executive,2024,elected,Incumbent (from 2020),0.4226,5535
+executive,2024,elected,Mean age,50.0,5535
+legislative,2020,candidates,N,487469.0,487469
+legislative,2020,candidates,Female,0.3471,487469
+legislative,2020,candidates,Non-white,0.511,487469
+legislative,2020,candidates,Higher education,0.2722,487469
+legislative,2020,candidates,Married,0.5032,487469
+legislative,2020,candidates,New entrant (vs 2020),,487469
+legislative,2020,candidates,Incumbent (from 2020),,487469
+legislative,2020,candidates,Mean age,45.65,487469
+legislative,2020,elected,N,58105.0,58105
+legislative,2020,elected,Female,0.1613,58105
+legislative,2020,elected,Non-white,0.4515,58105
+legislative,2020,elected,Higher education,0.3441,58105
+legislative,2020,elected,Married,0.6075,58105
+legislative,2020,elected,New entrant (vs 2020),,58105
+legislative,2020,elected,Incumbent (from 2020),,58105
+legislative,2020,elected,Mean age,45.01,58105
+legislative,2024,candidates,N,413662.0,413662
+legislative,2024,candidates,Female,0.353,413662
+legislative,2024,candidates,Non-white,0.5272,413662
+legislative,2024,candidates,Higher education,0.314,413662
+legislative,2024,candidates,Married,0.4977,413662
+legislative,2024,candidates,New entrant (vs 2020),0.6358,413662
+legislative,2024,candidates,Incumbent (from 2020),0.1091,413662
+legislative,2024,candidates,Mean age,47.23,413662
+legislative,2024,elected,N,58162.0,58162
+legislative,2024,elected,Female,0.1824,58162
+legislative,2024,elected,Non-white,0.4614,58162
+legislative,2024,elected,Higher education,0.3921,58162
+legislative,2024,elected,Married,0.5915,58162
+legislative,2024,elected,New entrant (vs 2020),0.3242,58162
+legislative,2024,elected,Incumbent (from 2020),0.48,58162
+legislative,2024,elected,Mean age,46.03,58162

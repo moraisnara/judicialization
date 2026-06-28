@@ -1,0 +1,112 @@
+{
+  "_doc": "Single source of truth for the estimation design. R reads this via code/utils/spec_config.R; Python via code/utils/spec_config.py. Do not hard-code control lists in individual scripts -- read them from here.",
+  "_status": "Baseline control set is the pre-determined universal controls minus arbitrary outcome-levels, plus a per-outcome lagged DV (the outcome's own 2020 level).",
+  "_instrument_status": "Current (act-based, 2026-06-26): instrument is the act-based 10-family municipality shift-share (bartik_iv_act), endogenous is delta_log1p_act_lawsuits. Built by code/02_build/01d_act_family_crosswalk.py -> code/03_estimation/01d_act_family_ivs.py, which writes data/estimation/act_design.csv (base executive design + the two act columns) AND data/clean/municipality_act_components.csv (the long muni x family decomposition, rung=='act', for Rotemberg/shift/balance/leave-one-out). The retired substance-family rungs (bartik_iv_2020_2024 / bartik_iv_fine7 etc.) are gone. cluster_id is the STATE (27 units): the leave-own-state shift is constant within a state. First-stage F approx 25.5, clears the Lee et al. (2022) tF critical value. See docs/STATE_OF_THE_ART.md.",
+  "fe": {
+    "baseline": "state",
+    "baseline_legacy_alias": "SG_UF",
+    "robustness": "code_meso"
+  },
+  "cluster": "cluster_id",
+  "cluster_unit": "state",
+  "instrument_robustness": "aggregation_ladder_rungs",
+  "inference": {
+    "headline": "cluster_robust_state_with_tF",
+    "exposure_robust": "bhj_akm",
+    "weak_iv_correction": "tF_lee_2022",
+    "estimator": "2sls",
+    "liml_check": true
+  },
+  "instrument": "bartik_iv_act",
+  "endogenous": "delta_log1p_act_lawsuits",
+  "baseline_controls": [
+    "log_pop_2010",
+    "urban_share_2010",
+    "log_income_pc_2010",
+    "margin_2016",
+    "log1p_total_valid_votes_2020"
+  ],
+  "_baseline_controls_note": "Per-outcome lagged dependent variable (the outcome's own 2020 level, see lagged_dv) is appended to these at estimation time. The inherited universal controls margin_top1_top2_2020 and log1p_total_candidates_2020 were REMOVED (they were arbitrary outcome-levels); the lagged-DV rule replaces them.",
+  "extended_controls_extra": [
+    "enp_2016",
+    "female_vote_share_2020",
+    "nonwhite_vote_share_2020",
+    "higher_education_vote_share_2020",
+    "log1p_party_count_2020",
+    "log1p_coalition_count_2020",
+    "turnout_rate_2020",
+    "null_rate_2020",
+    "share_first_time_candidates_2020",
+    "share_career_politicians_2020"
+  ],
+  "lagged_dv": {
+    "delta_winner_majority_2024_2020": "winner_majority_2020",
+    "delta_margin_top1_top2_2024_2020": "margin_top1_top2_2020",
+    "delta_winner_vote_share_2024_2020": "winner_vote_share_2020",
+    "delta_runnerup_vote_share_2024_2020": "runnerup_vote_share_2020",
+    "delta_others_vote_share_2024_2020": "others_vote_share_2020",
+    "delta_top2_vote_share_2024_2020": "top2_vote_share_2020",
+    "delta_log1p_n_candidates_with_votes_2024_2020": "log1p_n_candidates_with_votes_2020",
+    "delta_blank_rate_2024_2020": "blank_rate_2020",
+    "delta_turnout_rate_2024_2020": "turnout_rate_2020",
+    "delta_null_rate_2024_2020": "null_rate_2020",
+    "delta_valid_vote_rate_2024_2020": "valid_vote_rate_2020",
+    "delta_female_vote_share_2024_2020": "female_vote_share_2020",
+    "delta_female_share_2024_2020": "female_share_2020",
+    "delta_nonwhite_vote_share_2024_2020": "nonwhite_vote_share_2020",
+    "delta_higher_education_vote_share_2024_2020": "higher_education_vote_share_2020",
+    "delta_winner_is_female_2024_2020": "winner_is_female_2020",
+    "delta_new_candidate_vote_share_2024_2020": "new_candidate_vote_share_2020",
+    "delta_incumbent_candidate_vote_share_2024_2020": "incumbent_candidate_vote_share_2020",
+    "delta_winner_is_new_vs_2020_2024_2020": "winner_is_new_vs_2020_2020",
+    "delta_share_first_time_candidates_2024_2020": "share_first_time_candidates_2020",
+    "delta_share_serial_challenger_2024_2020": "share_serial_challenger_2020",
+    "delta_share_cross_cycle_returner_2024_2020": "share_cross_cycle_returner_2020",
+    "delta_effective_n_candidates_vote_2024_2020": "effective_n_candidates_vote_2020",
+    "delta_effective_n_parties_vote_2024_2020": "effective_n_parties_vote_2020",
+    "delta_effective_party_count_candidates_2024_2020": "effective_party_count_candidates_2020",
+    "delta_vote_hhi_candidate_2024_2020": "vote_hhi_candidate_2020",
+    "delta_vote_hhi_party_2024_2020": "vote_hhi_party_2020",
+    "delta_candidate_hhi_party_2024_2020": "candidate_hhi_party_2020",
+    "delta_elected_female_share_2024_2020": "elected_female_share_2020",
+    "delta_elected_nonwhite_share_2024_2020": "elected_nonwhite_share_2020",
+    "delta_elected_higher_ed_share_2024_2020": "elected_higher_education_share_2020",
+    "delta_elected_mean_age_2024_2020": "elected_mean_age_2020"
+  },
+  "_lagged_dv_pending": "valid_vote_rate_2020 is now built in 01_assemble_design.py from the registered-denominator identity (turnout - null - blank); with it, delta_valid_vote_rate is null on-spec (was spuriously +0.029 p=.029 without it). log1p_n_candidates_with_votes_2020 is still not built; that outcome runs without its lagged DV.",
+  "specs": {
+    "baseline": {
+      "controls": "baseline",
+      "fe": "baseline",
+      "sample": "all"
+    },
+    "robustness": {
+      "extended_controls": {
+        "controls": "extended",
+        "fe": "baseline",
+        "sample": "all"
+      },
+      "region_fe": {
+        "controls": "baseline",
+        "fe": "robustness",
+        "sample": "all"
+      },
+      "single_zone": {
+        "controls": "baseline",
+        "fe": "baseline",
+        "sample": "single_zone"
+      }
+    }
+  },
+  "heterogeneity": [
+    "open_seat_2024",
+    "poll_activity",
+    "media_atlas",
+    "population",
+    "population_x_media"
+  ],
+  "dropped": {
+    "broader_treatment": "Mislabeled: only added log1p_lawsuits_no_rrc_2020 as a control; did not broaden treatment.",
+    "no_rrc_variant": "Redundant: RRC (11618) already DROP in build-stage taxonomy, so bartik_iv_no_rrc == baseline."
+  }
+}

@@ -7,7 +7,7 @@ feed the two "scale of the phenomenon" slides in the presentation.
 
 Inputs:
   data/clean/zona_lawsuit_panel.csv            — all lawsuits by zone×year×subject
-  data/estimation/executive_margin_design.csv  — adversarial lawsuit counts
+  data/estimation/act_design.csv  — adversarial lawsuit counts
   data/clean/electoral_admin_outcomes.csv      — registered voters, turnout, blank, null
   data/clean/office_candidate_outcomes_panel.csv — candidates and elected
 
@@ -38,7 +38,7 @@ panel = pd.read_csv(
     low_memory=False,
 )
 design = pd.read_csv(
-    ESTIMATION / "executive_margin_design.csv",
+    ESTIMATION / "act_design.csv",
     usecols=["municipality_id_tse", "competition_lawsuits_2020", "competition_lawsuits_2024"],
 )
 adm = pd.read_csv(CLEAN / "electoral_admin_outcomes.csv")

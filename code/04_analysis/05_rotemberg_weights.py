@@ -7,8 +7,9 @@ For each topic k, the Rotemberg weight alpha_k and the just-identified
 IV estimate tau_k are computed so that tau_IV = sum_k alpha_k * tau_k.
 
 Inputs:
-  data/estimation/executive_margin_design.csv
-  data/clean/municipality_bartik_components.csv
+  data/estimation/act_design.csv
+  data/clean/municipality_act_components.csv  (SIG family components, long by
+        municipality x rung x family; bartik_component = s_{m,k} * g_{k,-state})
 
 Output:
   output/tables/descriptives/rotemberg_weights.csv
@@ -22,13 +23,14 @@ import numpy as np
 import pandas as pd
 
 PROJECT_ROOT    = Path(__file__).resolve().parents[2]
-DESIGN_PATH     = PROJECT_ROOT / "data" / "estimation" / "executive_margin_design.csv"
-COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_bartik_components.csv"
+DESIGN_PATH     = PROJECT_ROOT / "data" / "estimation" / "act_design.csv"
+COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_act_components.csv"
+RUNG            = "act"   # headline family taxonomy (matches HEADLINE_RUNG)
 OUT_DIR         = PROJECT_ROOT / "output" / "tables" / "descriptives"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-ENDOGENOUS = "delta_log1p_competition_lawsuits_2024_2020"
-INSTRUMENT = "bartik_iv_2020_2024"
+ENDOGENOUS = "delta_log1p_act_lawsuits"
+INSTRUMENT = "bartik_iv_act"
 FE_COL     = "state"
 
 BASELINE_CONTROLS = [
@@ -38,12 +40,12 @@ BASELINE_CONTROLS = [
     "log1p_total_candidates_2020",
 ]
 
-# Outcomes to decompose (significant and primary)
+# Outcomes to decompose (significant and primary, post-redesign consolidation set)
 OUTCOMES = [
     "delta_winner_majority_2024_2020",
+    "delta_others_vote_share_2024_2020",
     "delta_margin_top1_top2_2024_2020",
     "delta_winner_vote_share_2024_2020",
-    "delta_blank_rate_2024_2020",
 ]
 
 
@@ -103,37 +105,32 @@ def main() -> None:
     samp["municipality_id_tse"] = samp["municipality_id_tse"].astype(str).str.zfill(5)
     print(f"Analysis sample: {len(samp):,} municipalities")
 
-    # ---- 2. Load components, build no-RRC Bartik matrix ----
+    # ---- 2. Load family components (the per-family Bartik pieces) ----
     comp = pd.read_csv(
         COMPONENTS_PATH,
-        dtype={"municipality_id_tse": str, "main_subject_code": str},
+        dtype={"id_municipio_tse": str},
         low_memory=False,
     )
-    comp["municipality_id_tse"] = comp["municipality_id_tse"].str.zfill(5)
+    comp["municipality_id_tse"] = comp["id_municipio_tse"].str.strip().str.zfill(5)
+    comp = comp[comp["rung"] == RUNG].copy()
 
-    # Shares already reflect adversarial filter applied at build stage
-    comp["n_lawsuits"] = pd.to_numeric(comp["n_lawsuits"], errors="coerce").fillna(0)
-    comp["shock"]      = pd.to_numeric(
-        comp["shock_log_growth_2020_2024"], errors="coerce"
-    ).fillna(0)
-    base_totals = comp.groupby("municipality_id_tse")["n_lawsuits"].transform("sum")
-    comp["share"] = comp["n_lawsuits"] / base_totals.replace(0, np.nan)
-    comp["z_component"] = comp["share"] * comp["shock"]
+    # bartik_component = s_{m,k} * g_{k,-state} is already the topic IV piece
+    comp["z_component"] = pd.to_numeric(comp["bartik_component"], errors="coerce").fillna(0)
 
     # Keep only municipalities in the analysis sample
     samp_ids = set(samp["municipality_id_tse"])
     comp = comp[comp["municipality_id_tse"].isin(samp_ids)].copy()
 
-    # ---- 3. Pivot to municipality × topic matrix ----
+    # ---- 3. Pivot to municipality × family matrix ----
     pivot = comp.pivot_table(
         index="municipality_id_tse",
-        columns="main_subject_code",
+        columns="family",
         values="z_component",
         fill_value=0.0,
     )
     pivot = pivot.reindex(samp["municipality_id_tse"]).fillna(0.0)
     topic_codes = list(pivot.columns)
-    print(f"Topics in adversarial instrument: {len(topic_codes)}")
+    print(f"Families in instrument: {len(topic_codes)}")
 
     # ---- 4. Assemble combined frame and partial out ----
     samp_indexed = samp.set_index("municipality_id_tse")
@@ -157,11 +154,7 @@ def main() -> None:
     Zd = Z_sum_tilde @ d_tilde                              # denominator for weights
 
     # ---- 5. Rotemberg weights and just-identified IV estimates ----
-    topic_names = (
-        comp[["main_subject_code", "main_subject_name"]]
-        .drop_duplicates("main_subject_code")
-        .set_index("main_subject_code")["main_subject_name"]
-    )
+    topic_names = pd.Series({k: k for k in topic_codes})
 
     N = len(d_tilde)
     rows = []

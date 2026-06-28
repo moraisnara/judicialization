@@ -2,28 +2,69 @@
 
 **PhD dissertation project — Nara Lívia Morais, FEA-USP**
 
-Causal identification of the effect of pre-election judicial challenges on mayoral and city-council
-election outcomes in Brazil, using a Bartik shift-share instrument built from TSE processual data.
+Causal identification of the effect of the **judicialization of electoral competition** on
+municipal (mayoral and city-council) elections in Brazil, using a topic shift-share (Bartik)
+instrument built from TSE processual microdata.
+
+The research question is the impact of judicialization on **voters and candidates broadly** —
+turnout, valid/blank/null voting, electoral competition, candidate entry, party fragmentation,
+and the composition of who runs and who wins. Composition outcomes (female, nonwhite, incumbency)
+remain in the outcome sweep but are **not** the headline; this project is no longer led by a
+female-candidate-specific result.
+
+> **Authoritative design record.** The current econometric design (instrument, controls, FE,
+> clustering, inference, per-outcome lagged-DV map, dropped specs) lives in
+> **`docs/STATE_OF_THE_ART.md`** and the machine-readable **`code/spec_config.json`** (read by
+> `code/utils/spec_config.{R,py}`). If a script disagrees with those, those are right and the
+> script is stale. (`SPECIFICATION.md` has been archived as stale — refer to
+> `docs/STATE_OF_THE_ART.md` instead.)
 
 ---
 
 ## Identification Strategy
 
-The instrument is a municipality-level Bartik shift-share:
+The instrument is a municipality-level act-based shift-share (Ash, Morelli & Vannoni 2025 style):
 
 ```
-Z_i = Σ_k s_{ik} × g_k
+B_i = Σ_k  s_ik(2020 share)  ×  g_ik(leave-own-state-out 2020→2024 log-growth shock)
 ```
 
-where `s_{ik}` is municipality `i`'s 2020 baseline share of lawsuits in topic `k`, and `g_k` is the
-leave-state-out log growth of topic `k` nationally from 2020 to 2024.
+- `s_ik` = municipality `i`'s 2020 baseline share of lawsuits in **act family** `k`.
+- `g_ik` = national log-growth of family `k` from 2020→2024, **leaving `i`'s own state out**:
+  `g = log(N24 − S24 + 1) − log(N20 − S20 + 1)`.
+- Instrument column: **`bartik_iv_act`** (a single shift-share).
+- Endogenous treatment: **`delta_log1p_act_lawsuits`** = `log1p(2024 kept lawsuits) − log1p(2020)`.
 
-**Adversarial filter:** administrative and procedural classes/subjects are excluded at the build
-stage (`02_bartik_inputs.py`), retaining only substantive electoral competition cases.
-This produces the primary instrument `bartik_iv_2020_2024` (first-stage F ≈ 19.6).
+**Estimator.** 2SLS via `fixest::feols()`. Per-outcome formula:
+`y ~ baseline controls + per-outcome lagged DV | state FE | endogenous ~ instrument`.
 
-Inference follows GPS (2020) Rotemberg-weight decomposition and BHJ (2022/2024) diagnostics.
-Weak-instrument correction uses Lee et al. (2022) tF critical values.
+**Baseline controls.** `log_pop_2010`, `urban_share_2010`, `log_income_pc_2010`, `margin_2016`,
+`log1p_total_valid_votes_2020`, plus the outcome's own 2020 level (lagged DV).
+
+**Clustering.** At the **state** level (`cluster_id`, ~27 UFs) — the leave-own-state shift is
+constant within a state. (Not the electoral zone.)
+
+**Diagnostics.** First-stage F ≈ 25.5, K_eff ≈ 6.8. Weak-IV inference uses the Lee et al. (2022)
+tF correction; LIML ≡ 2SLS at K=1. Covariate balance: joint F = 2.83, **p = 0.037** — one yellow
+flag (`log_pop` and `log_valid_votes` predict exposure, but both are second-stage controls). This
+is reported honestly; no clean-exogeneity claim is made.
+
+### The 10 act-based families
+
+Built by `code/02_build/01d_act_family_crosswalk.py` → `data/clean/act_family_crosswalk.csv`
+(column `fam_act10`). Families = the *act alleged*, merging civil and criminal vehicles of the
+same act:
+
+`abuso` (abuse of power), `vote_buying` (captação + corrupção + boca de urna), `finance`
+(illicit campaign finance), `inelegib` (ineligibility), `fraude` (document/registration fraud,
+incl. candidatura fictícia code 12597), `honra` (defamation), `direito_resposta` (right of reply),
+`conduta_vedada` (prohibited conduct), `pesquisa_adv` (adversarial poll challenges),
+`ballot_integrity` (vote-tally / sufrágio interference).
+
+**Drops.** Mandatory administrative filings (RRC/DRAP/prestação de contas, ~48.5% of all
+lawsuits); ancillary/downstream procedural vehicles (execução, cumprimento, habeas, embargos,
+mandado de segurança); **propaganda dropped entirely** (defamation kept separately as `honra`);
+online propaganda (reform-contaminated). About **6.4%** of all lawsuits are kept.
 
 ---
 
@@ -37,19 +78,21 @@ judicialization/
 │   └── estimation/   — regression-ready design matrices (input to 03_estimation)
 │
 ├── output/
-│   ├── figures/      — all figures (PDF and PNG)
+│   ├── figures/      — figures (PDF)
 │   ├── tables/
-│   │   ├── regressions/  — regression coefficients (CSV + markdown)
+│   │   ├── regressions/  — regression coefficients (CSV)
 │   │   └── descriptives/ — shift-share diagnostics and summary statistics
-│   └── presentation/ — Beamer slides (TeX source + compiled PDF)
+│   └── presentation/ — Beamer report (TeX source + compiled PDF)
 │
 ├── code/
-│   ├── 01_download/  — scripts that download raw data from TSE/IBGE
-│   ├── 02_build/     — data cleaning and construction pipeline
-│   ├── 03_estimation/ — design assembly and IV estimation
-│   ├── 04_analysis/   — GPS/BHJ diagnostics, figures, and robustness
-│   └── run_all.py    — runs the full pipeline end to end
+│   ├── 01_download/  — scripts that download raw data from TSE/IBGE/etc.
+│   ├── 02_build/     — data cleaning, act taxonomy, outcome panels, covariates
+│   ├── 03_estimation/ — design assembly, act instrument, IV estimation
+│   ├── 04_analysis/   — Rotemberg/BHJ diagnostics, figures, descriptives, robustness
+│   ├── _archive/      — retired scripts from the old substance-family design
+│   └── run_all.py    — runs the live pipeline end to end
 │
+├── docs/             — STATE_OF_THE_ART.md (authoritative) + design logs
 └── logs/             — pipeline run logs
 ```
 
@@ -59,127 +102,103 @@ judicialization/
 
 ### `data/raw/`
 
-Original files downloaded from the TSE public data portal and IBGE. Never overwritten by any script.
+Original files from the TSE public data portal and IBGE. Never overwritten by any script.
+Includes the SIG "Processos eleitorais" exports, TSE candidate registry (`consulta_cand`), vote
+detail files, the TPU subject/class references, the census covariates, and the IBGE↔TSE crosswalk.
 
-| Folder / File | Contents |
-|---|---|
-| `processo_eleitoral_YYYY/` | Case-level docket registry (2018–2024) |
-| `processos_eleitorais_assuntos_YYYY/` | Case × legal subject mapping (2018–2024) |
-| `decisoes_YYYY/` | Judicial decisions (2018–2024) |
-| `recursos_YYYY/` | Electoral appeals (2018–2024) |
-| `consulta_cand_YYYY/` | Candidate registry by state (2012–2024) |
-| `votacao_candidato_munzona_YYYY/` | Candidate vote counts by zone (2016, 2020, 2024) |
-| `detalhe_votacao_munzona_YYYY/` | Aggregate vote detail by zone: turnout, blank, null (2020, 2024) |
-| `lista-zonas-municipios-10-07-24.csv` | Official TSE zone → municipality lookup |
-| `bd_municipio_tse_ibge.csv` | TSE ↔ IBGE municipality crosswalk |
-
-### `data/clean/`
-
-Intermediate datasets produced by the `02_build` pipeline.
+### `data/clean/` — key files
 
 | File | Produced by | Contents |
 |---|---|---|
-| `zona_lawsuit_panel.csv` | `01_lawsuit_panel.py` | Zone × class × subject panel, pre-election cases (2018–2024) |
-| `shift_share_subject_crosswalk.csv` | manual | Subject code → litigation family mapping |
-| `municipality_bartik_components.csv` | `02_bartik_inputs.py` | Per (municipality, subject): Bartik component `s_{ik}×g_k`, baseline share, shock |
-| `municipality_competition_subject_panel.csv` | `02_bartik_inputs.py` | Per (municipality, subject, year): lawsuit counts (2020 and 2024) |
-| `office_candidate_outcomes_panel.csv` | `02_bartik_inputs.py` | Office-level candidate composition outcomes |
-| `executive_shift_share_design.csv` | `02_bartik_inputs.py` | Executive design with Bartik IV before vote outcomes are joined |
-| `legislative_shift_share_design.csv` | `02_bartik_inputs.py` | Legislative (vereadores) design with Bartik IV |
-| `executive_vote_shift_share_design.csv` | `03_vote_outcomes.py` | Executive design with vote outcomes merged in |
-| `electoral_admin_outcomes.csv` | `06_electoral_admin.py` | Turnout, blank/null share, registered voters (2020 and 2024) |
-| `electoral_controls_2016.csv` | `07_electoral_controls_2016.py` | 2016 baseline: margin, HHI, ENP, winner identity |
-| `candidate_experience_panel.csv` | `05_candidate_history.py` | Prior candidacies and wins per municipality (2012–2024) |
-| `censo2010_municipal_ibge.csv` | `05_download_census_covariates.R` | Census 2010: population, urban share, income per capita |
-| `municipal_covariates.csv` | `08_municipal_covariates.py` | Master covariate table (merges all of the above) |
-| `zona_eleitoral_lookup.csv` | `01_lawsuit_panel.py` | Zone-level lookup (zone → municipality, state) |
+| `sig_lawsuits_muni_zona_classe_assunto.csv` (+ `_classe`, `_assunto` siblings) | `00_sig_lawsuit_panel.py` | SIG lawsuit panels resolved to município de origem (joint panel keyed on `pair_id`) |
+| `sig_family_crosswalk.csv` | `01_family_crosswalk.py` | Per (classe, assunto): canonical `pair_id` + substance crosswalk |
+| `act_family_crosswalk.csv` | `01d_act_family_crosswalk.py` | Per `pair_id`: act-family label (`fam_act10`) |
+| `municipality_act_components.csv` | `01d_act_family_ivs.py` | Long muni × family decomposition (`rung == "act"`); single source for Rotemberg/shift/balance diagnostics |
+| `office_candidate_outcomes_panel.csv` | `03_candidate_composition.py` | Office-level candidate composition outcomes |
+| `office_vote_outcomes_panel.csv` | `03b_vote_outcomes.py` | Office-level vote outcomes |
+| `office_ballot_spoilage.csv` | `05b_office_ballot_spoilage.py` | Per-office blank/null + roll-off |
+| `electoral_admin_outcomes.csv` | `05_electoral_admin.py` | Turnout, blank/null/valid share, registered voters (2020, 2024) |
+| `electoral_controls_2016.csv` | `06_electoral_controls_2016.py` | 2016 baseline: margin, HHI, ENP, winner identity |
+| `candidate_experience_panel.csv` | `04_candidate_history.py` | Prior candidacies/wins per municipality |
+| `council_experience_panel.csv` | `04b_council_history.py` | Council (vereador) experience panel |
+| `municipal_covariates.csv` | `07_municipal_covariates.py` | Master covariate table (census 2010 + 2016 baseline + experience) |
+| poll-activity panels | `08_poll_activity.py` | Pre-treatment poll activity for heterogeneity splits |
+
+2016 is **not** available in SIG, so there is no pre-period placebo from this lawsuit source.
 
 ### `data/estimation/`
 
-Flat files that enter the regressions directly. Produced by `03_estimation` assembly scripts.
-
 | File | Produced by | Contents |
 |---|---|---|
-| `executive_margin_design.csv` | `01_assemble_design.py` + `05_patch_family_ivs.py` | One row per municipality (N ≈ 5,571). Instrument `bartik_iv_2020_2024`, treatment `delta_log1p_competition_lawsuits_2024_2020`, all outcomes, controls, family IVs, topic shares, cluster ID. |
-| `legislative_design.csv` | `01b_assemble_legislative_design.py` | One row per municipality (N ≈ 5,560). Same instrument and controls; outcomes cover candidate composition and elected composition for vereadores. |
+| `executive_margin_design.csv` | `01_assemble_design.py` | Instrument-**free** base design: one row per municipality, all outcomes + baseline controls + `cluster_id`. |
+| `act_design.csv` | `01d_act_family_ivs.py` | Base design **+ `bartik_iv_act` + `delta_log1p_act_lawsuits`**. This is the headline analysis file. |
+| `legislative_design.csv` | `01b_assemble_legislative_design.py` | Legislative (vereadores) design — **still on the retired instrument** (see Status / caveats). |
 
 ---
 
 ## Code
 
+The live pipeline is **`code/run_all.py`**. The order below mirrors it. Scripts from the retired
+substance-family design live in `code/_archive/`; they are not part of the production engine.
+
 ### `code/01_download/`
 
-Scripts that download and verify raw data. Run once before the build pipeline.
-
-| Script | Purpose |
-|---|---|
-| `00_verify_raw_data.py` | Checks that expected raw files exist |
-| `01_download_processual.py` | Downloads TSE processual docket files (processo, assuntos, decisoes, recursos) |
-| `02_download_candidate_data.py` | Downloads TSE candidate registry files (consulta_cand) |
-| `02_download_covariates_data.py` | Downloads vote results, detalhe_votacao, and candidate history files |
-| `04_download_vote_results.py` | Downloads candidate vote count files |
-| `05_download_census_covariates.R` | Downloads Census 2010 microdata via `censobr` |
-| `06_download_municipality_crosswalk.R` | Downloads the IBGE ↔ TSE crosswalk from Base dos Dados |
+Downloads and verifies raw data (run once before the build). Covers TSE processual dockets,
+candidate registry, vote results, the TPU subject/class references, census covariates (`censobr`),
+the IBGE↔TSE crosswalk, polls, Poder360 / Atlas media coverage, and SPCE.
 
 ### `code/02_build/`
 
-Sequential pipeline that transforms raw data into analysis-ready inputs.
+| Script | Output |
+|---|---|
+| `00_verify_processual.py`, `00b_check_tr_mapping.py` | verification logs |
+| `01_family_crosswalk.py` | `sig_family_crosswalk.csv` (mints `pair_id` + substance crosswalk) |
+| `00_sig_lawsuit_panel.py` | SIG `sig_lawsuits_muni_zona_*` panels (stamps `pair_id`) |
+| `01d_act_family_crosswalk.py` | `act_family_crosswalk.csv` (routes each pair to one of the 10 act families) |
+| `03_candidate_composition.py` | `office_candidate_outcomes_panel.csv` |
+| `03b_vote_outcomes.py` | `office_vote_outcomes_panel.csv` |
+| `04_candidate_history.py`, `04b_council_history.py` | experience panels |
+| `05_electoral_admin.py`, `05b_office_ballot_spoilage.py` | turnout/blank/null + roll-off |
+| `06_electoral_controls_2016.py` | `electoral_controls_2016.csv` |
+| `07_municipal_covariates.py` | `municipal_covariates.csv` |
+| `08_poll_activity.py`, `09_poder360_trajectory.R`, `10_spce_build.py`, `11_build_atlas_noticias.R` | mechanism / heterogeneity inputs |
 
-| Script | Inputs | Output |
-|---|---|---|
-| `00_verify_processual.py` | `data/raw/` | Verification log to `logs/` |
-| `01_lawsuit_panel.py` | processo_eleitoral + assuntos + zone lookup | `zona_lawsuit_panel.csv` |
-| `02_bartik_inputs.py` | zona_lawsuit_panel + crosswalk + consulta_cand | `municipality_bartik_components.csv`, `municipality_competition_subject_panel.csv`, `office_candidate_outcomes_panel.csv`, `executive_shift_share_design.csv`, `legislative_shift_share_design.csv` |
-| `03_vote_outcomes.py` | executive_shift_share_design + votacao files | `executive_vote_shift_share_design.csv` |
-| `05_candidate_history.py` | consulta_cand 2012–2024 | `candidate_experience_panel.csv` |
-| `06_electoral_admin.py` | detalhe_votacao_munzona 2020 + 2024 | `electoral_admin_outcomes.csv` |
-| `07_electoral_controls_2016.py` | votacao_candidato_munzona_2016 | `electoral_controls_2016.csv` |
-| `08_municipal_covariates.py` | censo2010 + electoral_controls + candidate_experience + electoral_admin | `municipal_covariates.csv` |
+**ORDER MATTERS:** `01_family_crosswalk.py` mints the `pair_id` dictionary first; `00_sig_lawsuit_panel.py`
+stamps it onto the joint panel; `01d_act_family_crosswalk.py` then routes pairs to act families.
 
 ### `code/03_estimation/`
 
-Design assembly and IV estimation. All regression estimation is done in R via `fixest::feols()`.
+All regression OUTPUTS (first stage, 2SLS, any coef/SE/F that could reach a slide or the paper)
+run in **R/fixest**, reading `code/spec_config.json`. Python is for data construction only.
 
 | Script | Purpose | Output |
 |---|---|---|
-| `01_assemble_design.py` | Merges executive clean data, Bartik components, subject panel, and covariates into a flat regression file | `data/estimation/executive_margin_design.csv` |
-| `01b_assemble_legislative_design.py` | Builds the legislative design matrix by merging legislative shift-share design with executive controls | `data/estimation/legislative_design.csv` |
-| `05_patch_family_ivs.py` | Adds family-level Bartik IVs, family-specific endogenous variables, and top-topic baseline shares to the executive design | Patches `executive_margin_design.csv` in-place |
-| `02_iv_main.R` | Main 2SLS for executive outcomes: 6 specs × primary and secondary outcomes. Includes tF correction, LIML comparison, and variant comparison tables. | `executive_margin_iv_fixest.csv`, `executive_margin_first_stage_fixest.csv`, `liml_single_iv.csv`, `liml_comparison.csv` |
-| `02b_iv_legislative.R` | 2SLS for legislative outcomes (vereadores): 5 specs × 14 outcomes | `legislative_iv_fixest.csv`, `legislative_first_stage_fixest.csv` |
-| `04_family_iv_inference.R` | Family-split IV: each topic family IV instruments its family-specific endogenous variable. Mechanism analysis. | `family_iv_results.csv`, `family_iv_results.md` |
+| `01_assemble_design.py` | Build the instrument-free base design | `data/estimation/executive_margin_design.csv` |
+| `01d_act_family_ivs.py` | Build `bartik_iv_act` + `delta_log1p_act_lawsuits` and the long act components | `data/estimation/act_design.csv`, `data/clean/municipality_act_components.csv` |
+| `02c_act_iv.R` | **Headline** first stage + 2SLS over all outcomes, with tF | `act_first_stage_fixest.csv`, `act_iv_results.csv` |
+| `03_voter_behavior_iv.R` | Voter-behaviour group (turnout, blank/null, spoilage, roll-off placebo) | `voter_*` CSVs |
+| `04_candidate_outcomes_iv.R` | Candidate / composition outcomes | per-outcome CSVs |
+| `06`–`10` (heterogeneity) | Poll activity, media (Atlas), population splits | per-script CSVs |
+| `01b_assemble_legislative_design.py` | Legislative design assembly | `legislative_design.csv` (retired instrument) |
 
-**Instrument variants in `02_iv_main.R`:**
-
-| Column | Description |
-|---|---|
-| `bartik_iv_2020_2024` | Primary instrument — adversarial filter applied at build stage (F ≈ 19.6) |
-
-**Specifications (both executive and legislative):**
-
-| Spec | Description |
-|---|---|
-| `baseline` | Baseline controls + state FE (primary) |
-| `single_zone` | Same, restricted to single-zone municipalities |
-| `extended_controls` | Adds 7 demographic/composition controls |
-| `open_seat` | 2020 winner was term-limited (no incumbent in 2024) |
-| `contested_seat` | Incumbent can seek reelection in 2024 |
-| `broader_treatment` | Baseline + `log1p_lawsuits_no_rrc_2020` as covariate |
+**Specifications** (`spec_config.json`): `baseline` (preferred — baseline controls + lagged DV +
+state FE); robustness `extended_controls`, `region_fe` (mesoregion FE), `single_zone`.
+Heterogeneity (separate from robustness): open seat, poll activity, media, population, population×media.
 
 ### `code/04_analysis/`
 
-GPS (2020) and BHJ (2022/2024) required diagnostics, causal figures, and robustness checks.
+Shift-share diagnostics, figures, descriptives, and robustness. Key live scripts:
 
-| Script | Purpose | Output |
-|---|---|---|
-| `00_candidate_descriptives.py` | Candidate and elected pool descriptives by cycle | summary CSVs in `output/tables/descriptives/` |
-| `02_descriptives_overview.py` | Overview tables: lawsuits, voters, candidates (scale of phenomenon) | `overview_lawsuits.csv`, `overview_voters.csv`, `overview_candidates.csv` |
-| `02_figures_causal.R` | Causal figures: binscatter first stage, forest plot, IV histogram, choropleth | `binscatter_first_stage.pdf`, `forest_voter_behavior.pdf`, `bartik_histogram.pdf`, `bartik_choropleth.pdf` |
-| `03_map_data_universe.R` | Electoral zone map: municipalities per zone, colored by zone size | `map_data_universe.pdf` |
-| `05_rotemberg_weights.py` | GPS Rotemberg α_k weights and per-topic F_k statistics | `rotemberg_weights.csv`, `rotemberg_weights.md` |
-| `08_gps_balance_tests.py` | GPS share balance: covariate R² and pre-trend tests for top topics | `gps_balance_tests.csv`, `gps_balance_tests.md` |
-| `10_shift_descriptives.py` | BHJ shift distribution table: g_k, mean shares, HHI contribution | `shift_descriptives.csv`, `shift_descriptives.md` |
-| `11_exposure_robust_se.py` | BHJ/AKM exposure-robust standard errors (shift-level clustering) | `exposure_robust_se.csv`, `exposure_robust_se.md` |
+| Script | Output |
+|---|---|
+| `02_descriptives_overview.py`, `00_candidate_descriptives.py`, `20_summary_stats.py` | overview + `summary_stats.csv` |
+| `02_figures_causal.R`, `03_map_data_universe.R` | causal figures, `map_data_universe.pdf` |
+| `05_rotemberg_weights.py` | Rotemberg α_k + per-family F_k (`rotemberg_weights.csv`) from act components |
+| `08_gps_balance_tests.py` | share balance tests (`gps_balance_tests.csv`) |
+| `10_shift_descriptives.py` | BHJ shift table (`shift_descriptives.csv`) |
+| `22_exposure_robust_se.R` | BHJ/AKM exposure-robust SEs |
+| `23_mde_power.R` | MDE / bounding for the null defense |
+| `30`–`33_sig_*.py` | SIG subject/class share and coding-compatibility descriptives |
 
 ### `code/run_all.py`
 
@@ -192,63 +211,64 @@ R scripts are called via `Rscript`; Python scripts via `sys.executable`.
 
 ### `output/figures/`
 
-| File | Produced by | Description |
-|---|---|---|
-| `binscatter_first_stage.pdf` | `02_figures_causal.R` | Binscatter: Bartik IV → Δlog(lawsuits) |
-| `forest_voter_behavior.pdf` | `02_figures_causal.R` | Forest plot: voter behavior outcomes across specs |
-| `bartik_histogram.pdf` | `02_figures_causal.R` | Distribution of the IV (residualized on state FE) |
-| `bartik_choropleth.pdf` | `02_figures_causal.R` | Geographic distribution of the IV across Brazil |
-| `map_data_universe.pdf` | `03_map_data_universe.R` | Electoral zones colored by number of municipalities per zone |
+`map_data_universe.pdf` (electoral-zone coverage). Causal figures (binscatter first stage, forest,
+IV histogram, choropleth) are produced by `02_figures_causal.R`.
 
 ### `output/tables/regressions/`
 
 | File | Contents |
 |---|---|
-| `executive_margin_iv_fixest.csv` | 2SLS estimates: 6 specs × all outcomes (executive) |
-| `executive_margin_first_stage_fixest.csv` | First-stage: F-stats, coefs, tF critical values (executive) |
-| `executive_margin_fixest.md` | Markdown summary of executive IV results |
-| `first_stage_variant_comparison.csv` | First-stage summary across specs |
-| `iv_variant_comparison_primary.csv` | IV estimates for primary outcomes across specs |
-| `liml_single_iv.csv` | LIML estimates for baseline spec (K=1 instrument) |
-| `liml_comparison.csv` | 2SLS vs LIML comparison for primary outcomes |
-| `legislative_iv_fixest.csv` | 2SLS estimates: 5 specs × 14 outcomes (legislative) |
-| `legislative_first_stage_fixest.csv` | First-stage: F-stats, coefs (legislative) |
-| `legislative_fixest.md` | Markdown summary of legislative IV results |
-| `family_iv_results.csv` | Family-split IV: per-family first-stage F and 2SLS estimates |
-| `family_iv_results.md` | Markdown summary of family IV analysis |
+| `act_first_stage_fixest.csv` | Act instrument first stage (F, coefs, tF critical values) |
+| `act_iv_results.csv` | Headline 2SLS estimates over all outcomes |
+| `voter_first_stage.csv`, `voter_behavior_iv.csv` | Voter-behaviour group |
+| `voter_turnout_iv.csv`, `voter_office_spoilage_iv.csv`, `voter_rolloff_placebo_iv.csv` | Turnout, office-level spoilage, roll-off placebo |
 
 ### `output/tables/descriptives/`
 
-| File | Contents |
-|---|---|
-| `rotemberg_weights.csv` | GPS Rotemberg weights α_k and per-topic F_k for all topics |
-| `rotemberg_weights.md` | Formatted markdown table |
-| `gps_balance_tests.csv` | Share balance: R², F-stat, p-value per top topic |
-| `gps_balance_tests.md` | Formatted markdown table |
-| `shift_descriptives.csv` | BHJ shift table: g_k, mean shares, HHI contribution per topic |
-| `shift_descriptives.md` | Formatted markdown table |
-| `shift_share_diagnostics.md` | Shift-share design audit (sample sizes, top topics, IV coverage) |
-| `office_shift_share_setup.md` | Office-level shift-share construction summary |
-| `vote_outcomes_setup.md` | Vote outcome construction summary |
+`act_family_coverage.csv`, `rotemberg_weights.csv`, `gps_balance_tests.csv`,
+`shift_descriptives.csv`, `summary_stats.csv`, the `sig_*` share/coding tables, and the
+candidate/electorate descriptive tables.
 
 ### `output/presentation/`
 
-| File | Contents |
-|---|---|
-| `electoral_judicialization.tex` | Full report presentation (56 frames) — Beamer source |
-| `electoral_judicialization.pdf` | Compiled full presentation |
-| `electoral_judicialization_short.tex` | Short conference version (10 slides) — Beamer source |
-| `biblio.bib` | Bibliography |
+`slides_report.tex` / `.pdf` — the working Beamer research report; `biblio.bib` — bibliography.
+
+---
+
+## Headline Result
+
+The act instrument (n ≈ 5,009, ~26 state clusters, first-stage F ≈ 25.5) yields a **largely null**
+second stage:
+
+- **Candidate composition is null:** `female_vote_share` p = 0.39, `female_share` p = 0.77,
+  `winner_is_female` p = 0.81, nonwhite p = 0.17.
+- **Marginal positives** (tF-significant only): `turnout_rate` +0.011 (p = 0.024),
+  `valid_vote_rate` +0.025 (p = 0.045), `others_vote_share` +0.028 (p = 0.035).
+
+Reading: judicialization shows up faintly in **voter behaviour and competition**, not in candidate
+composition — which motivates the broadened voters-and-candidates framing.
+
+---
+
+## Status / caveats (known-pending)
+
+- **Legislative arm not ported.** `01b_assemble_legislative_design.py` / `legislative_design.csv`
+  are still on the retired substance-family instrument; they have not been repointed to the act
+  design.
+- **Slides / paper macros not regenerated.** The Beamer report and several `tex` fragments still
+  reflect the old design and the female-candidate headline; they are slated for revision.
+- **Authoritative record.** The current design lives in `docs/STATE_OF_THE_ART.md` and
+  `code/spec_config.json`. `SPECIFICATION.md` is archived/stale — do not rely on it.
 
 ---
 
 ## How to Reproduce
 
 ```bash
-# 1. Install Python dependencies
+# 1. Python dependencies
 pip install pandas numpy matplotlib seaborn scipy
 
-# 2. Install R packages (run once in R)
+# 2. R packages (run once in R)
 install.packages(c("fixest", "data.table", "binsreg", "ggplot2",
                    "dplyr", "tidyr", "patchwork", "scales",
                    "geobr", "sf", "censobr"))
@@ -256,11 +276,10 @@ install.packages(c("fixest", "data.table", "binsreg", "ggplot2",
 # 3. Run the full pipeline
 python code/run_all.py
 
-# 4. Compile the presentation
+# 4. Compile the report
 cd output/presentation
-pdflatex -interaction=nonstopmode electoral_judicialization.tex
-pdflatex -interaction=nonstopmode electoral_judicialization.tex
+pdflatex -interaction=nonstopmode slides_report.tex
+pdflatex -interaction=nonstopmode slides_report.tex
 ```
 
-> **Note:** The first run will download raw data from TSE and IBGE (~several GB).
-> The estimation step takes approximately 5–10 minutes total.
+> **Note:** The first run downloads raw data from TSE/IBGE (several GB).

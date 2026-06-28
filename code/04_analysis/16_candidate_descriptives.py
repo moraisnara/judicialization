@@ -1,0 +1,488 @@
+"""
+16_candidate_descriptives.py
+
+Candidate vs. elected composition, by office sought and election year.
+Shows, side by side, the demographic / experience makeup of (a) everyone who
+ran and (b) those who won -- the gap between the two columns is the
+representation filter of the election.
+
+Source:
+  data/clean/candidate_vote_panel.csv  -- candidate x year microdata
+
+Writes:
+  output/tables/descriptives/candidate_elected_composition.csv
+      tidy: office, year, group (candidates|elected), variable, value, n
+"""
+
+import pandas as pd
+import numpy as np
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "output" / "tables" / "descriptives"
+OUT.mkdir(parents=True, exist_ok=True)
+
+cv = pd.read_csv(ROOT / "data" / "clean" / "candidate_vote_panel.csv")
+
+# Variables that describe composition. Binary -> share; age -> mean.
+SHARE_VARS = [
+    ("is_female", "Female"),
+    ("is_nonwhite", "Non-white"),
+    ("is_higher_education", "Higher education"),
+    ("is_married", "Married"),
+    ("is_new_candidate_vs_2020", "New entrant (vs 2020)"),
+    ("is_incumbent_from_2020", "Incumbent (from 2020)"),
+]
+MEAN_VARS = [("candidate_age", "Mean age")]
+
+rows = []
+
+
+# The experience typology is defined relative to the 2020 cycle, so it does
+# not exist for 2020 candidates (would need 2016 as the prior cycle).
+EXPERIENCE_VARS = {"New entrant (vs 2020)", "Incumbent (from 2020)"}
+
+
+def compose(df, office, year, group):
+    rows.append(dict(office=office, year=year, group=group,
+                     variable="N", value=len(df), n=len(df)))
+    for col, lab in SHARE_VARS:
+        val = np.nan if (lab in EXPERIENCE_VARS and year == 2020) \
+            else round(pd.to_numeric(df[col], errors="coerce").mean(), 4)
+        rows.append(dict(office=office, year=year, group=group, variable=lab,
+                         value=val, n=len(df)))
+    for col, lab in MEAN_VARS:
+        rows.append(dict(office=office, year=year, group=group, variable=lab,
+                         value=round(pd.to_numeric(df[col], errors="coerce").mean(), 2),
+                         n=len(df)))
+
+
+for office in ["executive", "legislative"]:
+    for year in [2020, 2024]:
+        d = cv[(cv.office_group == office) & (cv.election_year == year)]
+        compose(d, office, year, "candidates")
+        compose(d[d.is_elected == 1], office, year, "elected")
+
+out = pd.DataFrame(rows)
+out.to_csv(OUT / "candidate_elected_composition.csv", index=False)
+
+# ======================================================================
+# CAMPAIGN FINANCE PANEL  (per-candidate spend, municipality SPCE accounts)
+# ======================================================================
+TEX = ROOT / "output" / "tables" / "tex"
+TEX.mkdir(parents=True, exist_ok=True)
+
+FIN_CATS = ["total", "legal", "marketing",
+            "traditional_marketing", "online_marketing"]
+fin = {}      # fin[office][cat][year] = mean per-candidate spend
+fin_sp = {}   # fin_sp[office] = the wide SPCE frame (for paired tests)
+for office in ["executive", "legislative"]:
+    sp = pd.read_csv(ROOT / "data" / "clean" / f"spce_{office}.csv")
+    fin_sp[office] = sp
+    fin[office] = {}
+    for cat in FIN_CATS:
+        fin[office][cat] = {y: sp[f"{cat}_per_cand_{y}"].mean() for y in (2020, 2024)}
+
+
+def money(v):
+    """Round to a clean precision and comma-group."""
+    if v >= 10000:
+        v = round(v, -2)
+    elif v >= 1000:
+        v = round(v, -1)
+    else:
+        v = round(v)
+    return f"{int(v):,}"
+
+
+def pct(x):
+    return f"{100*x:.1f}\\%"
+
+
+def growth(a, b):
+    return f"{'+' if b >= a else ''}{100*(b-a)/a:.0f}\\%"
+
+
+# ----------------------------------------------------------------------
+# Significance helpers.  Convention: *** p<.01, ** p<.05, * p<.10
+# ----------------------------------------------------------------------
+from scipy import stats
+
+
+def stars(p):
+    if pd.isna(p):
+        return ""
+    if p < 0.01:
+        return "***"
+    if p < 0.05:
+        return "**"
+    if p < 0.10:
+        return "*"
+    return ""
+
+
+def diff_cell(a, b, p, decimals=0):
+    """Relative %% change a->b with significance superscript."""
+    if a in (0, None) or pd.isna(a):
+        return "--"
+    rel = 100 * (b - a) / a
+    s = stars(p)
+    sup = f"$^{{{s}}}$" if s else ""
+    return f"{'+' if rel >= 0 else ''}{rel:.{decimals}f}\\%{sup}"
+
+
+def twoprop_p(x1, n1, x2, n2):
+    """Two-sided two-proportion z-test p-value."""
+    if min(n1, n2) == 0:
+        return np.nan
+    p1, p2 = x1 / n1, x2 / n2
+    pp = (x1 + x2) / (n1 + n2)
+    se = np.sqrt(pp * (1 - pp) * (1 / n1 + 1 / n2))
+    if se == 0:
+        return np.nan
+    z = (p1 - p2) / se
+    return 2 * (1 - stats.norm.cdf(abs(z)))
+
+
+# ---- macros ----
+OFF_TAG = {"executive": "Exec", "legislative": "Leg"}
+CAT_TAG = {"total": "Total", "legal": "Legal", "marketing": "Mktg",
+           "traditional_marketing": "Trad", "online_marketing": "Online"}
+YR_TAG = {2020: "A", 2024: "B"}
+
+mac = ["% Auto-generated by code/04_analysis/16_candidate_descriptives.py — do not edit by hand."]
+
+
+def emit(name, val):
+    mac.append(f"\\providecommand{{\\{name}}}{{}}\\renewcommand{{\\{name}}}{{{val}}}")
+
+
+for office, otag in OFF_TAG.items():
+    f = fin[office]
+    sp = fin_sp[office]
+    for cat, ctag in CAT_TAG.items():
+        for y, ytag in YR_TAG.items():
+            emit(f"Fin{otag}{ctag}{ytag}", money(f[cat][y]))
+        # paired test across municipalities (same units 2020 & 2024)
+        a, b = sp[f"{cat}_per_cand_2020"], sp[f"{cat}_per_cand_2024"]
+        p = stats.ttest_rel(b, a, nan_policy="omit").pvalue
+        emit(f"Fin{otag}{ctag}Diff", diff_cell(a.mean(), b.mean(), p))
+    # composition shares (+ paired test on per-municipality share)
+    share_def = {"LegalShare": ("legal", "total"),
+                 "MktgShare": ("marketing", "total"),
+                 "OnlineShare": ("online_marketing", "marketing")}
+    for tag, (num, den) in share_def.items():
+        for y, ytag in YR_TAG.items():
+            emit(f"Fin{otag}{tag}{ytag}", pct(f[num][y] / f[den][y]))
+        s20 = sp[f"{num}_per_cand_2020"] / sp[f"{den}_per_cand_2020"].replace(0, np.nan)
+        s24 = sp[f"{num}_per_cand_2024"] / sp[f"{den}_per_cand_2024"].replace(0, np.nan)
+        p = stats.ttest_rel(s24, s20, nan_policy="omit").pvalue
+        emit(f"Fin{otag}{tag}Diff", diff_cell(s20.mean(), s24.mean(), p))
+    # growth
+    emit(f"Fin{otag}TotalGrowth",  growth(f["total"][2020], f["total"][2024]))
+    emit(f"Fin{otag}OnlineGrowth", growth(f["online_marketing"][2020], f["online_marketing"][2024]))
+
+(TEX / "candidate_finance_macros.tex").write_text("\n".join(mac) + "\n", encoding="utf-8")
+
+
+# ---- frame fragment (two-column style, mirrors the lawsuits/voters frame) ----
+def fin_column(office_label, otag):
+    return rf"""\begin{{column}}{{0.48\textwidth}}
+\textbf{{{office_label}}}
+\vspace{{2pt}}
+
+\footnotesize
+\renewcommand{{\arraystretch}}{{1.1}}
+\begin{{tabular}}{{lrrr}}
+  \toprule
+  & 2020 & 2024 & $\Delta$\% \\
+  \midrule
+  Total spend             & \Fin{otag}TotalA & \Fin{otag}TotalB & \Fin{otag}TotalDiff \\
+  \quad Legal expenses    & \Fin{otag}LegalA & \Fin{otag}LegalB & \Fin{otag}LegalDiff \\
+  \quad Marketing         & \Fin{otag}MktgA & \Fin{otag}MktgB & \Fin{otag}MktgDiff \\
+  \qquad traditional      & \Fin{otag}TradA & \Fin{otag}TradB & \Fin{otag}TradDiff \\
+  \qquad online           & \Fin{otag}OnlineA & \Fin{otag}OnlineB & \Fin{otag}OnlineDiff \\
+  \multicolumn{{4}}{{l}}{{\textit{{Composition of spend}}}} \\
+  Legal share             & \Fin{otag}LegalShareA & \Fin{otag}LegalShareB & \Fin{otag}LegalShareDiff \\
+  Marketing share         & \Fin{otag}MktgShareA & \Fin{otag}MktgShareB & \Fin{otag}MktgShareDiff \\
+  Online \% of marketing  & \Fin{otag}OnlineShareA & \Fin{otag}OnlineShareB & \Fin{otag}OnlineShareDiff \\
+  \bottomrule
+\end{{tabular}}
+\end{{column}}"""
+
+
+frame = rf"""% Auto-generated by code/04_analysis/16_candidate_descriptives.py — do not edit by hand.
+% Requires: \input candidate_finance_macros.tex in the preamble.
+\begin{{frame}}{{The Candidates --- Campaign Spending per Candidate}}
+\begin{{columns}}[T]
+
+{fin_column("Mayoral (prefeito)", "Exec")}
+
+{fin_column("Council (vereador)", "Leg")}
+
+\end{{columns}}
+\vspace{{4pt}}
+\begin{{block}}{{}}
+  \footnotesize
+  Per-candidate campaign spending (R\$, municipality-average SPCE accounts; nominal).
+  Mayoral races cost an order of magnitude more per head than council races
+  (R\$\,\FinExecTotalB{{}} vs R\$\,\FinLegTotalB{{}} in 2024). Spending roughly
+  doubled in nominal terms from 2020 (\FinExecTotalGrowth{{}} mayoral,
+  \FinLegTotalGrowth{{}} council). \textbf{{Legal expenses}} absorb
+  \FinExecLegalShareB{{}} of mayoral budgets --- a non-trivial, litigation-sensitive
+  line --- while \textbf{{marketing}} dominates (\FinExecMktgShareB{{}}), still mostly
+  traditional though online grew fastest (\FinExecOnlineGrowth{{}}).
+  \par\smallskip
+  {{\scriptsize $\Delta$\% is the relative change 2020$\to$2024; significance from a
+  paired $t$-test across municipalities. $^{{***}}p<.01$, $^{{**}}p<.05$, $^{{*}}p<.10$.}}
+\end{{block}}
+\end{{frame}}"""
+
+(TEX / "candidate_finance_frame.tex").write_text(frame + "\n", encoding="utf-8")
+
+# ======================================================================
+# COMPOSITION MACROS + FRAMES (characteristics; election performance)
+# ======================================================================
+comp = {(r.office, r.year, r.group, r.variable): r.value for r in out.itertuples()}
+
+VAR_TAG = {"N": "N", "Female": "Female", "Non-white": "Nonwhite",
+           "Higher education": "HigherEd", "Married": "Married",
+           "New entrant (vs 2020)": "New", "Incumbent (from 2020)": "Incum",
+           "Mean age": "Age"}
+GRP_TAG = {"candidates": "Cand", "elected": "Elec"}
+
+
+def comp_fmt(variable, val):
+    if pd.isna(val):
+        return "--"
+    if variable == "N":
+        return f"{int(val):,}"
+    if variable == "Mean age":
+        return f"{val:.1f}"
+    return f"{100*val:.1f}\\%"
+
+
+cmac = ["% Auto-generated by code/04_analysis/16_candidate_descriptives.py — do not edit by hand."]
+for (office, year, group, variable), val in comp.items():
+    name = f"C{OFF_TAG[office]}{GRP_TAG[group]}{VAR_TAG[variable]}{YR_TAG[year]}"
+    cmac.append(f"\\providecommand{{\\{name}}}{{}}\\renewcommand{{\\{name}}}{{{comp_fmt(variable, val)}}}")
+
+
+# ---- diff macros computed from the candidate microdata ----
+# share vars use a two-proportion z-test; age uses a Welch t-test.
+VAR_COL = {
+    "Female": ("is_female", "share"),
+    "Nonwhite": ("is_nonwhite", "share"),
+    "HigherEd": ("is_higher_education", "share"),
+    "Married": ("is_married", "share"),
+    "New": ("is_new_candidate_vs_2020", "share"),
+    "Incum": ("is_incumbent_from_2020", "share"),
+    "Age": ("candidate_age", "mean"),
+}
+
+
+def diff_two(dfa, dfb, col, kind):
+    """Relative change dfa->dfb on `col`, with a significance test."""
+    a = pd.to_numeric(dfa[col], errors="coerce").dropna()
+    b = pd.to_numeric(dfb[col], errors="coerce").dropna()
+    if len(a) == 0 or len(b) == 0:
+        return "--"
+    if kind == "share":
+        p = twoprop_p(a.sum(), len(a), b.sum(), len(b))
+        return diff_cell(a.mean(), b.mean(), p, decimals=0)
+    p = stats.ttest_ind(a, b, equal_var=False).pvalue
+    return diff_cell(a.mean(), b.mean(), p, decimals=1)
+
+
+for office, otag in OFF_TAG.items():
+    d20 = cv[(cv.office_group == office) & (cv.election_year == 2020)]
+    d24 = cv[(cv.office_group == office) & (cv.election_year == 2024)]
+    win = d24[d24.is_elected == 1]
+    lose = d24[d24.is_elected == 0]
+    for vtag, (col, kind) in VAR_COL.items():
+        # "Who Runs": 2020 pool vs 2024 pool
+        cmac.append(f"\\providecommand{{\\C{otag}CandDiff{vtag}}}{{}}"
+                    f"\\renewcommand{{\\C{otag}CandDiff{vtag}}}{{{diff_two(d20, d24, col, kind)}}}")
+        # "Who Wins": ran (2024) vs elected (2024); test elected vs non-elected
+        if kind == "share":
+            w = pd.to_numeric(win[col], errors="coerce").dropna()
+            l = pd.to_numeric(lose[col], errors="coerce").dropna()
+            ran = pd.to_numeric(d24[col], errors="coerce").dropna()
+            if len(w) and len(l) and len(ran):
+                p = twoprop_p(w.sum(), len(w), l.sum(), len(l))
+                cell = diff_cell(ran.mean(), w.mean(), p, decimals=0)
+            else:
+                cell = "--"
+        else:
+            w = pd.to_numeric(win[col], errors="coerce").dropna()
+            l = pd.to_numeric(lose[col], errors="coerce").dropna()
+            ran = pd.to_numeric(d24[col], errors="coerce").dropna()
+            p = stats.ttest_ind(w, l, equal_var=False).pvalue
+            cell = diff_cell(ran.mean(), w.mean(), p, decimals=1)
+        cmac.append(f"\\providecommand{{\\C{otag}FiltDiff{vtag}}}{{}}"
+                    f"\\renewcommand{{\\C{otag}FiltDiff{vtag}}}{{{cell}}}")
+
+(TEX / "candidate_composition_macros.tex").write_text("\n".join(cmac) + "\n", encoding="utf-8")
+
+
+# ---- Frame: candidate characteristics (the pool, 2020 vs 2024) ----
+def char_column(office_label, otag):
+    return rf"""\begin{{column}}{{0.48\textwidth}}
+\textbf{{{office_label}}}
+\vspace{{2pt}}
+
+\footnotesize
+\renewcommand{{\arraystretch}}{{1.1}}
+\begin{{tabular}}{{lrrr}}
+  \toprule
+  & 2020 & 2024 & $\Delta$\% \\
+  \midrule
+  Candidates (N)      & \C{otag}CandNA & \C{otag}CandNB & \\
+  \multicolumn{{4}}{{l}}{{\textit{{Demographics}}}} \\
+  Female              & \C{otag}CandFemaleA & \C{otag}CandFemaleB & \C{otag}CandDiffFemale \\
+  Non-white           & \C{otag}CandNonwhiteA & \C{otag}CandNonwhiteB & \C{otag}CandDiffNonwhite \\
+  Higher education    & \C{otag}CandHigherEdA & \C{otag}CandHigherEdB & \C{otag}CandDiffHigherEd \\
+  Married             & \C{otag}CandMarriedA & \C{otag}CandMarriedB & \C{otag}CandDiffMarried \\
+  Mean age            & \C{otag}CandAgeA & \C{otag}CandAgeB & \C{otag}CandDiffAge \\
+  \multicolumn{{4}}{{l}}{{\textit{{Experience (vs 2020)}}}} \\
+  New entrant         & \C{otag}CandNewA & \C{otag}CandNewB & \C{otag}CandDiffNew \\
+  Incumbent           & \C{otag}CandIncumA & \C{otag}CandIncumB & \C{otag}CandDiffIncum \\
+  \bottomrule
+\end{{tabular}}
+\end{{column}}"""
+
+
+char_frame = rf"""% Auto-generated by code/04_analysis/16_candidate_descriptives.py — do not edit by hand.
+% Requires: \input candidate_composition_macros.tex in the preamble.
+\begin{{frame}}{{The Candidates --- Who Runs}}
+\begin{{columns}}[T]
+
+{char_column("Mayoral (prefeito)", "Exec")}
+
+{char_column("Council (vereador)", "Leg")}
+
+\end{{columns}}
+\vspace{{4pt}}
+\begin{{block}}{{}}
+  \footnotesize
+  The candidate pool, by office and cycle. Council races field two orders of
+  magnitude more candidates than mayoral races. Women are
+  \CLegCandFemaleB{{}} of council candidates but only \CExecCandFemaleB{{}} of
+  mayoral ones; non-white candidates are a larger share down-ballot. Most 2024
+  candidates are \textbf{{new entrants}} (\CExecCandNewB{{}} mayoral,
+  \CLegCandNewB{{}} council); incumbents are a small slice of those who run.
+  \par\smallskip
+  {{\scriptsize $\Delta$\% is the relative change in the 2020$\to$2024 candidate pool;
+  significance from a two-proportion $z$-test (Welch $t$-test for age).
+  Experience is undefined for 2020. $^{{***}}p<.01$, $^{{**}}p<.05$, $^{{*}}p<.10$.}}
+\end{{block}}
+\end{{frame}}"""
+
+(TEX / "candidate_characteristics_frame.tex").write_text(char_frame + "\n", encoding="utf-8")
+
+
+# ---- Frame: election performance (the filter: who ran vs who won, 2024) ----
+def perf_column(office_label, otag):
+    return rf"""\begin{{column}}{{0.48\textwidth}}
+\textbf{{{office_label}}}
+\vspace{{2pt}}
+
+\footnotesize
+\renewcommand{{\arraystretch}}{{1.1}}
+\begin{{tabular}}{{lrrr}}
+  \toprule
+  (2024) & Ran & Elected & $\Delta$\% \\
+  \midrule
+  Female              & \C{otag}CandFemaleB & \C{otag}ElecFemaleB & \C{otag}FiltDiffFemale \\
+  Non-white           & \C{otag}CandNonwhiteB & \C{otag}ElecNonwhiteB & \C{otag}FiltDiffNonwhite \\
+  Higher education    & \C{otag}CandHigherEdB & \C{otag}ElecHigherEdB & \C{otag}FiltDiffHigherEd \\
+  Married             & \C{otag}CandMarriedB & \C{otag}ElecMarriedB & \C{otag}FiltDiffMarried \\
+  Mean age            & \C{otag}CandAgeB & \C{otag}ElecAgeB & \C{otag}FiltDiffAge \\
+  New entrant         & \C{otag}CandNewB & \C{otag}ElecNewB & \C{otag}FiltDiffNew \\
+  Incumbent           & \C{otag}CandIncumB & \C{otag}ElecIncumB & \C{otag}FiltDiffIncum \\
+  \bottomrule
+\end{{tabular}}
+\end{{column}}"""
+
+
+perf_frame = rf"""% Auto-generated by code/04_analysis/16_candidate_descriptives.py — do not edit by hand.
+% Requires: \input candidate_composition_macros.tex in the preamble.
+\begin{{frame}}{{The Candidates --- Who Wins (the Representation Filter)}}
+\begin{{columns}}[T]
+
+{perf_column("Mayoral (prefeito)", "Exec")}
+
+{perf_column("Council (vereador)", "Leg")}
+
+\end{{columns}}
+\vspace{{4pt}}
+\begin{{block}}{{}}
+  \footnotesize
+  Composition of who \emph{{ran}} vs who \emph{{won}} in 2024 --- the gap is the
+  election's filter. The filter runs hardest against women and newcomers,
+  especially down-ballot: women fall from \CLegCandFemaleB{{}} of council
+  candidates to \CLegElecFemaleB{{}} of the elected, and new entrants from
+  \CLegCandNewB{{}} to \CLegElecNewB{{}}. It runs \emph{{toward}} the
+  higher-educated (\CLegCandHigherEdB{{}}\,$\to$\,\CLegElecHigherEdB{{}}) and,
+  sharply, toward \textbf{{incumbents}} (\CLegCandIncumB{{}}\,$\to$\,\CLegElecIncumB{{}}).
+  This is the descriptive backdrop to the ``who gets squeezed out'' question.
+  \par\smallskip
+  {{\scriptsize $\Delta$\% is the relative change ran$\to$elected (2024); significance
+  from a two-proportion $z$-test of elected vs.\ non-elected (Welch $t$-test for age).
+  $^{{***}}p<.01$, $^{{**}}p<.05$, $^{{*}}p<.10$.}}
+\end{{block}}
+\end{{frame}}"""
+
+(TEX / "candidate_performance_frame.tex").write_text(perf_frame + "\n", encoding="utf-8")
+
+# ----------------------------------------------------------------------
+# Console: candidates vs elected, side by side, per office/year
+# ----------------------------------------------------------------------
+var_order = ["N", "Female", "Non-white", "Higher education", "Married",
+             "New entrant (vs 2020)", "Incumbent (from 2020)", "Mean age"]
+
+
+def fmt(variable, val):
+    if pd.isna(val):
+        return "--"
+    if variable == "N":
+        return f"{int(val):,}"
+    if variable == "Mean age":
+        return f"{val:.1f}"
+    return f"{val*100:.1f}%"
+
+
+for office in ["executive", "legislative"]:
+    print(f"\n{'='*68}\n {office.upper()}  --  candidate pool vs. elected\n{'='*68}")
+    header = f"  {'':22s} | {'2020 cand':>10s} {'2020 elec':>10s} | {'2024 cand':>10s} {'2024 elec':>10s}"
+    print(header); print("  " + "-" * (len(header) - 2))
+    piv = out[out.office == office].pivot_table(
+        index="variable", columns=["year", "group"], values="value", aggfunc="first")
+    for v in var_order:
+        c20 = fmt(v, piv.loc[v, (2020, "candidates")])
+        e20 = fmt(v, piv.loc[v, (2020, "elected")])
+        c24 = fmt(v, piv.loc[v, (2024, "candidates")])
+        e24 = fmt(v, piv.loc[v, (2024, "elected")])
+        print(f"  {v:22s} | {c20:>10s} {e20:>10s} | {c24:>10s} {e24:>10s}")
+
+print(f"\nWrote {OUT / 'candidate_elected_composition.csv'}")
+
+# ---- finance console ----
+for office, otag in OFF_TAG.items():
+    f = fin[office]
+    print(f"\n{'='*60}\n {office.upper()}  --  campaign spend per candidate (R$, nominal)\n{'='*60}")
+    print(f"  {'':22s} | {'2020':>10s} {'2024':>10s} | growth")
+    print("  " + "-" * 52)
+    for cat, ctag in CAT_TAG.items():
+        a, b = f[cat][2020], f[cat][2024]
+        print(f"  {cat:22s} | {money(a):>10s} {money(b):>10s} | {growth(a,b).replace(chr(92),''):>5s}")
+    print(f"  {'legal share':22s} | {pct(f['legal'][2020]/f['total'][2020]).replace(chr(92),''):>10s}"
+          f" {pct(f['legal'][2024]/f['total'][2024]).replace(chr(92),''):>10s} |")
+    print(f"  {'marketing share':22s} | {pct(f['marketing'][2020]/f['total'][2020]).replace(chr(92),''):>10s}"
+          f" {pct(f['marketing'][2024]/f['total'][2024]).replace(chr(92),''):>10s} |")
+
+print(f"\nWrote {TEX / 'candidate_finance_macros.tex'}")
+print(f"Wrote {TEX / 'candidate_finance_frame.tex'}")
+print(f"Wrote {TEX / 'candidate_composition_macros.tex'}")
+print(f"Wrote {TEX / 'candidate_characteristics_frame.tex'}")
+print(f"Wrote {TEX / 'candidate_performance_frame.tex'}")
