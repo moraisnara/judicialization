@@ -3,22 +3,14 @@
 
 \begin{tabular}{lcccc}
    \tabularnewline \midrule \midrule
-   Dependent Variable: & \multicolumn{4}{c}{delta\_log1p\_competition\_lawsuits\_2024\_2020}\\
-   Model:                   & (1)         & (2)         & (3)         & (4)\\  
-   \midrule
-   \emph{Variables}\\
-   Bartik IV                & 1.79$^{**}$ & 1.80$^{**}$ & 1.80$^{**}$ & 1.79$^{**}$\\   
-                            & (0.405)     & (0.422)     & (0.406)     & (0.405)\\   
-   First-stage $F$          & 19.6        & 18.2        & 19.7        & 19.6\\  
-   tF$_{\text{cv}}$ (5\%)   & 2.18        & 2.23        & 2.18        & 2.18\\  
-   $N$                      & 5,560       & 5,371       & 5,560       & 5,560\\  
-   \midrule
-   \emph{Fixed-effects}\\
-   SG\_UF                   & Yes         & Yes         & Yes         & Yes\\  
-   \midrule
-   \emph{Fit statistics}\\
-   Observations             & 5,560       & 5,371       & 5,560       & 5,560\\  
+   Dependent Variable: & \multicolumn{4}{c}{Judicialization}\\
+   Design:                   & Baseline      & Ext.\ controls  & Open seats    & Contested \\   
+   Model:                    & (1)           & (2)             & (3)           & (4)\\  
+   Predicted judicialization & 0.213$^{***}$ & 0.207$^{***}$   & 0.177$^{***}$ & 0.237$^{***}$\\   
+                             & (0.040)       & (0.039)         & (0.056)       & (0.039)\\   
+   First-stage $F$           & 28.1          & 28.0            & 10.0          & 36.8\\  
+   $N$                       & 5,560         & 5,560           & 1,994         & 3,566\\  
    \midrule \midrule
-   \multicolumn{5}{l}{\emph{Clustered (cluster\_id) standard-errors in parentheses}}\\
-   \multicolumn{5}{l}{\emph{Signif. Codes: **: 0.01, *: 0.05, \dagger: 0.1}}\\
+   \multicolumn{5}{l}{\emph{Clustered (state) standard-errors in parentheses}}\\
+   \multicolumn{5}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
 \end{tabular}

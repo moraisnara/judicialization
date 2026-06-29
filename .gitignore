@@ -56,3 +56,10 @@ __pycache__/
 desktop.ini
 Thumbs.db
 *.tmp
+
+# Secrets and stray artifacts
+.env
+Rplots.pdf
+
+# Never commit data CSVs (large, regenerable)
+*.csv

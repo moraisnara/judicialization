@@ -6,28 +6,31 @@
   Outcome & Coef. & SE & $p$ & Dep.\ mean \\
   \midrule
   \multicolumn{5}{l}{\textit{Panel A: Voter Behavior}} \\
-  \quad $\Delta$ Blank vote rate & \textbf{+0.013} & \textbf{(0.005)} & \textbf{0.018} & \textbf{0.001} \\
-  \quad $\Delta$ Valid vote rate & -0.026 & (0.013) & 0.038 & 0.015 \\
-  \quad $\Delta$ Turnout rate & -0.006 & (0.005) & 0.185 & 0.010 \\
-  \quad $\Delta$ Null vote rate & +0.007 & (0.006) & 0.220 & -0.006 \\
+  \quad Turnout (any ballot) & -0.006 & (0.004) & 0.116 & 0.835 \\
+  \quad Blank rate (mayoral) & +0.006 & (0.002) & 0.002 & 0.016 \\
+  \quad Null rate (mayoral) & +0.005 & (0.002) & 0.026 & 0.027 \\
+  \quad Valid rate (mayoral) & -0.014 & (0.006) & 0.025 & 0.792 \\
+  \quad Blank rate (council) & +0.000 & (0.001) & 0.465 & 0.013 \\
+  \quad Null rate (council) & +0.000 & (0.001) & 0.876 & 0.018 \\
+  \quad Valid rate (council) & -0.006 & (0.004) & 0.169 & 0.804 \\
   \midrule
   \multicolumn{5}{l}{\textit{Panel B: Candidate Performance}} \\
-  \quad $\Delta$ Log candidates (exec.) & -0.066 & (0.039) & 0.092 & -0.112 \\
-  \quad $\Delta$ Log candidates (leg.) & -0.075 & (0.041) & 0.066 & -0.108 \\
-  \quad $\Delta$ Margin (W$-$RU) & +0.062 & (0.043) & 0.151 & 0.060 \\
-  \quad $\Delta$ Runner-up vote share & -0.031 & (0.022) & 0.157 & -0.011 \\
-  \quad $\Delta$ Winner majority & +0.140 & (0.090) & 0.122 & 0.125 \\
-  \quad $\Delta$ Female candidate share & -0.077 & (0.043) & 0.075 & 0.021 \\
-  \quad $\Delta$ Female vote share & -0.093 & (0.048) & 0.052 & 0.015 \\
-  \quad $\Delta$ Winner is female & -0.123 & (0.063) & 0.052 & 0.011 \\
+  \quad Log candidates (exec.) & -0.046 & (0.027) & 0.097 & -0.112 \\
+  \quad $\Delta$ Log candidates (leg.) & -0.021 & (0.043) & 0.634 & -0.108 \\
+  \quad Margin (W$-$RU) & +0.092 & (0.028) & 0.003 & 0.270 \\
+  \quad Runner-up vote share & -0.046 & (0.015) & 0.005 & 0.337 \\
+  \quad Winner majority & +0.036 & (0.036) & 0.334 & 0.832 \\
+  \quad $\Delta$ Female candidate share & -0.040 & (0.037) & 0.279 & 0.021 \\
+  \quad Female vote share & -0.045 & (0.029) & 0.133 & 0.146 \\
+  \quad Winner is female & -0.040 & (0.044) & 0.382 & 0.132 \\
   \midrule
-  \multicolumn{5}{l}{\textit{Panel C: Heterogeneity --- $\Delta$ Blank Rate}} \\
-  \quad Open seat ($N=2,571$) & +0.030 & (0.014) & 0.028 & -0.001 \\
-  \quad Contested ($N=2,989$) & +0.003 & (0.005) & 0.545 & 0.003 \\
+  \multicolumn{5}{l}{\textit{Panel C: Heterogeneity --- Blank Rate (2024)}} \\
+  \quad Open seat ($N=1,994$) & +0.003 & (0.002) & 0.117 & 0.014 \\
+  \quad Contested ($N=3,566$) & +0.007 & (0.002) & 0.005 & 0.017 \\
   \bottomrule
 \end{tabular}
 \par\vspace{4pt}
 \begin{minipage}{0.97\linewidth}
 \footnotesize
-\textit{Notes:} Baseline specification: state FE + 7 pre-determined controls. First-stage $F=19.6$, $N=5,560$, 2,187 clusters (electoral zones). SE clustered by principal zone. Panel~C open-seat sub-sample first-stage $F=10.6$.
+\textit{Notes:} Headline estimator: ANCOVA on the 2016 pre-window baseline, $Y_{2024} \sim D + Y_{2016} + X$ (state FE + pre-determined controls), 2SLS with the Bartik instrument. The 2016 level enters as a free lag, so the dependent variable is the 2024 level and ``Dep.\ mean'' is its 2024-level mean. Rows marked $\Delta$ have no clean 2016 analog and are estimated in first differences. First-stage $F=28.1$, $N=5,560$, 26 clusters (states). SE clustered by state (UF). Panel~C open-seat sub-sample first-stage $F=10.0$.
 \end{minipage}

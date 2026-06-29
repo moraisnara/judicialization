@@ -90,13 +90,23 @@ ALL_OUTCOMES <- c(CANDIDATE_POOL_OUTCOMES, ELECTED_COMP_OUTCOMES, PARTY_COMP_OUT
 # Baseline controls: demographic + legislative electoral baseline
 # Note: margin_2016 is executive margin, used here as a municipality-level
 # political-environment control (competitiveness of the local political arena).
+# V2 control philosophy (2026-06-28), mirroring the executive design: common
+# pre-determined controls only. The 2020 *levels* of legislative field size and
+# party count are dropped from baseline because two outcomes
+# (delta_log1p_total_candidates, delta_effective_party_count_candidates) are
+# 2024-2020 changes of those same quantities -- conditioning on their 2020 base
+# level is Lord's-paradox bias. The legislative design has NO 2016 candidate-
+# composition levels, so a per-outcome 2016 lag (executive V3) is infeasible here.
 BASELINE_CONTROLS <- c(
   "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
   "margin_2016",
-  "log1p_total_valid_votes_2020",        # electorate size
-  "log1p_total_candidates_2020_leg",     # baseline legislative field size
-  "effective_party_count_candidates_2020" # baseline party count
+  "log1p_total_valid_votes_2020"         # electorate size (not a comp. outcome)
 )
+
+# OLD ANCOVA stance (V1): the two 2020 legislative levels back in, for a labelled
+# stance-check spec so the bias is visible in the results file.
+ANCOVA_2020_LEVELS <- c("log1p_total_candidates_2020_leg",
+                        "effective_party_count_candidates_2020")
 
 
 
@@ -169,7 +179,8 @@ specs <- list(
     "female_share_2020", "nonwhite_share_2020",
     "incumbent_candidate_share_2020", "new_candidate_share_2020"
   ),                                                                                 "SG_UF", FALSE, NULL),
-  list("broader_treatment", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"),      "SG_UF", FALSE, NULL)
+  list("broader_treatment", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"),      "SG_UF", FALSE, NULL),
+  list("ancova_2020lvl",    c(BASELINE_CONTROLS, ANCOVA_2020_LEVELS),                "SG_UF", FALSE, NULL)
 )
 
 cat(sprintf("Running %d variants x %d specs x %d outcomes\n\n",

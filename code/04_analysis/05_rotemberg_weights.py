@@ -46,6 +46,18 @@ OUTCOMES = [
     "delta_blank_rate_2024_2020",
 ]
 
+# Headline = ANCOVA on the 2016 pre-window baseline: the decomposed dependent
+# variable is the 2024 LEVEL, residualised on controls PLUS its own 2016 level.
+# The Rotemberg WEIGHTS (alpha_k, K_eff) are first-stage objects — they depend
+# only on the endogenous variable and the instrument and are unchanged by the
+# outcome form — so only the per-topic outcome estimates tau_k switch to ANCOVA.
+ANCOVA_LEVEL = {
+    "delta_winner_majority_2024_2020":   ("winner_majority_2024",   "winner_majority_2016"),
+    "delta_margin_top1_top2_2024_2020":  ("margin_top1_top2_2024",  "margin_top1_top2_2016"),
+    "delta_winner_vote_share_2024_2020": ("winner_vote_share_2024", "winner_vote_share_2016"),
+    "delta_blank_rate_2024_2020":        ("blank_rate_2024",        "blank_rate_2016"),
+}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -87,8 +99,12 @@ def main() -> None:
     )
 
     need = [ENDOGENOUS, INSTRUMENT, FE_COL] + BASELINE_CONTROLS
-    avail_outcomes = [o for o in OUTCOMES if o in design.columns]
-    need += avail_outcomes
+    # Keep only outcomes whose 2024 level + 2016 lag both exist (ANCOVA form).
+    avail_outcomes = [o for o in OUTCOMES
+                      if all(c in design.columns for c in ANCOVA_LEVEL.get(o, ("", "")))]
+    for o in avail_outcomes:
+        lvl, lag = ANCOVA_LEVEL[o]
+        need += [lvl, lag]
 
     samp = design[need].dropna().copy().reset_index(drop=True)
     samp["municipality_id_tse"] = samp["municipality_id_tse"].str.zfill(5) \
@@ -140,11 +156,20 @@ def main() -> None:
     pivot.index.name = "municipality_id_tse"
     combined = samp_indexed.join(pivot, how="inner")
 
-    scalar_cols = [ENDOGENOUS, INSTRUMENT] + avail_outcomes
+    scalar_cols = [ENDOGENOUS, INSTRUMENT]
     all_cols    = scalar_cols + topic_codes
 
     print("Partialling out controls and state FE …")
     resid_df = partial_out(combined, all_cols, BASELINE_CONTROLS, FE_COL)
+
+    # Outcome residuals are ANCOVA: the 2024 LEVEL residualised on the baseline
+    # controls PLUS the outcome's own 2016 level (the headline conditioning set).
+    # Computed per outcome because the 2016 lag is outcome-specific.
+    outcome_resid = {}
+    for o in avail_outcomes:
+        lvl, lag = ANCOVA_LEVEL[o]
+        rr = partial_out(combined, [lvl], BASELINE_CONTROLS + [lag], FE_COL)
+        outcome_resid[o] = rr[lvl].values
 
     d_tilde  = resid_df[ENDOGENOUS].values          # (N,)  residualised endog
 
@@ -188,7 +213,7 @@ def main() -> None:
             "f_stat_k":   f_k,
         }
         for out in avail_outcomes:
-            y_tilde = resid_df[out].values
+            y_tilde = outcome_resid[out]
             zk_Y    = zk @ y_tilde
             row[f"tau_{out}"] = zk_Y / zk_D if abs(zk_D) > 1e-12 else np.nan
 

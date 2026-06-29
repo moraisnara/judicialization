@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+import difflib
+import re
 import unicodedata
+import zipfile
 
 import numpy as np
 import pandas as pd
@@ -12,12 +15,38 @@ RAW_DIR = PROJECT_ROOT / "data" / "raw"
 DERIVED_DIR = PROJECT_ROOT / "data" / "clean"
 TABLES_DIR = PROJECT_ROOT / "output" / "tables" / "descriptives"
 
-ZONA_PANEL_PATH = DERIVED_DIR / "zona_lawsuit_panel.csv"
 CROSSWALK_PATH = DERIVED_DIR / "shift_share_subject_crosswalk.csv"
 OVERRIDES_PATH = DERIVED_DIR / "shift_share_subject_manual_assignments.csv"
 LOOKUP_PATH = RAW_DIR / "lista-zonas-municipios-10-07-24.csv"
 
 TARGET_YEARS = [2020, 2024]
+
+# ── SIG municipality-level lawsuit source ──────────────────────────────────────
+# The lawsuit panel is now built from the SIG TSE microdata export, which resolves
+# each lawsuit to its MUNICIPALITY of origin (not just the electoral zona). This
+# replaces the old zona-eleitoral panel + zona->municipality many-to-many merge,
+# which duplicated each multi-municipality zona's caseload across its municipalities
+# and inflated the first stage. SIG carries only TEXT labels (no CD_CLASSE /
+# CD_ASSUNTO codes), so labels are bridged to the committed codes via the raw-TSE
+# processo files; the adversarial DROP filter and subject->family crosswalk are then
+# applied on codes exactly as before.
+SIG_SOURCES = [
+    ("processos_eleitorais.csv.zip", 2020),
+    ("processos_eleitorais_2024.csv", 2024),  # despite the .csv name it is a zip
+]
+SIG_RAW_COLS = [
+    "ano", "assunto", "classe", "data_dist", "muni", "tipo_origem", "uf", "zona",
+    "qt_dec", "qt_proc", "tempo_med", "data_carga",
+]
+# First-round municipal election day per cycle (campaign-window cutoff), matching
+# the committed ELECTION_CUTOFFS in the retired 01_lawsuit_panel.py.
+SIG_ELECTION_DAY = {
+    2020: pd.Timestamp("2020-11-15"),
+    2024: pd.Timestamp("2024-10-06"),
+}
+MUNI_DIRECTORY_PATH = RAW_DIR / "bd_diretorio_municipio.csv"
+# TSE spellings the fuzzy matcher cannot bridge -> id_municipio_tse (zero-padded).
+MANUAL_MUNI_OVERRIDE = {"RN|ASSU": "16039"}  # Assu (TSE) == Acu (IBGE)
 
 # ── Adversarial filter ─────────────────────────────────────────────────────────
 # Classes to exclude: administrative and procedural/enforcement classes
@@ -141,32 +170,154 @@ def load_zone_lookup() -> pd.DataFrame:
     return lookup
 
 
-def load_zone_subject_panel(crosswalk: pd.DataFrame) -> pd.DataFrame:
-    panel = pd.read_csv(
-        ZONA_PANEL_PATH,
-        dtype={"municipality_id_tse": str, "case_class_code": str, "main_subject_code": str},
-        low_memory=False,
+def norm_label(value: object) -> str:
+    """Normalize a text label for code bridging: deaccent, drop punctuation,
+    collapse whitespace, uppercase. Used to match SIG class/subject/municipality
+    names to the canonical TSE codes (validated at 100% of lawsuit volume)."""
+    text = "" if pd.isna(value) else str(value).strip()
+    text = "".join(
+        ch for ch in unicodedata.normalize("NFKD", text)
+        if not unicodedata.combining(ch)
     )
-    panel = panel.rename(columns=STANDARD_TO_LEGACY)
-    panel = panel[panel["ANO_ELEICAO"].isin(TARGET_YEARS)].copy()
-    panel = panel[
-        ~panel["CD_CLASSE"].isin(DROP_CLASSES) &
-        ~panel["CD_ASSUNTO_PRINCIPAL"].isin(DROP_SUBJECTS)
-    ].copy()
+    text = re.sub(r"[^A-Za-z0-9 ]", " ", text)
+    return re.sub(r"\s+", " ", text).upper().strip()
+
+
+def build_label_code_bridges() -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
+    """Build normalized-label -> code dictionaries from the raw-TSE processo files,
+    which carry both CD_CLASSE/DS_CLASSE and CD_ASSUNTO_PRINCIPAL/DS_ASSUNTO_PRINCIPAL.
+    Returns (class_label->code, subject_label->code, subject_code->canonical_DS)."""
+    cols = ["CD_CLASSE", "DS_CLASSE", "CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL"]
+    frames: list[pd.DataFrame] = []
+    for year in TARGET_YEARS:
+        path = RAW_DIR / f"processo_eleitoral_{year}" / f"processo_eleitoral_{year}.csv"
+        if not path.exists():
+            continue
+        frames.append(pd.read_csv(
+            path, sep=";", encoding="latin-1", usecols=cols, dtype=str, low_memory=False,
+        ))
+    tse = pd.concat(frames, ignore_index=True)
+
+    class_map: dict[str, str] = {}
+    for _, row in tse[["CD_CLASSE", "DS_CLASSE"]].drop_duplicates().iterrows():
+        class_map.setdefault(norm_label(row["DS_CLASSE"]), row["CD_CLASSE"])
+
+    subject_map: dict[str, str] = {}
+    code_to_ds: dict[str, str] = {}
+    for _, row in tse[["CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL"]].drop_duplicates().iterrows():
+        subject_map.setdefault(norm_label(row["DS_ASSUNTO_PRINCIPAL"]), row["CD_ASSUNTO_PRINCIPAL"])
+        code_to_ds.setdefault(row["CD_ASSUNTO_PRINCIPAL"], row["DS_ASSUNTO_PRINCIPAL"])
+    return class_map, subject_map, code_to_ds
+
+
+def build_muni_name_to_tse() -> dict[str, str]:
+    """Build (UF|normalized municipality name) -> id_municipio_tse (zero-padded
+    5-char) from the basedosdados municipality directory. Reused from the SIG
+    builder; resolves each SIG municipality to its TSE code with no many-to-many."""
+    directory = pd.read_csv(MUNI_DIRECTORY_PATH, dtype=str, encoding="utf-8")
+    directory = directory.dropna(subset=["id_municipio_tse"]).copy()
+    directory["key"] = directory["sigla_uf"].str.upper() + "|" + directory["nome"].map(norm_label)
+    directory = directory.drop_duplicates("key")
+    name_to_tse = {
+        row["key"]: str(row["id_municipio_tse"]).strip().zfill(5)
+        for _, row in directory.iterrows()
+    }
+    for key, tse in MANUAL_MUNI_OVERRIDE.items():
+        name_to_tse[key] = str(tse).strip().zfill(5)
+    return name_to_tse
+
+
+def load_sig_lawsuits() -> pd.DataFrame:
+    """Load the SIG TSE lawsuit microdata (2020 + 2024), municipality-resolved."""
+    frames: list[pd.DataFrame] = []
+    for filename, year in SIG_SOURCES:
+        with zipfile.ZipFile(RAW_DIR / filename) as archive:
+            df = pd.read_csv(
+                archive.open(archive.namelist()[0]),
+                sep=";", encoding="latin-1", dtype=str, low_memory=False,
+            )
+        df.columns = SIG_RAW_COLS
+        df["election_year"] = year
+        df["qt_proc"] = pd.to_numeric(df["qt_proc"], errors="coerce").fillna(0.0)
+        df["dt_dist"] = pd.to_datetime(df["data_dist"], errors="coerce")
+        frames.append(df)
+    return pd.concat(frames, ignore_index=True)
+
+
+def build_sig_municipal_panel(
+    crosswalk: pd.DataFrame,
+    nm_ue_by_code: dict[str, str],
+) -> pd.DataFrame:
+    """Municipality-level lawsuit panel from SIG, matching the schema the bartik
+    builder expects. Each lawsuit is already resolved to one municipality, so the
+    panel is built WITHOUT the zona->municipality many-to-many expansion. Filters
+    (first-instance Originário + filed before first-round election day) and the
+    adversarial DROP sets + subject->family crosswalk mirror the committed design."""
+    sig = load_sig_lawsuits()
+
+    # Same restrictions as the retired raw-TSE panel: first-instance only
+    # (Originário ≈ NR_INSTANCIA == 1) and filed before first-round election day.
+    is_originario = sig["tipo_origem"].str.startswith("Origin", na=False)
+    election_day = sig["election_year"].map(SIG_ELECTION_DAY)
+    pre_election = sig["dt_dist"] < election_day
+    sig = sig[is_originario & pre_election].copy()
+
+    # Bridge SIG text labels -> committed TSE codes.
+    class_map, subject_map, code_to_ds = build_label_code_bridges()
+    sig["CD_CLASSE"] = sig["classe"].map(norm_label).map(class_map)
+    sig["CD_ASSUNTO_PRINCIPAL"] = sig["assunto"].map(norm_label).map(subject_map)
+    n_unbridged = int(sig["CD_ASSUNTO_PRINCIPAL"].isna().sum())
+    if n_unbridged:
+        print(f"    SIG subjects without a code bridge: {n_unbridged:,} rows "
+              f"({100 * n_unbridged / max(len(sig), 1):.3f}%) — dropped")
+    sig = sig[sig["CD_CLASSE"].notna() & sig["CD_ASSUNTO_PRINCIPAL"].notna()].copy()
+
+    # NOTE: the adversarial filter is NO LONGER applied here. Both adversarial and
+    # non-adversarial (mandatory/administrative) filings are carried through the
+    # panel and tagged with `competition_case` below. Selecting competition_case==True
+    # reproduces the old adversarial set byte-for-byte; the excluded filings feed the
+    # non-adversarial intensity control and the placebo shift-share (BHJ generic-shares
+    # diagnostic). The DROP sets now define the tag, not a row filter.
+
+    # Resolve municipality of origin -> TSE code (no many-to-many; one muni per case).
+    name_to_tse = build_muni_name_to_tse()
+    sig["muni_key"] = sig["uf"].str.upper() + "|" + sig["muni"].map(norm_label)
+    sig["SG_UE"] = sig["muni_key"].map(name_to_tse)
+    unmatched_muni = sig["SG_UE"].isna()
+    if unmatched_muni.any():
+        pct = 100 * sig.loc[unmatched_muni, "qt_proc"].sum() / max(sig["qt_proc"].sum(), 1)
+        print(f"    SIG municipalities unmatched to TSE code: "
+              f"{int(unmatched_muni.sum()):,} rows ({pct:.3f}% of volume) — dropped")
+    sig = sig[sig["SG_UE"].notna()].copy()
+
+    sig = sig.rename(columns={"election_year": "ANO_ELEICAO", "uf": "SG_UF"})
+    sig["SG_UF"] = sig["SG_UF"].str.upper()
+    sig["zona_eleitoral"] = pd.to_numeric(sig["zona"], errors="coerce").astype("Int64")
+    # Canonical DS label from the TSE dictionary, so the crosswalk keys align.
+    sig["DS_ASSUNTO_PRINCIPAL"] = sig["CD_ASSUNTO_PRINCIPAL"].map(code_to_ds)
+    # NM_UE comes from the same TSE source the universe uses, so design merges on
+    # (SG_UF, SG_UE, NM_UE) stay consistent. Fall back to the SIG name (then the
+    # code) for the rare municipality absent from the zona lookup, so no row is
+    # dropped by the downstream groupby on a missing name.
+    sig["NM_UE"] = sig["SG_UE"].map(nm_ue_by_code)
+    sig["NM_UE"] = sig["NM_UE"].fillna(sig["muni"].map(norm_label)).fillna(sig["SG_UE"])
+
     panel = (
-        panel.groupby(
+        sig.groupby(
             [
                 "ANO_ELEICAO",
                 "SG_UF",
                 "zona_eleitoral",
+                "SG_UE",
+                "NM_UE",
                 "CD_CLASSE",
-                "DS_CLASSE",
                 "CD_ASSUNTO_PRINCIPAL",
                 "DS_ASSUNTO_PRINCIPAL",
             ],
             as_index=False,
+            dropna=False,
         )
-        .agg(n_lawsuits=("n_lawsuits", "max"))
+        .agg(n_lawsuits=("qt_proc", "sum"))
     )
     panel = panel.merge(
         crosswalk,
@@ -175,28 +326,24 @@ def load_zone_subject_panel(crosswalk: pd.DataFrame) -> pd.DataFrame:
         validate="many_to_one",
     )
     panel["topic_family"] = panel["topic_family"].fillna("unmapped")
-    panel["zone_id"] = panel["SG_UF"].astype(str) + "_" + panel["zona_eleitoral"].astype(str)
-    return panel
-
-
-def build_municipality_subject_panel(
-    zone_subject_panel: pd.DataFrame,
-    zone_lookup: pd.DataFrame,
-) -> pd.DataFrame:
-    municipal = zone_subject_panel.merge(
-        zone_lookup,
-        on=["SG_UF", "zona_eleitoral"],
-        how="left",
-        validate="many_to_many",
+    # Adversarial (=competition) iff NOT in either DROP set. This tag reproduces the
+    # old hard filter exactly: competition_case==True selects the identical rows that
+    # the removed `~isin(DROP_*)` filter kept.
+    panel["competition_case"] = ~(
+        panel["CD_CLASSE"].isin(DROP_CLASSES)
+        | panel["CD_ASSUNTO_PRINCIPAL"].isin(DROP_SUBJECTS)
     )
-    municipal["competition_case"] = True
-    return municipal
+    return panel
 
 
 def build_municipality_bartik_components(
     municipal_panel: pd.DataFrame,
+    case_flag: bool = True,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    competition = municipal_panel[municipal_panel["competition_case"]].copy()
+    # case_flag=True -> adversarial (committed) instrument; case_flag=False -> placebo
+    # shift-share over the EXCLUDED mandatory/administrative filings. National/leave-out
+    # totals are computed from the selected subset only, so the two are fully separate.
+    competition = municipal_panel[municipal_panel["competition_case"] == case_flag].copy()
 
     municipality_subject = (
         competition.groupby(
@@ -302,32 +449,41 @@ def build_municipality_bartik_components(
     return municipality_subject, components, bartik
 
 
-def build_municipality_judicialization_totals(municipal_panel: pd.DataFrame) -> pd.DataFrame:
-    competition = municipal_panel[municipal_panel["competition_case"]].copy()
+def build_municipality_judicialization_totals(
+    municipal_panel: pd.DataFrame,
+    case_flag: bool = True,
+    prefix: str = "competition",
+) -> pd.DataFrame:
+    # case_flag=True/prefix="competition" -> adversarial caseload volume (the endogenous
+    # treatment); case_flag=False/prefix="nonadversarial" -> excluded mandatory/admin
+    # filing volume (the BHJ generic-shares intensity control).
+    competition = municipal_panel[municipal_panel["competition_case"] == case_flag].copy()
     totals = (
         competition.groupby(["ANO_ELEICAO", "SG_UF", "SG_UE", "NM_UE"], as_index=False)
         .agg(
-            competition_lawsuits=("n_lawsuits", "sum"),
-            competition_subjects=("CD_ASSUNTO_PRINCIPAL", "nunique"),
-            competition_families=("topic_family", "nunique"),
+            **{
+                f"{prefix}_lawsuits": ("n_lawsuits", "sum"),
+                f"{prefix}_subjects": ("CD_ASSUNTO_PRINCIPAL", "nunique"),
+                f"{prefix}_families": ("topic_family", "nunique"),
+            }
         )
     )
     wide = (
         totals.pivot_table(
             index=["SG_UF", "SG_UE", "NM_UE"],
             columns="ANO_ELEICAO",
-            values=["competition_lawsuits", "competition_subjects", "competition_families"],
+            values=[f"{prefix}_lawsuits", f"{prefix}_subjects", f"{prefix}_families"],
             fill_value=0,
         )
     )
     wide.columns = [f"{name}_{year}" for name, year in wide.columns]
     wide = wide.reset_index()
     for year in TARGET_YEARS:
-        wide[f"log1p_competition_lawsuits_{year}"] = np.log1p(
-            wide.get(f"competition_lawsuits_{year}", 0)
+        wide[f"log1p_{prefix}_lawsuits_{year}"] = np.log1p(
+            wide.get(f"{prefix}_lawsuits_{year}", 0)
         )
-    wide["delta_log1p_competition_lawsuits_2024_2020"] = (
-        wide["log1p_competition_lawsuits_2024"] - wide["log1p_competition_lawsuits_2020"]
+    wide[f"delta_log1p_{prefix}_lawsuits_2024_2020"] = (
+        wide[f"log1p_{prefix}_lawsuits_2024"] - wide[f"log1p_{prefix}_lawsuits_2020"]
     )
     return wide
 
@@ -567,8 +723,20 @@ def build_design_for_office(
     office_outcomes: pd.DataFrame,
 ) -> pd.DataFrame:
     office_panel = office_outcomes[office_outcomes["office_group"] == office_group].copy()
+    bartik_cols = [
+        "SG_UF", "SG_UE", "NM_UE",
+        "bartik_iv_2020_2024", "baseline_competition_lawsuits_2020", "baseline_subjects_2020",
+    ]
+    # Carry the placebo shift-share + its baseline counts when present (added in main()).
+    for column in [
+        "placebo_bartik_iv_2020_2024",
+        "baseline_nonadversarial_lawsuits_2020",
+        "baseline_nonadversarial_subjects_2020",
+    ]:
+        if column in bartik.columns:
+            bartik_cols.append(column)
     design = municipality_universe.merge(
-        bartik[["SG_UF", "SG_UE", "NM_UE", "bartik_iv_2020_2024", "baseline_competition_lawsuits_2020", "baseline_subjects_2020"]]
+        bartik[bartik_cols]
         .drop_duplicates()
         .merge(judicialization_totals, on=["SG_UF", "SG_UE", "NM_UE"], how="outer"),
         on=["SG_UF", "SG_UE", "NM_UE"],
@@ -588,6 +756,19 @@ def build_design_for_office(
         "log1p_competition_lawsuits_2020",
         "log1p_competition_lawsuits_2024",
         "delta_log1p_competition_lawsuits_2024_2020",
+        # Placebo / non-adversarial intensity (zero where a muni has no excluded filings).
+        "placebo_bartik_iv_2020_2024",
+        "baseline_nonadversarial_lawsuits_2020",
+        "baseline_nonadversarial_subjects_2020",
+        "nonadversarial_families_2020",
+        "nonadversarial_families_2024",
+        "nonadversarial_lawsuits_2020",
+        "nonadversarial_lawsuits_2024",
+        "nonadversarial_subjects_2020",
+        "nonadversarial_subjects_2024",
+        "log1p_nonadversarial_lawsuits_2020",
+        "log1p_nonadversarial_lawsuits_2024",
+        "delta_log1p_nonadversarial_lawsuits_2024_2020",
     ]
     for column in fill_zero_cols:
         if column in design.columns:
@@ -666,12 +847,15 @@ def write_setup_note(
     lines = [
         "# Office-Specific Shift-Share Setup",
         "",
-        "This setup uses only first-instance (`NR_INSTANCIA == 1`) electoral lawsuits,",
-        "which correspond to local `zonas eleitorais`, and maps them to municipalities.",
+        "Lawsuits come from the SIG TSE microdata export, which resolves each case to",
+        "its **municipality of origin** directly. Only first-instance (`Originário`)",
+        "cases filed before first-round election day are kept. This replaces the old",
+        "zona-eleitoral panel and its zona->municipality many-to-many merge, which",
+        "duplicated each multi-municipality zona's caseload across its municipalities.",
         "",
         "## Core Choices",
         "",
-        "- exposure unit: municipality, aggregated from first-instance zona-eleitoral outputs",
+        "- exposure unit: municipality, resolved directly by SIG (no zona expansion)",
         "- treatment universe: adversarial lawsuits only (administrative and procedural",
         "  classes/subjects excluded via DROP_CLASSES and DROP_SUBJECTS in 02_bartik_inputs.py)",
         "- outcome panels are separated by office sought",
@@ -709,12 +893,39 @@ def main() -> None:
 
     crosswalk = load_crosswalk()
     zone_lookup = load_zone_lookup()
-    zone_subject_panel = load_zone_subject_panel(crosswalk)
-    municipal_panel = build_municipality_subject_panel(zone_subject_panel, zone_lookup)
+    # zone_lookup is now used only as the municipality-name / universe source —
+    # lawsuits are resolved to municipality directly by SIG, with no zona merge.
+    nm_ue_by_code = (
+        zone_lookup.drop_duplicates("SG_UE").set_index("SG_UE")["NM_UE"].to_dict()
+    )
+    municipal_panel = build_sig_municipal_panel(crosswalk, nm_ue_by_code)
     municipality_subject, bartik_components, bartik = build_municipality_bartik_components(
         municipal_panel
     )
     judicialization_totals = build_municipality_judicialization_totals(municipal_panel)
+
+    # Non-adversarial (excluded mandatory/administrative filings): placebo shift-share
+    # + intensity volume for the BHJ generic-shares diagnostic. Same construction as the
+    # adversarial instrument, over the complementary subset; merged onto the design so the
+    # estimation can (a) add log non-adversarial volume as a control and (b) run the
+    # placebo IV and condition the main result on it.
+    _, _, placebo_bartik = build_municipality_bartik_components(
+        municipal_panel, case_flag=False
+    )
+    placebo_bartik = placebo_bartik.rename(
+        columns={
+            "bartik_iv_2020_2024": "placebo_bartik_iv_2020_2024",
+            "baseline_competition_lawsuits_2020": "baseline_nonadversarial_lawsuits_2020",
+            "baseline_subjects_2020": "baseline_nonadversarial_subjects_2020",
+        }
+    )
+    nonadversarial_totals = build_municipality_judicialization_totals(
+        municipal_panel, case_flag=False, prefix="nonadversarial"
+    )
+    bartik = bartik.merge(placebo_bartik, on=["SG_UF", "SG_UE", "NM_UE"], how="outer")
+    judicialization_totals = judicialization_totals.merge(
+        nonadversarial_totals, on=["SG_UF", "SG_UE", "NM_UE"], how="outer"
+    )
 
     candidates = load_candidates()
     candidates = add_candidate_history_flags(candidates)

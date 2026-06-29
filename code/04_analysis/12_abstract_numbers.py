@@ -87,6 +87,41 @@ def dvmean(panel, outcome, extra=None):
         m = m & extra
     return panel.loc[m, outcome].mean()
 
+# Headline = ANCOVA on the 2016 pre-window baseline (Y_2024 ~ D + Y_2016 + X),
+# so the dependent variable the coefficient acts on is the 2024 LEVEL, not the
+# 2024-2020 change. Map each delta outcome to its 2024 level column so the
+# reported dep-var mean matches the R tables (which report the 2024-level mean).
+# Outcomes with no 2016 analog (extensive shares, entrant typology) keep the
+# first-difference LHS and fall through to the delta mean.
+ANCOVA_LEVEL = {
+    'delta_margin_top1_top2_2024_2020':              'margin_top1_top2_2024',
+    'delta_winner_vote_share_2024_2020':             'winner_vote_share_2024',
+    'delta_runnerup_vote_share_2024_2020':           'runnerup_vote_share_2024',
+    'delta_winner_majority_2024_2020':               'winner_majority_2024',
+    'delta_log1p_n_candidates_with_votes_2024_2020': 'log1p_n_candidates_with_votes_2024',
+    'delta_female_vote_share_2024_2020':             'female_vote_share_2024',
+    'delta_nonwhite_vote_share_2024_2020':           'nonwhite_vote_share_2024',
+    'delta_winner_is_female_2024_2020':              'winner_is_female_2024',
+    'delta_blank_rate_2024_2020':                    'blank_rate_2024',
+    'delta_null_rate_2024_2020':                     'null_rate_2024',
+    'delta_turnout_rate_2024_2020':                  'turnout_rate_2024',
+    'delta_valid_vote_rate_2024_2020':               'valid_vote_rate_2024',
+    'delta_blank_rate_vereador_2024_2020':           'blank_rate_vereador_2024',
+    'delta_null_rate_vereador_2024_2020':            'null_rate_vereador_2024',
+    'delta_valid_vote_rate_vereador_2024_2020':      'valid_vote_rate_vereador_2024',
+}
+
+def repmean(panel, outcome, extra=None):
+    """Dep-var mean to REPORT under the headline spec: the 2024-level mean for
+    ANCOVA outcomes (matching the R tables), the delta mean otherwise."""
+    lvl = ANCOVA_LEVEL.get(outcome)
+    if lvl is not None and lvl in panel.columns:
+        m = panel[TREAT].notna() & panel[INSTR].notna() & panel[lvl].notna()
+        if extra is not None:
+            m = m & extra
+        return panel.loc[m, lvl].mean()
+    return dvmean(panel, outcome, extra=extra)
+
 # ── Helper: pull one row from IV results ──────────────────────────────────────
 def get_iv(spec, outcome, variant='adversarial'):
     row = iv.loc[(iv['spec'] == spec) & (iv['outcome'] == outcome) &
@@ -138,6 +173,10 @@ r_blank   = get_iv('baseline', 'delta_blank_rate_2024_2020')
 r_turnout = get_iv('baseline', 'delta_turnout_rate_2024_2020')
 r_null    = get_iv('baseline', 'delta_null_rate_2024_2020')
 r_valid   = get_iv('baseline', 'delta_valid_vote_rate_2024_2020')
+# council (vereador) ballot composition — same spec, other ballot
+r_blank_v = get_iv('baseline', 'delta_blank_rate_vereador_2024_2020')
+r_null_v  = get_iv('baseline', 'delta_null_rate_vereador_2024_2020')
+r_valid_v = get_iv('baseline', 'delta_valid_vote_rate_vereador_2024_2020')
 
 # IV — competition
 r_cand    = get_iv('baseline', 'delta_log1p_n_candidates_with_votes_2024_2020')
@@ -227,6 +266,11 @@ M['ValidCoef']   = coef(r_valid['coef'])
 M['ValidSE']     = se_par(r_valid['se'])
 M['ValidP']      = pval(r_valid['p'])
 
+# council ballot
+M['BlankVerCoef'] = coef(r_blank_v['coef']); M['BlankVerSE'] = se_par(r_blank_v['se']); M['BlankVerP'] = pval(r_blank_v['p'])
+M['NullVerCoef']  = coef(r_null_v['coef']);  M['NullVerSE']  = se_par(r_null_v['se']);  M['NullVerP']  = pval(r_null_v['p'])
+M['ValidVerCoef'] = coef(r_valid_v['coef']); M['ValidVerSE'] = se_par(r_valid_v['se']); M['ValidVerP'] = pval(r_valid_v['p'])
+
 # --- Competition (baseline) ---
 M['CandExecCoef']  = coef(r_cand['coef'])
 M['CandExecSE']    = se_par(r_cand['se'])
@@ -309,6 +353,50 @@ M['FemaleCandCoefPP']= f1(abs(r_female_cand['coef']) * 100)
 M['OpenBlankCoefPP']= f1(abs(r_blank_open['coef']) * 100)
 M['ContBlankCoefPP']= f1(abs(r_blank_cont['coef']) * 100)
 
+# --- Per-1-SD-of-judicialization interpretation -------------------------------
+# The treatment is D = Delta log(1 + adversarial lawsuits). To make magnitudes
+# legible on the slides we report the effect of a ONE-STANDARD-DEVIATION increase
+# in D over the estimation sample, rather than per raw log-unit. The IV slope tau
+# is the effect per unit of D, so the per-SD effect is tau * SD(D).
+#   * SD(D) is taken on the same non-missing (treatment, instrument) sample.
+#   * Because D is a log change, a +1 SD move means lawsuits multiply by exp(SD):
+#     TreatSDPct = (exp(SD) - 1) * 100  (percent more adversarial lawsuits).
+#   * Share outcomes -> per-SD effect in percentage points: tau * SD * 100.
+#   * Log-count outcomes -> per-SD effect as a percent: (exp(tau*SD) - 1) * 100.
+dmask    = panel_ex[TREAT].notna() & panel_ex[INSTR].notna()
+TREAT_SD = panel_ex.loc[dmask, TREAT].std()
+M['TreatSD']     = f'{TREAT_SD:.3f}'
+M['TreatSDPct']  = pct1(100 * (math.exp(TREAT_SD) - 1))   # % more lawsuits at +1 SD
+M['TreatSDMult'] = f'{math.exp(TREAT_SD):.1f}'            # lawsuits multiply by ~x
+
+def per_sd_pp(c):
+    """Share outcome: effect of +1 SD in D, in percentage points (unsigned)."""
+    return f1(abs(c) * TREAT_SD * 100)
+
+def per_sd_pp_signed(c):
+    return f'{c * TREAT_SD * 100:+.1f}'
+
+def per_sd_pct_signed(c):
+    """Log outcome: effect of +1 SD in D as a percent change (signed)."""
+    return f'{(math.exp(c * TREAT_SD) - 1) * 100:+.1f}'
+
+# Share-scale outcomes (coefficient in share units; x100 = pp).
+_PERSD_SHARE = {
+    'Blank': r_blank, 'Null': r_null, 'Valid': r_valid, 'Turnout': r_turnout,
+    'Margin': r_margin, 'RunnerUp': r_ruup, 'WinMaj': r_wmaj, 'WinShare': r_wshare,
+    'FemaleVS': r_female_vs, 'FemaleWin': r_female_win, 'FemaleCand': r_female_cand,
+    'OpenBlank': r_blank_open, 'ContBlank': r_blank_cont,
+    'BlankVer': r_blank_v, 'NullVer': r_null_v, 'ValidVer': r_valid_v,
+}
+for tag, r in _PERSD_SHARE.items():
+    M[f'{tag}PerSD']       = per_sd_pp(r['coef'])
+    M[f'{tag}PerSDSigned'] = per_sd_pp_signed(r['coef'])
+
+# Log-count outcomes (proportional change).
+for tag, r in (('CandExec', r_cand), ('LegCand', r_leg_cand)):
+    M[f'{tag}PerSDPct']       = f1(abs((math.exp(r['coef'] * TREAT_SD) - 1) * 100))
+    M[f'{tag}PerSDPctSigned'] = per_sd_pct_signed(r['coef'])
+
 # --- Dependent-variable means (over estimation sample) ---
 def m3(x):
     """Mean, signed, 3 dp."""
@@ -316,20 +404,141 @@ def m3(x):
 
 open_mask = panel_ex['open_seat_2024'] == 1
 cont_mask = panel_ex['open_seat_2024'] == 0
-M['BlankMean']     = m3(dvmean(panel_ex,  'delta_blank_rate_2024_2020'))
-M['ValidMean']     = m3(dvmean(panel_ex,  'delta_valid_vote_rate_2024_2020'))
-M['TurnoutMean']   = m3(dvmean(panel_ex,  'delta_turnout_rate_2024_2020'))
-M['NullMean']      = m3(dvmean(panel_ex,  'delta_null_rate_2024_2020'))
-M['CandExecMean']  = m3(dvmean(panel_ex,  'delta_log1p_n_candidates_with_votes_2024_2020'))
-M['MarginMean']    = m3(dvmean(panel_ex,  'delta_margin_top1_top2_2024_2020'))
-M['RunnerUpMean']  = m3(dvmean(panel_ex,  'delta_runnerup_vote_share_2024_2020'))
-M['WinMajMean']    = m3(dvmean(panel_ex,  'delta_winner_majority_2024_2020'))
-M['FemaleVSMean']  = m3(dvmean(panel_ex,  'delta_female_vote_share_2024_2020'))
-M['FemaleWinMean'] = m3(dvmean(panel_ex,  'delta_winner_is_female_2024_2020'))
+# Under the ANCOVA-2016 headline these report the 2024-LEVEL mean (the LHS the
+# coefficient acts on); outcomes with no 2016 analog fall back to the delta mean.
+M['BlankMean']     = m3(repmean(panel_ex,  'delta_blank_rate_2024_2020'))
+M['ValidMean']     = m3(repmean(panel_ex,  'delta_valid_vote_rate_2024_2020'))
+M['TurnoutMean']   = m3(repmean(panel_ex,  'delta_turnout_rate_2024_2020'))
+M['NullMean']      = m3(repmean(panel_ex,  'delta_null_rate_2024_2020'))
+M['BlankVerMean']  = m3(repmean(panel_ex,  'delta_blank_rate_vereador_2024_2020'))
+M['NullVerMean']   = m3(repmean(panel_ex,  'delta_null_rate_vereador_2024_2020'))
+M['ValidVerMean']  = m3(repmean(panel_ex,  'delta_valid_vote_rate_vereador_2024_2020'))
+M['CandExecMean']  = m3(repmean(panel_ex,  'delta_log1p_n_candidates_with_votes_2024_2020'))
+M['MarginMean']    = m3(repmean(panel_ex,  'delta_margin_top1_top2_2024_2020'))
+M['RunnerUpMean']  = m3(repmean(panel_ex,  'delta_runnerup_vote_share_2024_2020'))
+M['WinMajMean']    = m3(repmean(panel_ex,  'delta_winner_majority_2024_2020'))
+M['FemaleVSMean']  = m3(repmean(panel_ex,  'delta_female_vote_share_2024_2020'))
+M['FemaleWinMean'] = m3(repmean(panel_ex,  'delta_winner_is_female_2024_2020'))
 M['FemaleCandMean']= m3(dvmean(panel_ex,  'delta_female_share_2024_2020'))
 M['LegCandMean']   = m3(dvmean(panel_leg, 'delta_log1p_total_candidates_2024_2020'))
-M['OpenBlankMean'] = m3(dvmean(panel_ex,  'delta_blank_rate_2024_2020', extra=open_mask))
-M['ContBlankMean'] = m3(dvmean(panel_ex,  'delta_blank_rate_2024_2020', extra=cont_mask))
+M['OpenBlankMean'] = m3(repmean(panel_ex,  'delta_blank_rate_2024_2020', extra=open_mask))
+M['ContBlankMean'] = m3(repmean(panel_ex,  'delta_blank_rate_2024_2020', extra=cont_mask))
+
+# ── Instrument-construction descriptives (subject-level design) ───────────────
+# These replace the numbers that the deleted family-rework generators used to
+# emit. Everything here is sourced from the committed subject-level pipeline.
+shiftd = pd.read_csv(os.path.join(DESC, 'shift_descriptives.csv'))
+N_SUBJECTS_KEPT = shiftd['subject_code'].nunique()
+
+# Scale of filtering: total vs kept (adversarial) caseload, pooled 2020+2024.
+tot_all = ovl['total_lawsuits'].sum()
+tot_adv = ovl['adversarial_lawsuits'].sum()
+M['NSubjectsKept']        = big(N_SUBJECTS_KEPT)
+M['TotalAllLawsuits']     = millions(tot_all)
+M['KeptAdversarialLawsuits'] = big(tot_adv)
+M['KeptAdversarialPct']   = pct1(100 * tot_adv / tot_all)
+M['DroppedNonAdvPct']     = pct1(100 * (1 - tot_adv / tot_all))
+
+# Instrument distribution: raw mean and SD after residualising on state FE
+# (within-state demean == residual on state dummies).
+zname = INSTR
+zraw  = panel_ex[zname]
+zres  = zraw - panel_ex.groupby('cluster_id')[zname].transform('mean')
+M['BartikZMeanRaw']  = f'{zraw.mean():.3f}'
+M['BartikZSDResid']  = f'{zres.std():.3f}'
+
+# Sample universe / unit-of-treatment counts (committed estimation panel).
+n_munis_uni   = panel_ex['municipality_id_tse'].nunique()
+n_zones_uni   = panel_ex['principal_zone_id'].nunique()
+n_states_uni  = panel_ex['cluster_id'].nunique()
+M['NMunisUniverse']  = big(n_munis_uni)
+M['NZonesUniverse']  = big(n_zones_uni)
+M['NStatesUniverse'] = big(n_states_uni)
+M['AvgMunisPerZone'] = f1(n_munis_uni / n_zones_uni)
+M['NClusters']       = big(int(fs_base['n_clusters']))
+
+# Zone-size distribution: how many municipalities share an electoral zone.
+zsize = panel_ex.groupby('principal_zone_id')['municipality_id_tse'].nunique()
+nz = len(zsize)
+b1  = (zsize == 1).sum()
+b2  = (zsize == 2).sum()
+b35 = ((zsize >= 3) & (zsize <= 5)).sum()
+b6  = (zsize >= 6).sum()
+M['ZoneDistOneN'], M['ZoneDistOnePct']         = big(b1),  pct1(100 * b1  / nz)
+M['ZoneDistTwoN'], M['ZoneDistTwoPct']         = big(b2),  pct1(100 * b2  / nz)
+M['ZoneDistThreeFiveN'], M['ZoneDistThreeFivePct'] = big(b35), pct1(100 * b35 / nz)
+M['ZoneDistSixN'], M['ZoneDistSixPct']         = big(b6),  pct1(100 * b6  / nz)
+
+# Aliases so legacy macro names in the report resolve to the canonical numbers.
+M['HeadlineF']  = M['FSF']
+M['NMunisFS']   = M['NMunis']
+
+# --- Disaggregated turnout (facultative vs compulsory; education gradient) ----
+DISAGG = {
+    'Facultative': 'delta_facultative_turnout_2024_2020',
+    'Compulsory':  'delta_compulsory_turnout_2024_2020',
+    'LowEd':       'delta_low_ed_turnout_2024_2020',
+    'HighEd':      'delta_high_ed_turnout_2024_2020',
+    'Analfabeto':  'delta_analfabeto_turnout_2024_2020',
+    'EduGap':      'delta_education_turnout_gap_2024_2020',
+    'SexGap':      'delta_sex_turnout_gap_2024_2020',
+}
+for tag, outcome in DISAGG.items():
+    try:
+        r = get_iv('baseline', outcome)
+    except AssertionError:
+        continue
+    M[f'{tag}Coef'] = coef(r['coef'])
+    M[f'{tag}SE']   = se_par(r['se'])
+    M[f'{tag}P']    = pval(r['p'])
+    M[f'{tag}TF']   = tick_cross(r['reject_tF_5pct'])
+    M[f'{tag}Mean'] = m3(dvmean(panel_ex, outcome))
+    M[f'{tag}PerSD']       = per_sd_pp(r['coef'])
+    M[f'{tag}PerSDSigned'] = per_sd_pp_signed(r['coef'])
+
+# ── BHJ robustness: AR wild-cluster bootstrap + non-adversarial placebo ───────
+# Few-cluster (G=26), weak-IV-robust inference for the headline margin outcome,
+# and the discriminant-validity placebo (excluded mandatory/admin filings).
+HEADLINE_Y = 'delta_margin_top1_top2_2024_2020'
+try:
+    ar = pd.read_csv(os.path.join(REG, 'wild_bootstrap_ar.csv'))
+    arm = ar.loc[ar['outcome'] == HEADLINE_Y].iloc[0]
+    M['ARMarginP']     = f"{arm['ar_wcr_p_at0']:.3f}"
+    M['ARMarginCILo']  = f"{arm['ar_wcr_ci_lo']:+.3f}"
+    M['ARMarginCIHi']  = f"{arm['ar_wcr_ci_hi']:+.3f}"
+    M['ARMarginCI']    = f"[{arm['ar_wcr_ci_lo']:+.3f}, {arm['ar_wcr_ci_hi']:+.3f}]"
+    M['ARNClusters']   = big(int(arm['n_clusters']))
+    # Across all focus outcomes: do ANY AR 95% CIs exclude zero?
+    M['ARAnyExcludeZero'] = r'\tick' if bool(ar['ci_excludes_0'].any()) else r'\cross'
+    # Same AR-WCR objects for the other headline outcomes so the slides can cite
+    # the weak-IV-robust p-value / CI directly (every number from a macro).
+    for tag, oc in (('ARRunnerUp', 'delta_runnerup_vote_share_2024_2020'),
+                    ('ARBlank',    'delta_blank_rate_2024_2020'),
+                    ('ARTurnout',  'delta_turnout_rate_2024_2020'),
+                    ('ARFemaleVS', 'delta_female_vote_share_2024_2020'),
+                    ('ARWinMaj',   'delta_winner_majority_2024_2020')):
+        row = ar.loc[ar['outcome'] == oc]
+        if row.empty:
+            continue
+        row = row.iloc[0]
+        M[f'{tag}P']  = f"{row['ar_wcr_p_at0']:.3f}"
+        M[f'{tag}CI'] = f"[{row['ar_wcr_ci_lo']:+.3f}, {row['ar_wcr_ci_hi']:+.3f}]"
+except (FileNotFoundError, IndexError):
+    pass
+
+try:
+    plc = pd.read_csv(os.path.join(REG, 'nonadversarial_placebo.csv'))
+    pm = plc.loc[plc['outcome'] == HEADLINE_Y].iloc[0]
+    # Main coef and the same coef conditioning on the placebo Bartik / intensity.
+    M['PlaceboMainCoef']   = coef(pm['main_coef'])
+    M['PlaceboIntensCoef'] = coef(pm['intensity_coef'])
+    M['PlaceboCtrlCoef']   = coef(pm['placebo_ctrl_coef'])
+    # Placebo reduced-form coefficient (should be a null) on the headline outcome.
+    M['PlaceboRFCoef']     = coef(pm['placebo_rf_coef'])
+    M['PlaceboRFSE']       = se_par(pm['placebo_rf_se'])
+    M['PlaceboRelevanceF'] = f1(pm['placebo_first_stage_F'])
+except (FileNotFoundError, IndexError, KeyError):
+    pass
 
 # ── Write abstract_macros.tex ─────────────────────────────────────────────────
 macros_path = os.path.join(TEX, 'abstract_macros.tex')
@@ -363,40 +572,49 @@ with open(table_path, 'w', encoding='utf-8') as f:
     f.write('  Outcome & Coef. & SE & $p$ & Dep.\\ mean \\\\\n')
     f.write('  \\midrule\n')
 
-    # Panel A
+    # Panel A — ANCOVA-2016: LHS is the 2024 level (2016 level conditioned on),
+    # so no "Delta" prefix; the two FD-only rows in Panel B keep the prefix.
     f.write('  \\multicolumn{5}{l}{\\textit{Panel A: Voter Behavior}} \\\\\n')
-    f.write(row('\\quad $\\Delta$ Blank vote rate',
-                M['BlankCoef'], M['BlankSE'], M['BlankP'], M['BlankMean'], bold=True))
-    f.write(row('\\quad $\\Delta$ Valid vote rate',
-                M['ValidCoef'], M['ValidSE'], M['ValidP'], M['ValidMean']))
-    f.write(row('\\quad $\\Delta$ Turnout rate',
+    f.write(row('\\quad Turnout (any ballot)',
                 M['TurnoutCoef'], M['TurnoutSE'], M['TurnoutP'], M['TurnoutMean']))
-    f.write(row('\\quad $\\Delta$ Null vote rate',
+    f.write(row('\\quad Blank rate (mayoral)',
+                M['BlankCoef'], M['BlankSE'], M['BlankP'], M['BlankMean']))
+    f.write(row('\\quad Null rate (mayoral)',
                 M['NullCoef'], M['NullSE'], M['NullP'], M['NullMean']))
+    f.write(row('\\quad Valid rate (mayoral)',
+                M['ValidCoef'], M['ValidSE'], M['ValidP'], M['ValidMean']))
+    f.write(row('\\quad Blank rate (council)',
+                M['BlankVerCoef'], M['BlankVerSE'], M['BlankVerP'], M['BlankVerMean']))
+    f.write(row('\\quad Null rate (council)',
+                M['NullVerCoef'], M['NullVerSE'], M['NullVerP'], M['NullVerMean']))
+    f.write(row('\\quad Valid rate (council)',
+                M['ValidVerCoef'], M['ValidVerSE'], M['ValidVerP'], M['ValidVerMean']))
     f.write('  \\midrule\n')
 
-    # Panel B — candidate performance (competition + gender composition)
+    # Panel B — candidate performance (competition + gender composition).
+    # "$\\Delta$" marks the two first-difference rows (no clean 2016 analog);
+    # the rest are ANCOVA-2016 on the 2024 level.
     f.write('  \\multicolumn{5}{l}{\\textit{Panel B: Candidate Performance}} \\\\\n')
-    f.write(row('\\quad $\\Delta$ Log candidates (exec.)',
+    f.write(row('\\quad Log candidates (exec.)',
                 M['CandExecCoef'], M['CandExecSE'], M['CandExecP'], M['CandExecMean']))
     f.write(row('\\quad $\\Delta$ Log candidates (leg.)',
                 M['LegCandCoef'], M['LegCandSE'], M['LegCandP'], M['LegCandMean']))
-    f.write(row('\\quad $\\Delta$ Margin (W$-$RU)',
+    f.write(row('\\quad Margin (W$-$RU)',
                 M['MarginCoef'], M['MarginSE'], M['MarginP'], M['MarginMean']))
-    f.write(row('\\quad $\\Delta$ Runner-up vote share',
+    f.write(row('\\quad Runner-up vote share',
                 M['RunnerUpCoef'], M['RunnerUpSE'], M['RunnerUpP'], M['RunnerUpMean']))
-    f.write(row('\\quad $\\Delta$ Winner majority',
+    f.write(row('\\quad Winner majority',
                 M['WinMajCoef'], M['WinMajSE'], M['WinMajP'], M['WinMajMean']))
     f.write(row('\\quad $\\Delta$ Female candidate share',
                 M['FemaleCandCoef'], M['FemaleCandSE'], M['FemaleCandP'], M['FemaleCandMean']))
-    f.write(row('\\quad $\\Delta$ Female vote share',
+    f.write(row('\\quad Female vote share',
                 M['FemaleVSCoef'], M['FemaleVSSE'], M['FemaleVSP'], M['FemaleVSMean']))
-    f.write(row('\\quad $\\Delta$ Winner is female',
+    f.write(row('\\quad Winner is female',
                 M['FemaleWinCoef'], M['FemaleWinSE'], M['FemaleWinP'], M['FemaleWinMean']))
     f.write('  \\midrule\n')
 
     # Panel C — heterogeneity (open vs contested seats)
-    f.write('  \\multicolumn{5}{l}{\\textit{Panel C: Heterogeneity --- $\\Delta$ Blank Rate}} \\\\\n')
+    f.write('  \\multicolumn{5}{l}{\\textit{Panel C: Heterogeneity --- Blank Rate (2024)}} \\\\\n')
     f.write(row(f'\\quad Open seat ($N={M["OpenN"]}$)',
                 M['OpenBlankCoef'], M['OpenBlankSE'], M['OpenBlankP'], M['OpenBlankMean']))
     f.write(row(f'\\quad Contested ($N={M["ContN"]}$)',
@@ -408,9 +626,9 @@ with open(table_path, 'w', encoding='utf-8') as f:
     f.write('\\par\\vspace{4pt}\n')
     f.write('\\begin{minipage}{0.97\\linewidth}\n')
     f.write('\\footnotesize\n')
-    f.write(f'\\textit{{Notes:}} Baseline specification: state FE + 7 pre-determined controls. ')
+    f.write(f'\\textit{{Notes:}} Headline estimator: ANCOVA on the 2016 pre-window baseline, $Y_{{2024}} \\sim D + Y_{{2016}} + X$ (state FE + pre-determined controls), 2SLS with the Bartik instrument. The 2016 level enters as a free lag, so the dependent variable is the 2024 level and ``Dep.\\ mean\'\' is its 2024-level mean. Rows marked $\\Delta$ have no clean 2016 analog and are estimated in first differences. ')
     f.write(f'First-stage $F={M["FSF"]}$, $N={M["NMunis"]}$, ')
-    f.write(f'{M["NZones"]} clusters (electoral zones). SE clustered by principal zone. ')
+    f.write(f'{M["NClusters"]} clusters (states). SE clustered by state (UF). ')
     f.write(f'Panel~C open-seat sub-sample first-stage $F={M["OpenSeatF"]}$.\n')
     f.write('\\end{minipage}\n')
 

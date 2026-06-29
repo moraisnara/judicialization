@@ -1,5 +1,33 @@
 # CLAUDE.md — judicialization repo
 
+## Regression-table conventions (standing rule)
+
+Every regression table that reaches a slide or the paper MUST:
+1. **Name outcomes in human-readable form**, never the raw variable name. In
+   `fixest::etable()` this is done by merging an outcome-label vector into the
+   `dict` (the dict translates the dependent-variable header row, not just
+   coefficient names). See `OUTCOME_LABELS` in `code/03_estimation/02_iv_main.R`.
+   Relabel FE rows and the cluster note via the same `dict` (e.g. `SG_UF` →
+   "State (UF)", `cluster_id` → "state") so no raw column names leak.
+2. **Report the dependent-variable mean** (a "Mean of dep. var." row). Attach
+   `attr(fit, "mean_delta") <- mean(samp[[y]], na.rm = TRUE)` at fit time and
+   emit it via `etable(..., extralines = ...)`. Pattern lives in the
+   `iv_etable()` wrapper in `02_iv_main.R`.
+3. **Not show a misleading first-stage F.** Suppress fixest's homoskedastic
+   `ivf` in outcome tables; the dedicated first-stage table carries the
+   cluster-robust F and tF critical value.
+4. **Drop the fixed-effects row when uniform.** Every table is state-(UF) FE, so
+   pass `drop.section = "fixef"` and state the FE in the slide caption.
+5. **Drop the observations row when N is constant** across columns (`fitstat =
+   if (same_n) NA else ~ n`); report the constant N in the caption. Keep the N
+   row only where it varies (e.g. open vs contested subsamples).
+6. **Standard significance stars:** `*** = 1%, ** = 5%, * = 10%` (`ETABLE_SIGNIF
+   <- c("***"=.01,"**"=.05,"*"=.10)`).
+
+Note: `write_etable_frag()` keeps only the `tabular` block and the report wraps
+fragments in `\resizebox{...}{!}{\input{...}}`, so etable `notes` are stripped —
+FE / constant-N facts belong in the frame caption, not the table note.
+
 ## Quick data reference
 
 ### Raw data (`data/raw/`)

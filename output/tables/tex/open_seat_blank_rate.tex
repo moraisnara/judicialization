@@ -3,20 +3,16 @@
 
 \begin{tabular}{lccc}
    \tabularnewline \midrule \midrule
-   Dependent Variable: & \multicolumn{3}{c}{delta\_blank\_rate\_2024\_2020}\\
-   Model:                                                                   & (1)         & (2)         & (3)\\  
-   \midrule
-   \emph{Variables}\\
-   $\Delta$ Log(lawsuits)                                                   & 0.013$^{*}$ & 0.030$^{*}$ & 0.003\\   
-                                                                            & (0.005)     & (0.013)     & (0.005)\\   
-   \midrule
-   \emph{Fixed-effects}\\
-   SG\_UF                                                                   & Yes         & Yes         & Yes\\  
+   Dependent Variable: & \multicolumn{3}{c}{Blank (mayoral)}\\
+   Model:          & (1)           & (2)     & (3)\\  
+   Judicialization & \cellcolor{sigshade}0.006$^{***}$ & 0.003   & \cellcolor{sigshade}0.007$^{***}$\\   
+                   & (0.002)       & (0.002) & (0.002)\\   
+   2024 Mean       & 0.016         & 0.014   & 0.017\\  
+   2016 Mean       & 0.016         & 0.015   & 0.016\\  
    \midrule
    \emph{Fit statistics}\\
-   F-test (1st stage), delta\_log1p\_competition\_lawsuits\_2024\_2020      & 238.9       & 71.6        & 170.0\\  
-   Observations                                                             & 5,560       & 2,571       & 2,989\\  
+   Observations    & 5,560         & 1,994   & 3,566\\  
    \midrule \midrule
-   \multicolumn{4}{l}{\emph{Clustered (cluster\_id) standard-errors in parentheses}}\\
-   \multicolumn{4}{l}{\emph{Signif. Codes: **: 0.01, *: 0.05, \dagger: 0.1}}\\
+   \multicolumn{4}{l}{\emph{Clustered (state) standard-errors in parentheses}}\\
+   \multicolumn{4}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
 \end{tabular}

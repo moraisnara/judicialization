@@ -14,8 +14,23 @@ TABLES_DIR = PROJECT_ROOT / "output" / "tables" / "descriptives"
 
 EXECUTIVE_DESIGN_PATH = DERIVED_DIR / "executive_shift_share_design.csv"
 LEGISLATIVE_DESIGN_PATH = DERIVED_DIR / "legislative_shift_share_design.csv"
+# Candidate-level career/experience flags produced by 05_candidate_history.py.
+# Merged onto the vote panel to build vote-weighted (intensive-margin) versions
+# of the career categories, parallel to female_vote_share etc.
+CAND_FLAGS_PATH = DERIVED_DIR / "candidate_experience_flags.csv"
+EXPERIENCE_FLAGS = [
+    "is_first_time", "is_career", "is_prior_winner",
+    "is_serial_challenger", "is_cross_cycle_returner",
+]
 
-TARGET_YEARS = [2020, 2024]
+# 2016 is included to build a pre-treatment outcome baseline (lagged levels and
+# 2016->2020 pre-trends). Treatment (lawsuits) only exists for 2020/2024, so 2016
+# never enters the endogenous variable; it is outcomes-only. 2012 vote microdata
+# are absent, so 2016 is the earliest available outcome cycle. Renewal/incumbency
+# composition (new-candidate / incumbent vote shares, winner-is-new) is defined
+# relative to 2020 and therefore is NOT produced for 2016.
+TARGET_YEARS = [2016, 2020, 2024]
+RENEWAL_BASELINE_YEAR = 2020  # cycle whose candidates define "new vs prior"
 STANDARD_TO_LEGACY = {
     "election_year": "ANO_ELEICAO",
     "state": "SG_UF",
@@ -33,6 +48,21 @@ OFFICE_MAP = {
     "VEREADOR": "legislative",
 }
 ELECTED_STATUSES = {"ELEITO", "ELEITO POR QP", "ELEITO POR MÃ‰DIA", "ELEITO POR MÉDIA"}
+
+
+def resolve_year_files(folder: Path, stem: str) -> list[Path]:
+    """Return the CSV(s) for a TSE export. Prefer the single ``*_BRASIL.csv``
+    bundle (2020/2024); fall back to per-UF state files (2016, which ships no
+    national bundle for votacao_candidato_munzona)."""
+    brasil = folder / f"{stem}_BRASIL.csv"
+    if brasil.exists():
+        return [brasil]
+    files = sorted(
+        f for f in folder.glob(f"{stem}_*.csv") if "leiame" not in f.name.lower()
+    )
+    if not files:
+        raise FileNotFoundError(f"No files matching {stem}_*.csv in {folder}")
+    return files
 
 
 def normalize_text(value: object) -> str:
@@ -68,16 +98,17 @@ def load_candidate_metadata() -> pd.DataFrame:
     ]
     frames: list[pd.DataFrame] = []
     for year in TARGET_YEARS:
-        path = RAW_DIR / f"consulta_cand_{year}" / f"consulta_cand_{year}_BRASIL.csv"
-        df = pd.read_csv(
-            path,
-            sep=";",
-            encoding="latin-1",
-            usecols=usecols,
-            dtype=str,
-            low_memory=False,
-        )
-        frames.append(df)
+        folder = RAW_DIR / f"consulta_cand_{year}"
+        for path in resolve_year_files(folder, f"consulta_cand_{year}"):
+            df = pd.read_csv(
+                path,
+                sep=";",
+                encoding="latin-1",
+                usecols=usecols,
+                dtype=str,
+                low_memory=False,
+            )
+            frames.append(df)
     candidates = pd.concat(frames, ignore_index=True)
     candidates = candidates.loc[
         (candidates["TP_ABRANGENCIA"] == "MUNICIPAL")
@@ -99,14 +130,16 @@ def load_candidate_metadata() -> pd.DataFrame:
     candidates["title_key"] = (
         candidates["NR_TITULO_ELEITORAL_CANDIDATO"].fillna("").str.strip()
     )
-    candidates["title_key"] = candidates["title_key"].replace({"-4": "", "#NULO#": ""})
+    candidates["title_key"] = candidates["title_key"].replace({"-4": "", "-1": "", "#NULO#": ""})
+    # person_key must match 05_candidate_history.py exactly so the experience
+    # flags merge aligns: title when it has >3 chars, else name|dob fallback.
     candidates["person_key"] = (
         candidates["NM_CANDIDATO"].map(normalize_text)
         + "|"
         + candidates["DT_NASCIMENTO"].dt.strftime("%Y-%m-%d").fillna("")
     )
     candidates["person_key"] = candidates["title_key"].where(
-        candidates["title_key"].ne(""),
+        candidates["title_key"].str.len() > 3,
         candidates["person_key"],
     )
     candidates = candidates.sort_values(
@@ -162,6 +195,11 @@ def load_candidate_metadata() -> pd.DataFrame:
         & candidates["person_key"].ne("")
         & (candidates["elected_in_2020"] == 1)
     ).astype(int)
+
+    # Attach career/experience flags (extensive-margin source) so the vote panel
+    # can build their vote-weighted (intensive-margin) twins.
+    candidates = attach_experience_flags(candidates)
+
     return candidates[
         [
             "ANO_ELEICAO",
@@ -178,8 +216,41 @@ def load_candidate_metadata() -> pd.DataFrame:
             "is_elected",
             "is_new_candidate_vs_2020",
             "is_incumbent_from_2020",
+            *EXPERIENCE_FLAGS,
         ]
     ]
+
+
+def attach_experience_flags(candidates: pd.DataFrame) -> pd.DataFrame:
+    """Merge candidate-level career flags from 05_candidate_history.py onto the
+    candidate metadata, keyed on (year, office, state, municipality, person)."""
+    if not CAND_FLAGS_PATH.exists():
+        print(
+            f"  WARNING: {CAND_FLAGS_PATH.name} not found; experience vote shares "
+            "will be NaN. Run 05_candidate_history.py first.",
+            flush=True,
+        )
+        for col in EXPERIENCE_FLAGS:
+            candidates[col] = np.nan
+        return candidates
+    flags = pd.read_csv(
+        CAND_FLAGS_PATH,
+        dtype={"municipality_id_tse": str, "person_key": str},
+        low_memory=False,
+    )
+    flags = flags.rename(columns={
+        "election_year": "ANO_ELEICAO",
+        "state": "SG_UF",
+        "municipality_id_tse": "SG_UE",
+    })
+    keys = ["ANO_ELEICAO", "SG_UF", "SG_UE", "office_group", "person_key"]
+    flags = flags.loc[flags["person_key"].notna() & flags["person_key"].ne(""), keys + EXPERIENCE_FLAGS]
+    flags = flags.drop_duplicates(subset=keys, keep="first")
+    candidates["SG_UE"] = candidates["SG_UE"].astype(str)
+    merged = candidates.merge(flags, on=keys, how="left", validate="many_to_one")
+    matched = merged[EXPERIENCE_FLAGS[0]].notna().mean()
+    print(f"  experience flags matched on {matched:.1%} of candidate-vote rows", flush=True)
+    return merged
 
 
 def load_vote_rows() -> pd.DataFrame:
@@ -201,16 +272,17 @@ def load_vote_rows() -> pd.DataFrame:
     ]
     frames: list[pd.DataFrame] = []
     for year in TARGET_YEARS:
-        path = RAW_DIR / f"votacao_candidato_munzona_{year}" / f"votacao_candidato_munzona_{year}_BRASIL.csv"
-        df = pd.read_csv(
-            path,
-            sep=";",
-            encoding="latin-1",
-            usecols=usecols,
-            dtype=str,
-            low_memory=False,
-        )
-        frames.append(df)
+        folder = RAW_DIR / f"votacao_candidato_munzona_{year}"
+        for path in resolve_year_files(folder, f"votacao_candidato_munzona_{year}"):
+            df = pd.read_csv(
+                path,
+                sep=";",
+                encoding="latin-1",
+                usecols=usecols,
+                dtype=str,
+                low_memory=False,
+            )
+            frames.append(df)
     votes = pd.concat(frames, ignore_index=True)
     votes = votes.loc[
         (votes["NR_TURNO"] == "1")
@@ -337,6 +409,22 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
             incumbent_candidate_vote_share=("candidate_vote_total", lambda s: float(
                 s[panel.loc[s.index, "is_incumbent_from_2020"] == 1].sum() / s.sum()
             ) if s.sum() > 0 else np.nan),
+            # Vote-weighted (intensive-margin) career categories
+            first_time_vote_share=("candidate_vote_total", lambda s: float(
+                s[panel.loc[s.index, "is_first_time"] == 1].sum() / s.sum()
+            ) if s.sum() > 0 else np.nan),
+            career_vote_share=("candidate_vote_total", lambda s: float(
+                s[panel.loc[s.index, "is_career"] == 1].sum() / s.sum()
+            ) if s.sum() > 0 else np.nan),
+            prior_winner_vote_share=("candidate_vote_total", lambda s: float(
+                s[panel.loc[s.index, "is_prior_winner"] == 1].sum() / s.sum()
+            ) if s.sum() > 0 else np.nan),
+            serial_challenger_vote_share=("candidate_vote_total", lambda s: float(
+                s[panel.loc[s.index, "is_serial_challenger"] == 1].sum() / s.sum()
+            ) if s.sum() > 0 else np.nan),
+            cross_cycle_returner_vote_share=("candidate_vote_total", lambda s: float(
+                s[panel.loc[s.index, "is_cross_cycle_returner"] == 1].sum() / s.sum()
+            ) if s.sum() > 0 else np.nan),
         )
     )
     municipal_outcomes["effective_n_candidates_vote"] = np.where(
@@ -409,6 +497,18 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
     )
     wide.columns = [f"{name}_{year}" for name, year in wide.columns]
     wide = wide.reset_index()
+    # Renewal/incumbency outcomes are defined relative to 2020; their 2016 pivot
+    # slot is a definitional zero (no 2016 candidate can be "new vs 2020"), so
+    # drop those columns to avoid a misleading baseline.
+    invalid_2016 = [
+        "new_candidate_vote_share_2016",
+        "incumbent_candidate_vote_share_2016",
+        "winner_is_new_vs_2020_2016",
+        # career (3+ priors) and cross-cycle return are ~0 in 2016 by left-censor
+        "career_vote_share_2016",
+        "cross_cycle_returner_vote_share_2016",
+    ]
+    wide = wide.drop(columns=[c for c in invalid_2016 if c in wide.columns])
     out = design.merge(wide, on=["SG_UF", "SG_UE"], how="left")
 
     diff_pairs = {
@@ -429,6 +529,12 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
         "higher_education_vote_share": "delta_higher_education_vote_share_2024_2020",
         "new_candidate_vote_share": "delta_new_candidate_vote_share_2024_2020",
         "incumbent_candidate_vote_share": "delta_incumbent_candidate_vote_share_2024_2020",
+        # Vote-weighted career categories (intensive margin)
+        "first_time_vote_share": "delta_first_time_vote_share_2024_2020",
+        "career_vote_share": "delta_career_vote_share_2024_2020",
+        "prior_winner_vote_share": "delta_prior_winner_vote_share_2024_2020",
+        "serial_challenger_vote_share": "delta_serial_challenger_vote_share_2024_2020",
+        "cross_cycle_returner_vote_share": "delta_cross_cycle_returner_vote_share_2024_2020",
         # Winner identity
         "winner_is_female": "delta_winner_is_female_2024_2020",
         "winner_is_new_vs_2020": "delta_winner_is_new_vs_2020_2024_2020",
@@ -440,6 +546,35 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
         col_2024 = f"{base}_2024"
         if col_2020 in out.columns and col_2024 in out.columns:
             out[diff_name] = out[col_2024] - out[col_2020]
+
+    # Pre-treatment trend (2020 - 2016) for the outcomes that are defined
+    # identically in 2016. Used as a placebo (reduced form should be flat
+    # pre-2020) and to absorb pre-existing convergence. Renewal/incumbency
+    # outcomes are excluded -- they require a prior cycle (2012 votes) absent
+    # from 2016. The 2016 *levels* (e.g. winner_vote_share_2016) flow through
+    # the pivot above and serve as lagged controls.
+    pretrend_bases = [
+        "winner_vote_share", "runnerup_vote_share", "margin_top1_top2",
+        "top2_vote_share", "others_vote_share", "winner_majority",
+        "vote_hhi_candidate", "effective_n_candidates_vote",
+        "vote_hhi_party", "effective_n_parties_vote",
+        "female_vote_share", "nonwhite_vote_share", "higher_education_vote_share",
+        "winner_is_female", "total_valid_votes",
+        # Career categories well-defined in 2016 (2012 is an available prior cycle).
+        # career_vote_share and cross_cycle_returner_vote_share are excluded: both
+        # are mechanically ~0 in 2016 given the 2012 left-censor (no pre-trend).
+        "first_time_vote_share", "prior_winner_vote_share", "serial_challenger_vote_share",
+    ]
+    for base in pretrend_bases:
+        col_2016 = f"{base}_2016"
+        col_2020 = f"{base}_2020"
+        if col_2016 in out.columns and col_2020 in out.columns:
+            out[f"pretrend_{base}_2020_2016"] = out[col_2020] - out[col_2016]
+    if "n_candidates_with_votes_2016" in out.columns and "n_candidates_with_votes_2020" in out.columns:
+        out["pretrend_log1p_n_candidates_with_votes_2020_2016"] = (
+            np.log1p(out["n_candidates_with_votes_2020"])
+            - np.log1p(out["n_candidates_with_votes_2016"])
+        )
     if "total_valid_votes_2020" in out.columns and "total_valid_votes_2024" in out.columns:
         out["delta_log_total_valid_votes_2024_2020"] = (
             np.log1p(out["total_valid_votes_2024"]) - np.log1p(out["total_valid_votes_2020"])
@@ -468,8 +603,26 @@ def write_note(vote_outcomes: pd.DataFrame) -> None:
         "- party-vote HHI and effective number of parties",
         "- vote shares for female, nonwhite, and highly educated candidates",
         "- vote shares for new candidates and incumbents in 2024",
+        "- vote-weighted (intensive-margin) career categories: first-time,",
+        "  career (3+ priors), prior-winner, serial-challenger, cross-cycle returner",
+        "",
+        "Each categorical trait now has BOTH an extensive-margin share (fraction of",
+        "candidates, in candidate_experience_panel.csv / office_candidate_outcomes_panel.csv)",
+        "and an intensive-margin `*_vote_share` (fraction of votes) here. career and",
+        "cross-cycle vote shares are left-censored before 2024 (no 2016 baseline).",
+        "",
+        "## Years and the 2016 baseline",
+        "",
+        "Outcomes are built for 2016, 2020 and 2024 with identical definitions,",
+        "separately by office (executive = PREFEITO, legislative = VEREADOR).",
+        "2016 is a pre-treatment outcome baseline only: lawsuits (the treatment)",
+        "exist only for 2020/2024, and 2012 vote microdata are unavailable. The",
+        "design files therefore carry `*_2016` levels (lagged controls) and",
+        "`pretrend_*_2020_2016` trends (placebo). Renewal/incumbency outcomes are",
+        "2020-relative and are NOT produced for 2016.",
         "",
         f"- municipality-office-year rows in vote panel: {len(vote_outcomes):,}",
+        f"- election cycles: {sorted(vote_outcomes['ANO_ELEICAO'].unique().tolist())}",
     ]
     (TABLES_DIR / "vote_outcomes_setup.md").write_text("\n".join(lines), encoding="utf-8")
 

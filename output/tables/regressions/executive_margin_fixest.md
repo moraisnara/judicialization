@@ -2,152 +2,280 @@
 
 Benchmark: Ash, Morelli & Vannoni (2025, JPE) — `ivreghdfe` → `feols()` in fixest.
 Formula: `y ~ controls | FE | Δlog(lawsuits) ~ Bartik_IV`.
-SE clustered by principal electoral zone.
+SE clustered by state (UF); leave-own-state-out shift is constant within state.
 
 ## Instrument
 - **adversarial** : bartik_iv_2020_2024 / delta_log1p_competition_lawsuits_2024_2020
   (adversarial class/subject filter applied at build stage in 02_bartik_inputs.py)
 
-## Specifications
-1. **baseline** — 7 baseline controls + state FE
+## Specifications (headline = ANCOVA on the 2016 pre-window baseline)
+Baseline (V3) controls: 2010 Census structure (log pop, urban share, log income p.c., higher-ed share),
+log valid-vote volume (2020), 2016 victory margin, PLUS each outcome's own 2016 level where one exists
+(per-outcome lagged DV). No 2020 levels of competition outcomes (avoids Lord's-paradox bias).
+
+1. **baseline** — ANCOVA-2016: per-outcome 2016 level as free lag + common controls + state FE
 2. **single_zone** — baseline, single-zone municipalities only
-3. **extended_controls** — 14 controls + state FE
+3. **extended_controls** — baseline + extended 2020 covariates + state FE
 4. **open_seat** — baseline, open-seat municipalities (2020 winner term-limited)
 5. **contested_seat** — baseline, contested-seat municipalities
 6. **broader_treatment** — baseline + log1p_lawsuits_no_rrc_2020 as additional control
+7. **fd** — appendix robustness: pure first difference (delta_Y ~ D, persistence pinned to 1)
+8. **ancova_2020lvl** — legacy V1 stance check: delta outcome + 2020 competition levels as controls
 
 ## First Stage
 
 | variant | spec | coef | se | t | p | first_stage_F | nobs | n_clusters |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| adversarial | baseline | 1.7918 | 0.4049 | 4.43 | 0.0000 | 19.58 | 5560 | 2187 |
-| adversarial | single_zone | 1.8008 | 0.4217 | 4.27 | 0.0000 | 18.24 | 5371 | 2049 |
-| adversarial | extended_controls | 1.7998 | 0.4058 | 4.44 | 0.0000 | 19.68 | 5560 | 2187 |
-| adversarial | open_seat | 1.3302 | 0.4083 | 3.26 | 0.0011 | 10.62 | 2571 | 1563 |
-| adversarial | contested_seat | 2.1895 | 0.5595 | 3.91 | 0.0001 | 15.31 | 2989 | 1756 |
-| adversarial | broader_treatment | 1.7918 | 0.4049 | 4.43 | 0.0000 | 19.58 | 5560 | 2187 |
+| adversarial | baseline | 0.2130 | 0.0402 | 5.30 | 0.0000 | 28.06 | 5560 | 26 |
+| adversarial | single_zone | 0.2150 | 0.0416 | 5.17 | 0.0000 | 26.68 | 5371 | 26 |
+| adversarial | extended_controls | 0.2072 | 0.0391 | 5.30 | 0.0000 | 28.05 | 5560 | 26 |
+| adversarial | open_seat | 0.1772 | 0.0561 | 3.16 | 0.0041 | 9.96 | 1994 | 26 |
+| adversarial | contested_seat | 0.2373 | 0.0391 | 6.07 | 0.0000 | 36.81 | 3566 | 26 |
+| adversarial | broader_treatment | 0.2130 | 0.0402 | 5.30 | 0.0000 | 28.06 | 5560 | 26 |
+| adversarial | fd | 0.2130 | 0.0402 | 5.30 | 0.0000 | 28.06 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 0.2068 | 0.0388 | 5.33 | 0.0000 | 28.38 | 5560 | 26 |
 
 ## IV Results
 
 | variant | spec | estimator | family | outcome | coef | se | t | p | ivf | nobs | n_clusters |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| adversarial | baseline | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0307 | 0.0217 | -1.42 | 0.1572 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0619 | 0.0431 | 1.44 | 0.1508 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0312 | 0.0251 | 1.25 | 0.2132 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | secondary | delta_winner_majority_2024_2020 | 0.1398 | 0.0903 | 1.55 | 0.1218 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0048 | 0.0186 | -0.26 | 0.7983 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0664 | 0.0393 | -1.69 | 0.0917 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0929 | 0.0479 | -1.94 | 0.0524 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | composition | delta_female_share_2024_2020 | -0.0765 | 0.0430 | -1.78 | 0.0752 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0394 | 0.0420 | -0.94 | 0.3482 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0095 | 0.0499 | -0.19 | 0.8484 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0096 | 0.0490 | 0.20 | 0.8443 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | composition | delta_winner_is_female_2024_2020 | -0.1229 | 0.0632 | -1.94 | 0.0521 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.0016 | 0.0733 | -0.02 | 0.9823 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0063 | 0.0048 | -1.33 | 0.1848 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0073 | 0.0059 | 1.23 | 0.2197 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0126 | 0.0053 | 2.36 | 0.0184 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0263 | 0.0127 | -2.07 | 0.0381 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0114 | 0.0433 | -0.26 | 0.7928 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | entry | delta_share_serial_challenger_2024_2020 | 0.0066 | 0.0261 | 0.25 | 0.8019 | 238.94 | 5560 | 2187 |
-| adversarial | baseline | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | 0.0045 | 0.0254 | 0.18 | 0.8610 | 238.94 | 5560 | 2187 |
-| adversarial | single_zone | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0247 | 0.0220 | -1.12 | 0.2629 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0533 | 0.0439 | 1.21 | 0.2249 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0286 | 0.0257 | 1.11 | 0.2662 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | secondary | delta_winner_majority_2024_2020 | 0.1400 | 0.0932 | 1.50 | 0.1330 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0069 | 0.0193 | -0.36 | 0.7192 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0561 | 0.0395 | -1.42 | 0.1557 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0890 | 0.0486 | -1.83 | 0.0673 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | composition | delta_female_share_2024_2020 | -0.0790 | 0.0448 | -1.77 | 0.0776 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0436 | 0.0440 | -0.99 | 0.3214 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0093 | 0.0521 | -0.18 | 0.8586 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0050 | 0.0505 | 0.10 | 0.9206 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | composition | delta_winner_is_female_2024_2020 | -0.1281 | 0.0659 | -1.94 | 0.0521 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.0115 | 0.0766 | -0.15 | 0.8805 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0051 | 0.0048 | -1.06 | 0.2908 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0071 | 0.0063 | 1.13 | 0.2566 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0130 | 0.0056 | 2.30 | 0.0215 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0253 | 0.0132 | -1.92 | 0.0548 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | entry | delta_share_first_time_candidates_2024_2020 | 0.0036 | 0.0455 | 0.08 | 0.9373 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | entry | delta_share_serial_challenger_2024_2020 | 0.0080 | 0.0272 | 0.29 | 0.7700 | 232.87 | 5371 | 2049 |
-| adversarial | single_zone | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | 0.0014 | 0.0268 | 0.05 | 0.9583 | 232.87 | 5371 | 2049 |
-| adversarial | extended_controls | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0269 | 0.0209 | -1.29 | 0.1979 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0558 | 0.0419 | 1.33 | 0.1834 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0289 | 0.0246 | 1.17 | 0.2410 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | secondary | delta_winner_majority_2024_2020 | 0.1477 | 0.0897 | 1.65 | 0.0997 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0065 | 0.0183 | -0.36 | 0.7219 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0639 | 0.0385 | -1.66 | 0.0970 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | composition | delta_female_vote_share_2024_2020 | -0.1262 | 0.0490 | -2.58 | 0.0101 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | composition | delta_female_share_2024_2020 | -0.1010 | 0.0435 | -2.32 | 0.0203 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | 0.0021 | 0.0367 | 0.06 | 0.9545 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0033 | 0.0497 | -0.07 | 0.9467 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0007 | 0.0475 | 0.01 | 0.9885 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | composition | delta_winner_is_female_2024_2020 | -0.1562 | 0.0640 | -2.44 | 0.0147 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | 0.0061 | 0.0722 | 0.08 | 0.9326 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0028 | 0.0040 | -0.71 | 0.4783 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0059 | 0.0047 | 1.27 | 0.2041 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0119 | 0.0051 | 2.35 | 0.0187 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0208 | 0.0104 | -2.00 | 0.0457 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0048 | 0.0333 | -0.14 | 0.8852 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | entry | delta_share_serial_challenger_2024_2020 | 0.0064 | 0.0254 | 0.25 | 0.8020 | 241.31 | 5560 | 2187 |
-| adversarial | extended_controls | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | 0.0053 | 0.0246 | 0.22 | 0.8280 | 241.31 | 5560 | 2187 |
-| adversarial | open_seat | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0410 | 0.0404 | -1.01 | 0.3112 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0610 | 0.0791 | 0.77 | 0.4405 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0201 | 0.0459 | 0.44 | 0.6619 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | secondary | delta_winner_majority_2024_2020 | 0.0926 | 0.1693 | 0.55 | 0.5846 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | secondary | delta_others_vote_share_2024_2020 | 0.0141 | 0.0350 | 0.40 | 0.6869 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | 0.0046 | 0.0714 | 0.06 | 0.9486 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | composition | delta_female_vote_share_2024_2020 | -0.1377 | 0.1111 | -1.24 | 0.2152 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | composition | delta_female_share_2024_2020 | -0.0529 | 0.0882 | -0.60 | 0.5492 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.1263 | 0.1078 | -1.17 | 0.2412 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0845 | 0.0832 | -1.02 | 0.3100 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | -0.0241 | 0.0683 | -0.35 | 0.7240 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | composition | delta_winner_is_female_2024_2020 | -0.2361 | 0.1460 | -1.62 | 0.1061 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.1066 | 0.1287 | -0.83 | 0.4074 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | 0.0020 | 0.0080 | 0.25 | 0.8037 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0043 | 0.0115 | 0.37 | 0.7091 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0298 | 0.0135 | 2.20 | 0.0278 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0320 | 0.0246 | -1.30 | 0.1924 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0689 | 0.0851 | -0.81 | 0.4183 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | entry | delta_share_serial_challenger_2024_2020 | 0.0910 | 0.0566 | 1.61 | 0.1080 | 71.60 | 2571 | 1563 |
-| adversarial | open_seat | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0056 | 0.0528 | -0.11 | 0.9157 | 71.60 | 2571 | 1563 |
-| adversarial | contested_seat | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0207 | 0.0232 | -0.89 | 0.3725 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0527 | 0.0476 | 1.11 | 0.2688 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0320 | 0.0287 | 1.12 | 0.2642 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | secondary | delta_winner_majority_2024_2020 | 0.1667 | 0.1062 | 1.57 | 0.1167 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0152 | 0.0211 | -0.72 | 0.4696 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.1051 | 0.0477 | -2.20 | 0.0278 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0699 | 0.0446 | -1.57 | 0.1173 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | composition | delta_female_share_2024_2020 | -0.0872 | 0.0444 | -1.96 | 0.0496 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | 0.0004 | 0.0422 | 0.01 | 0.9929 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | 0.0488 | 0.0516 | 0.95 | 0.3439 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0062 | 0.0515 | 0.12 | 0.9042 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0686 | 0.0649 | -1.06 | 0.2903 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | 0.0814 | 0.0771 | 1.06 | 0.2916 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0100 | 0.0057 | -1.74 | 0.0821 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0082 | 0.0063 | 1.30 | 0.1953 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0028 | 0.0046 | 0.60 | 0.5455 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0211 | 0.0130 | -1.63 | 0.1036 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | entry | delta_share_first_time_candidates_2024_2020 | 0.0395 | 0.0459 | 0.86 | 0.3896 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.0338 | 0.0317 | -1.07 | 0.2868 | 170.03 | 2989 | 1756 |
-| adversarial | contested_seat | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | 0.0097 | 0.0263 | 0.37 | 0.7137 | 170.03 | 2989 | 1756 |
-| adversarial | broader_treatment | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0307 | 0.0217 | -1.42 | 0.1572 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0619 | 0.0431 | 1.44 | 0.1508 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0312 | 0.0251 | 1.25 | 0.2132 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | secondary | delta_winner_majority_2024_2020 | 0.1398 | 0.0903 | 1.55 | 0.1218 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0048 | 0.0186 | -0.26 | 0.7983 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0664 | 0.0393 | -1.69 | 0.0917 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0929 | 0.0479 | -1.94 | 0.0524 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | composition | delta_female_share_2024_2020 | -0.0765 | 0.0430 | -1.78 | 0.0752 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0394 | 0.0420 | -0.94 | 0.3482 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0095 | 0.0499 | -0.19 | 0.8484 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0096 | 0.0490 | 0.20 | 0.8443 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | composition | delta_winner_is_female_2024_2020 | -0.1229 | 0.0632 | -1.94 | 0.0521 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.0016 | 0.0733 | -0.02 | 0.9823 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0063 | 0.0048 | -1.33 | 0.1848 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0073 | 0.0059 | 1.23 | 0.2197 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0126 | 0.0053 | 2.36 | 0.0184 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0263 | 0.0127 | -2.07 | 0.0381 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0114 | 0.0433 | -0.26 | 0.7928 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | entry | delta_share_serial_challenger_2024_2020 | 0.0066 | 0.0261 | 0.25 | 0.8019 | 238.94 | 5560 | 2187 |
-| adversarial | broader_treatment | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | 0.0045 | 0.0254 | 0.18 | 0.8610 | 238.94 | 5560 | 2187 |
+| adversarial | baseline | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0458 | 0.0148 | -3.10 | 0.0047 | 70.33 | 5560 | 26 |
+| adversarial | baseline | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0924 | 0.0280 | 3.30 | 0.0029 | 71.87 | 5560 | 26 |
+| adversarial | baseline | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0480 | 0.0149 | 3.22 | 0.0035 | 71.24 | 5560 | 26 |
+| adversarial | baseline | 2sls | secondary | delta_winner_majority_2024_2020 | 0.0357 | 0.0362 | 0.98 | 0.3343 | 70.72 | 5560 | 26 |
+| adversarial | baseline | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0053 | 0.0088 | -0.61 | 0.5478 | 70.11 | 5560 | 26 |
+| adversarial | baseline | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0457 | 0.0265 | -1.72 | 0.0972 | 69.39 | 5560 | 26 |
+| adversarial | baseline | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0447 | 0.0287 | -1.55 | 0.1328 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | composition | delta_female_share_2024_2020 | -0.0405 | 0.0366 | -1.11 | 0.2793 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0304 | 0.0387 | -0.79 | 0.4386 | 71.67 | 5560 | 26 |
+| adversarial | baseline | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0269 | 0.0366 | -0.74 | 0.4687 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0386 | 0.0422 | 0.91 | 0.3692 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0396 | 0.0445 | -0.89 | 0.3819 | 71.98 | 5560 | 26 |
+| adversarial | baseline | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | 0.0017 | 0.0497 | 0.03 | 0.9725 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0058 | 0.0035 | -1.63 | 0.1161 | 73.25 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0054 | 0.0023 | 2.36 | 0.0265 | 71.59 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0058 | 0.0017 | 3.38 | 0.0024 | 71.33 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0138 | 0.0058 | -2.38 | 0.0254 | 71.72 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | 0.0001 | 0.0009 | 0.16 | 0.8758 | 71.77 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | 0.0005 | 0.0007 | 0.74 | 0.4653 | 71.84 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | -0.0059 | 0.0042 | -1.42 | 0.1688 | 72.32 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | -0.0034 | 0.0087 | -0.39 | 0.7027 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | 0.0005 | 0.0020 | 0.26 | 0.8002 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0036 | 0.0050 | -0.73 | 0.4745 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0065 | 0.0028 | 2.29 | 0.0310 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0121 | 0.0121 | -1.00 | 0.3282 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0101 | 0.0069 | 1.46 | 0.1567 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | 0.0002 | 0.0017 | 0.10 | 0.9185 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0134 | 0.0583 | -0.23 | 0.8205 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.0058 | 0.0451 | -0.13 | 0.8992 | 71.76 | 5560 | 26 |
+| adversarial | baseline | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0240 | 0.0317 | -0.76 | 0.4546 | 71.76 | 5560 | 26 |
+| adversarial | single_zone | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0453 | 0.0146 | -3.09 | 0.0048 | 70.58 | 5371 | 26 |
+| adversarial | single_zone | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0935 | 0.0278 | 3.36 | 0.0025 | 71.86 | 5371 | 26 |
+| adversarial | single_zone | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0494 | 0.0150 | 3.29 | 0.0029 | 71.38 | 5371 | 26 |
+| adversarial | single_zone | 2sls | secondary | delta_winner_majority_2024_2020 | 0.0413 | 0.0377 | 1.09 | 0.2847 | 70.97 | 5371 | 26 |
+| adversarial | single_zone | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0068 | 0.0092 | -0.74 | 0.4654 | 70.40 | 5371 | 26 |
+| adversarial | single_zone | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0450 | 0.0264 | -1.71 | 0.0998 | 69.19 | 5371 | 26 |
+| adversarial | single_zone | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0449 | 0.0291 | -1.54 | 0.1352 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | composition | delta_female_share_2024_2020 | -0.0400 | 0.0371 | -1.08 | 0.2906 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0303 | 0.0374 | -0.81 | 0.4255 | 71.69 | 5371 | 26 |
+| adversarial | single_zone | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0301 | 0.0386 | -0.78 | 0.4439 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0414 | 0.0436 | 0.95 | 0.3509 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0392 | 0.0443 | -0.88 | 0.3848 | 71.92 | 5371 | 26 |
+| adversarial | single_zone | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.0065 | 0.0507 | -0.13 | 0.8985 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0056 | 0.0034 | -1.67 | 0.1074 | 72.87 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0051 | 0.0023 | 2.27 | 0.0323 | 71.53 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0053 | 0.0017 | 3.10 | 0.0048 | 71.22 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0134 | 0.0055 | -2.42 | 0.0231 | 71.40 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | -0.0002 | 0.0009 | -0.25 | 0.8014 | 71.73 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | 0.0004 | 0.0007 | 0.68 | 0.5012 | 71.74 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | -0.0055 | 0.0040 | -1.39 | 0.1772 | 72.22 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | -0.0018 | 0.0083 | -0.22 | 0.8265 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | 0.0011 | 0.0021 | 0.53 | 0.5999 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0025 | 0.0048 | -0.51 | 0.6115 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0068 | 0.0029 | 2.37 | 0.0257 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0108 | 0.0118 | -0.92 | 0.3663 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0093 | 0.0068 | 1.38 | 0.1810 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | 0.0002 | 0.0017 | 0.14 | 0.8860 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0172 | 0.0600 | -0.29 | 0.7768 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.0053 | 0.0448 | -0.12 | 0.9061 | 71.77 | 5371 | 26 |
+| adversarial | single_zone | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0206 | 0.0323 | -0.64 | 0.5293 | 71.77 | 5371 | 26 |
+| adversarial | extended_controls | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0457 | 0.0155 | -2.95 | 0.0068 | 68.82 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0957 | 0.0292 | 3.28 | 0.0030 | 69.09 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0503 | 0.0149 | 3.38 | 0.0024 | 69.36 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | secondary | delta_winner_majority_2024_2020 | 0.0424 | 0.0370 | 1.15 | 0.2625 | 68.83 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0067 | 0.0085 | -0.79 | 0.4394 | 69.31 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0502 | 0.0271 | -1.85 | 0.0756 | 68.30 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0488 | 0.0290 | -1.69 | 0.1042 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | composition | delta_female_share_2024_2020 | -0.0442 | 0.0301 | -1.47 | 0.1546 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0156 | 0.0437 | -0.36 | 0.7247 | 68.77 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0340 | 0.0378 | -0.90 | 0.3772 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0442 | 0.0438 | 1.01 | 0.3229 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0380 | 0.0476 | -0.80 | 0.4320 | 69.21 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.0070 | 0.0548 | -0.13 | 0.8994 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0019 | 0.0025 | -0.77 | 0.4505 | 67.64 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0049 | 0.0023 | 2.10 | 0.0458 | 68.75 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0055 | 0.0018 | 3.03 | 0.0056 | 68.22 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0121 | 0.0049 | -2.48 | 0.0203 | 67.28 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | -0.0002 | 0.0009 | -0.25 | 0.8067 | 68.94 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | 0.0005 | 0.0006 | 0.72 | 0.4777 | 69.18 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | -0.0030 | 0.0034 | -0.88 | 0.3860 | 67.39 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | -0.0039 | 0.0067 | -0.58 | 0.5697 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | -0.0001 | 0.0017 | -0.08 | 0.9370 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0037 | 0.0039 | -0.93 | 0.3594 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0054 | 0.0032 | 1.69 | 0.1038 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0119 | 0.0111 | -1.08 | 0.2926 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0090 | 0.0061 | 1.48 | 0.1509 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | -0.0000 | 0.0017 | -0.02 | 0.9831 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | entry | delta_share_first_time_candidates_2024_2020 | 0.0014 | 0.0344 | 0.04 | 0.9668 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.0099 | 0.0441 | -0.23 | 0.8232 | 68.98 | 5560 | 26 |
+| adversarial | extended_controls | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0333 | 0.0305 | -1.09 | 0.2865 | 68.98 | 5560 | 26 |
+| adversarial | open_seat | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0139 | 0.0225 | -0.62 | 0.5404 | 20.87 | 1994 | 26 |
+| adversarial | open_seat | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0459 | 0.0400 | 1.15 | 0.2622 | 20.97 | 1994 | 26 |
+| adversarial | open_seat | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0321 | 0.0217 | 1.48 | 0.1505 | 20.93 | 1994 | 26 |
+| adversarial | open_seat | 2sls | secondary | delta_winner_majority_2024_2020 | 0.1146 | 0.0794 | 1.44 | 0.1617 | 21.22 | 1994 | 26 |
+| adversarial | open_seat | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0234 | 0.0195 | -1.20 | 0.2414 | 20.89 | 1994 | 26 |
+| adversarial | open_seat | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.1062 | 0.0516 | -2.06 | 0.0501 | 19.86 | 1994 | 26 |
+| adversarial | open_seat | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0342 | 0.0657 | -0.52 | 0.6076 | 20.98 | 1994 | 26 |
+| adversarial | open_seat | 2sls | composition | delta_female_share_2024_2020 | -0.0726 | 0.0613 | -1.18 | 0.2476 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | 0.0247 | 0.0692 | 0.36 | 0.7241 | 20.89 | 1994 | 26 |
+| adversarial | open_seat | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | 0.0372 | 0.0520 | 0.71 | 0.4813 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | -0.0030 | 0.0025 | -1.20 | 0.2408 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | composition | delta_winner_is_female_2024_2020 | 0.0026 | 0.0901 | 0.03 | 0.9771 | 21.02 | 1994 | 26 |
+| adversarial | open_seat | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | 0.0564 | 0.0685 | 0.82 | 0.4181 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | 0.0108 | 0.0061 | 1.76 | 0.0910 | 20.82 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0037 | 0.0038 | 0.99 | 0.3318 | 20.29 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0030 | 0.0018 | 1.63 | 0.1166 | 20.90 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | 0.0060 | 0.0103 | 0.58 | 0.5651 | 19.89 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | -0.0006 | 0.0013 | -0.47 | 0.6391 | 21.06 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | 0.0001 | 0.0009 | 0.16 | 0.8773 | 20.96 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | 0.0119 | 0.0077 | 1.54 | 0.1351 | 20.65 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | 0.0008 | 0.0167 | 0.05 | 0.9609 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | 0.0042 | 0.0055 | 0.77 | 0.4512 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0007 | 0.0105 | -0.07 | 0.9441 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0072 | 0.0056 | 1.28 | 0.2125 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0027 | 0.0202 | -0.13 | 0.8960 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0079 | 0.0121 | 0.66 | 0.5184 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | 0.0017 | 0.0032 | 0.54 | 0.5953 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0002 | 0.0784 | -0.00 | 0.9980 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.1067 | 0.0826 | -1.29 | 0.2080 | 20.99 | 1994 | 26 |
+| adversarial | open_seat | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | 0.0715 | 0.0481 | 1.49 | 0.1499 | 20.99 | 1994 | 26 |
+| adversarial | contested_seat | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0618 | 0.0199 | -3.11 | 0.0046 | 51.50 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.1142 | 0.0374 | 3.06 | 0.0053 | 53.29 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0542 | 0.0196 | 2.76 | 0.0106 | 52.96 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | secondary | delta_winner_majority_2024_2020 | -0.0060 | 0.0470 | -0.13 | 0.8995 | 51.77 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | secondary | delta_others_vote_share_2024_2020 | 0.0041 | 0.0103 | 0.40 | 0.6944 | 51.29 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0162 | 0.0289 | -0.56 | 0.5812 | 51.86 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0496 | 0.0405 | -1.22 | 0.2322 | 53.04 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | composition | delta_female_share_2024_2020 | -0.0159 | 0.0401 | -0.40 | 0.6945 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0587 | 0.0398 | -1.48 | 0.1524 | 53.39 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0747 | 0.0406 | -1.84 | 0.0778 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0732 | 0.0448 | 1.64 | 0.1145 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0644 | 0.0548 | -1.17 | 0.2511 | 53.13 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.0505 | 0.0547 | -0.92 | 0.3648 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0138 | 0.0045 | -3.08 | 0.0049 | 54.59 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0057 | 0.0026 | 2.22 | 0.0359 | 53.03 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0073 | 0.0024 | 3.07 | 0.0051 | 53.00 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0231 | 0.0073 | -3.18 | 0.0039 | 53.71 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | 0.0005 | 0.0010 | 0.47 | 0.6405 | 53.06 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | 0.0007 | 0.0006 | 1.04 | 0.3081 | 52.84 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | -0.0148 | 0.0051 | -2.93 | 0.0071 | 53.75 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | -0.0059 | 0.0087 | -0.68 | 0.5049 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | -0.0015 | 0.0020 | -0.78 | 0.4442 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0052 | 0.0047 | -1.10 | 0.2802 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0067 | 0.0034 | 1.97 | 0.0604 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0171 | 0.0130 | -1.32 | 0.1983 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0119 | 0.0065 | 1.82 | 0.0808 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | -0.0004 | 0.0021 | -0.21 | 0.8345 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0426 | 0.0596 | -0.71 | 0.4818 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | entry | delta_share_serial_challenger_2024_2020 | 0.0453 | 0.0416 | 1.09 | 0.2862 | 53.08 | 3566 | 26 |
+| adversarial | contested_seat | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0810 | 0.0468 | -1.73 | 0.0958 | 53.08 | 3566 | 26 |
+| adversarial | broader_treatment | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0458 | 0.0148 | -3.10 | 0.0047 | 70.33 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0924 | 0.0280 | 3.30 | 0.0029 | 71.87 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0480 | 0.0149 | 3.22 | 0.0035 | 71.24 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | secondary | delta_winner_majority_2024_2020 | 0.0357 | 0.0362 | 0.98 | 0.3343 | 70.72 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0053 | 0.0088 | -0.61 | 0.5478 | 70.11 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0457 | 0.0265 | -1.72 | 0.0972 | 69.39 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0447 | 0.0287 | -1.55 | 0.1328 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | composition | delta_female_share_2024_2020 | -0.0405 | 0.0366 | -1.11 | 0.2793 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | -0.0304 | 0.0387 | -0.79 | 0.4386 | 71.67 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0269 | 0.0366 | -0.74 | 0.4687 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0386 | 0.0422 | 0.91 | 0.3692 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0396 | 0.0445 | -0.89 | 0.3819 | 71.98 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | 0.0017 | 0.0497 | 0.03 | 0.9725 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0058 | 0.0035 | -1.63 | 0.1161 | 73.25 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_null_rate_2024_2020 | 0.0054 | 0.0023 | 2.36 | 0.0265 | 71.59 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0058 | 0.0017 | 3.38 | 0.0024 | 71.33 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0138 | 0.0058 | -2.38 | 0.0254 | 71.72 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | 0.0001 | 0.0009 | 0.16 | 0.8758 | 71.77 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | 0.0005 | 0.0007 | 0.74 | 0.4653 | 71.84 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | -0.0059 | 0.0042 | -1.42 | 0.1688 | 72.32 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | -0.0034 | 0.0087 | -0.39 | 0.7027 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | 0.0005 | 0.0020 | 0.26 | 0.8002 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0036 | 0.0050 | -0.73 | 0.4745 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0065 | 0.0028 | 2.29 | 0.0310 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0121 | 0.0121 | -1.00 | 0.3282 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0101 | 0.0069 | 1.46 | 0.1567 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | 0.0002 | 0.0017 | 0.10 | 0.9185 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0134 | 0.0583 | -0.23 | 0.8205 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.0058 | 0.0451 | -0.13 | 0.8992 | 71.76 | 5560 | 26 |
+| adversarial | broader_treatment | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0240 | 0.0317 | -0.76 | 0.4546 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0082 | 0.0132 | -0.62 | 0.5393 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0282 | 0.0272 | 1.04 | 0.3097 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0199 | 0.0176 | 1.13 | 0.2685 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | secondary | delta_winner_majority_2024_2020 | 0.0647 | 0.0585 | 1.11 | 0.2786 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0157 | 0.0156 | -1.01 | 0.3232 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0632 | 0.0397 | -1.59 | 0.1241 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0454 | 0.0373 | -1.22 | 0.2347 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | composition | delta_female_share_2024_2020 | -0.0405 | 0.0366 | -1.11 | 0.2793 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | 0.0203 | 0.0601 | 0.34 | 0.7384 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0269 | 0.0366 | -0.74 | 0.4687 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0386 | 0.0422 | 0.91 | 0.3692 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0252 | 0.0476 | -0.53 | 0.6016 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | 0.0017 | 0.0497 | 0.03 | 0.9725 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0010 | 0.0030 | -0.33 | 0.7439 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_null_rate_2024_2020 | -0.0017 | 0.0024 | -0.72 | 0.4764 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0003 | 0.0025 | 0.12 | 0.9033 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | 0.0004 | 0.0048 | 0.09 | 0.9270 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | -0.0007 | 0.0011 | -0.65 | 0.5234 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | -0.0002 | 0.0003 | -0.69 | 0.4955 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | -0.0002 | 0.0032 | -0.06 | 0.9540 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | -0.0034 | 0.0087 | -0.39 | 0.7027 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | 0.0005 | 0.0020 | 0.26 | 0.8002 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0036 | 0.0050 | -0.73 | 0.4745 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0065 | 0.0028 | 2.29 | 0.0310 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0121 | 0.0121 | -1.00 | 0.3282 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0101 | 0.0069 | 1.46 | 0.1567 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | 0.0002 | 0.0017 | 0.10 | 0.9185 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0134 | 0.0583 | -0.23 | 0.8205 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.0058 | 0.0451 | -0.13 | 0.8992 | 71.76 | 5560 | 26 |
+| adversarial | fd | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0240 | 0.0317 | -0.76 | 0.4546 | 71.76 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | primary | delta_runnerup_vote_share_2024_2020 | -0.0394 | 0.0149 | -2.65 | 0.0138 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | primary | delta_margin_top1_top2_2024_2020 | 0.0882 | 0.0282 | 3.13 | 0.0044 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | secondary | delta_winner_vote_share_2024_2020 | 0.0488 | 0.0163 | 2.99 | 0.0062 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | secondary | delta_winner_majority_2024_2020 | 0.0847 | 0.0622 | 1.36 | 0.1853 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | secondary | delta_others_vote_share_2024_2020 | -0.0116 | 0.0140 | -0.83 | 0.4124 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | secondary | delta_log1p_n_candidates_with_votes_2024_2020 | -0.0489 | 0.0286 | -1.71 | 0.0997 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | composition | delta_female_vote_share_2024_2020 | -0.0489 | 0.0383 | -1.27 | 0.2143 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | composition | delta_female_share_2024_2020 | -0.0435 | 0.0375 | -1.16 | 0.2564 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | composition | delta_nonwhite_vote_share_2024_2020 | 0.0192 | 0.0623 | 0.31 | 0.7609 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | composition | delta_new_candidate_vote_share_2024_2020 | -0.0512 | 0.0375 | -1.37 | 0.1837 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | composition | delta_incumbent_candidate_vote_share_2024_2020 | 0.0529 | 0.0448 | 1.18 | 0.2489 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | composition | delta_winner_is_female_2024_2020 | -0.0289 | 0.0483 | -0.60 | 0.5560 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | composition | delta_winner_is_new_vs_2020_2024_2020 | -0.0272 | 0.0539 | -0.50 | 0.6181 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_turnout_rate_2024_2020 | -0.0015 | 0.0030 | -0.50 | 0.6180 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_null_rate_2024_2020 | -0.0000 | 0.0027 | -0.00 | 0.9990 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_blank_rate_2024_2020 | 0.0017 | 0.0022 | 0.77 | 0.4490 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_valid_vote_rate_2024_2020 | -0.0032 | 0.0045 | -0.70 | 0.4888 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_null_rate_vereador_2024_2020 | -0.0007 | 0.0011 | -0.59 | 0.5611 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_blank_rate_vereador_2024_2020 | -0.0001 | 0.0003 | -0.27 | 0.7893 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_valid_vote_rate_vereador_2024_2020 | -0.0007 | 0.0032 | -0.23 | 0.8181 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_facultative_turnout_2024_2020 | -0.0042 | 0.0089 | -0.47 | 0.6394 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_compulsory_turnout_2024_2020 | -0.0000 | 0.0019 | -0.02 | 0.9875 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_low_ed_turnout_2024_2020 | -0.0039 | 0.0051 | -0.78 | 0.4424 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_high_ed_turnout_2024_2020 | 0.0056 | 0.0029 | 1.93 | 0.0652 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_analfabeto_turnout_2024_2020 | -0.0128 | 0.0124 | -1.03 | 0.3134 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_education_turnout_gap_2024_2020 | 0.0095 | 0.0071 | 1.34 | 0.1935 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | voter_behavior | delta_sex_turnout_gap_2024_2020 | 0.0002 | 0.0017 | 0.09 | 0.9262 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | entry | delta_share_first_time_candidates_2024_2020 | -0.0168 | 0.0551 | -0.30 | 0.7629 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | entry | delta_share_serial_challenger_2024_2020 | -0.0022 | 0.0459 | -0.05 | 0.9618 | 68.27 | 5560 | 26 |
+| adversarial | ancova_2020lvl | 2sls | entry | delta_share_cross_cycle_returner_2024_2020 | -0.0294 | 0.0342 | -0.86 | 0.3988 | 68.27 | 5560 | 26 |

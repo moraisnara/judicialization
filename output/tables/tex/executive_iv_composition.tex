@@ -3,20 +3,13 @@
 
 \begin{tabular}{lcccccc}
    \tabularnewline \midrule \midrule
-   Dependent Variables:                                                     & delta\_female\_vote\_share\_2024\_2020      & delta\_nonwhite\_vote\_share\_2024\_2020      & delta\_new\_candidate\_vote\_share\_2024\_2020       & delta\_incumbent\_candidate\_vote\_share\_2024\_2020       & delta\_winner\_is\_female\_2024\_2020      & delta\_winner\_is\_new\_vs\_2020\_2024\_2020\\         
-   Model:                                                                   & (1)                                         & (2)                                           & (3)                                                  & (4)                                                        & (5)                                        & (6)\\  
-   \midrule
-   \emph{Variables}\\
-   $\Delta$ Log(lawsuits)                                                   & -0.093$^{\dagger}$                          & -0.039                                        & -0.010                                               & 0.010                                                      & -0.123$^{\dagger}$                         & -0.002\\   
-                                                                            & (0.048)                                     & (0.042)                                       & (0.050)                                              & (0.049)                                                    & (0.063)                                    & (0.073)\\   
-   \midrule
-   \emph{Fixed-effects}\\
-   SG\_UF                                                                   & Yes                                         & Yes                                           & Yes                                                  & Yes                                                        & Yes                                        & Yes\\  
-   \midrule
-   \emph{Fit statistics}\\
-   F-test (1st stage), delta\_log1p\_competition\_lawsuits\_2024\_2020      & 238.9                                       & 238.9                                         & 238.9                                                & 238.9                                                      & 238.9                                      & 238.9\\  
-   Observations                                                             & 5,560                                       & 5,560                                         & 5,560                                                & 5,560                                                      & 5,560                                      & 5,560\\  
+   Dependent Variables: & Female vote share & Nonwhite vote share & $\Delta$ New-cand.\ vote share   & $\Delta$ Incumbent vote share  & Winner is female & $\Delta$ Winner is new entrant\\   
+   Model:               & (1)               & (2)                 & (3)                              & (4)                            & (5)              & (6)\\  
+   Judicialization      & -0.045            & -0.030              & -0.027                           & 0.039                          & -0.040           & 0.002\\   
+                        & (0.029)           & (0.039)             & (0.037)                          & (0.042)                        & (0.044)          & (0.050)\\   
+   2024 Mean            & 0.146             & 0.341               & 0.550                            & 0.315                          & 0.132            & 0.474\\  
+   2016 Mean            & 0.128             & 0.303               &                                  &                                & 0.116            & \\  
    \midrule \midrule
-   \multicolumn{7}{l}{\emph{Clustered (cluster\_id) standard-errors in parentheses}}\\
-   \multicolumn{7}{l}{\emph{Signif. Codes: **: 0.01, *: 0.05, \dagger: 0.1}}\\
+   \multicolumn{7}{l}{\emph{Clustered (state) standard-errors in parentheses}}\\
+   \multicolumn{7}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
 \end{tabular}

@@ -151,6 +151,66 @@ cat("  Saved binscatter_first_stage.pdf\n")
 
 
 # ============================================================
+# 1b. LINEAR FIRST STAGE (Ash–Morelli–Vannoni style)
+#     Residualised binscatter with a STRAIGHT OLS fit and the
+#     cluster-robust slope + first-stage F annotated. This is the
+#     headline first-stage figure (frame 16); the cubic binscatter
+#     above is the appendix diagnostic.
+# ============================================================
+cat("\n[1b] Linear first stage (AMV style)...\n")
+
+# Cluster-robust first stage (FWL: the partialled-out slope equals the
+# residual-space OLS slope, so the annotated beta matches the drawn line).
+fs_fit <- feols(
+  as.formula(paste(ENDOG, "~", INSTR, "+",
+                   paste(ctrls_avail, collapse = " + "), "| SG_UF")),
+  data = samp, cluster = ~cluster_id, warn = FALSE, notes = FALSE
+)
+fs_beta <- as.numeric(coef(fs_fit)[INSTR])
+fs_se   <- as.numeric(se(fs_fit)[INSTR])
+fs_F    <- (fs_beta / fs_se)^2
+
+# Equal-count bins on the residualised instrument (25 bins, AMV uses ~20).
+nb <- 25
+bs_df$xbin <- cut(bs_df$x,
+                  breaks = quantile(bs_df$x, probs = seq(0, 1, length.out = nb + 1),
+                                    na.rm = TRUE),
+                  include.lowest = TRUE)
+binned <- aggregate(cbind(x, y) ~ xbin, data = bs_df, FUN = mean)
+
+xr <- quantile(bs_df$x, c(0.01, 0.99))
+line_lin <- data.frame(x = xr, y = fs_beta * xr)   # intercept ~0 in residual space
+
+annot <- sprintf("hat(beta) == '%.3f'~'('*%.3f*')'", fs_beta, fs_se)
+annot_F <- sprintf("First-stage~italic(F) == '%.1f'", fs_F)
+
+p_lin <- ggplot() +
+  geom_hline(yintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
+  geom_vline(xintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
+  geom_point(data = binned, aes(x = x, y = y),
+             color = COL_BLUE, size = 2.4, alpha = 0.9) +
+  geom_line(data = line_lin, aes(x = x, y = y),
+            color = COL_RED, linewidth = 1.0) +
+  annotate("text", x = xr[1], y = max(binned$y),
+           label = annot,   parse = TRUE, hjust = 0, vjust = 1, size = 3.6) +
+  annotate("text", x = xr[1], y = max(binned$y) * 0.82,
+           label = annot_F, parse = TRUE, hjust = 0, vjust = 1, size = 3.6) +
+  coord_cartesian(xlim = xr) +
+  labs(
+    x = "Predicted exposure (Bartik IV, residualised on controls + state FE)",
+    y = expression(Delta*log(1 + lawsuits) ~ "(residualised)")
+  ) +
+  theme_clean()
+
+ggsave(
+  file.path(FIG_DIR, "first_stage_linear.pdf"),
+  p_lin, width = 7, height = 4.5
+)
+cat(sprintf("  Saved first_stage_linear.pdf  (beta=%.3f, se=%.3f, F=%.1f)\n",
+            fs_beta, fs_se, fs_F))
+
+
+# ============================================================
 # 2. VOTER BEHAVIOR FOREST PLOT
 # ============================================================
 cat("\n[2] Voter behavior forest plot...\n")
@@ -236,6 +296,95 @@ ggsave(
   p_forest, width = 9, height = 4.5
 )
 cat("  Saved forest_voter_behavior.pdf\n")
+
+
+# ============================================================
+# 2b. COEFFICIENT PLOTS for the "nothing moves" families
+#     One dot per outcome, 90% (thick) + 95% tF (thin) CI, zero line.
+#     Significant-at-5% points highlighted; coefficient printed at the
+#     point so the reader reads the magnitude, not just the position.
+#     Replaces the wide null tables on the primary slides (full tables
+#     move to the appendix).
+# ============================================================
+cat("\n[2b] Coefficient plots (null families)...\n")
+
+# baseline-spec rows, keyed by outcome
+iv_base <- iv_raw[iv_raw$spec_name == "baseline", ]
+
+make_coefplot <- function(outcomes, title, file, xexpand = 0.012) {
+  d <- iv_base[match(names(outcomes), iv_base$outcome), ]
+  d <- d[!is.na(d$outcome), ]
+  d$lab <- factor(unname(outcomes[d$outcome]), levels = rev(unname(outcomes)))
+  d$sig <- d$p < 0.05
+  d$ci90_lo <- d$coef - qnorm(0.95) * d$se
+  d$ci90_hi <- d$coef + qnorm(0.95) * d$se
+  # tF-corrected 95% CI if present, else normal
+  lo <- if ("ci95_low_tF"  %in% names(d)) d$ci95_low_tF  else d$coef - 1.96 * d$se
+  hi <- if ("ci95_high_tF" %in% names(d)) d$ci95_high_tF else d$coef + 1.96 * d$se
+  d$ci95_lo <- lo; d$ci95_hi <- hi
+  xr <- range(c(d$ci95_lo, d$ci95_hi, 0))
+  pad <- diff(xr) * 0.18 + xexpand
+  ggplot(d, aes(x = coef, y = lab)) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "grey45", linewidth = 0.5) +
+    geom_errorbarh(aes(xmin = ci95_lo, xmax = ci95_hi),
+                   height = 0, color = COL_GRAY, linewidth = 0.6, alpha = 0.6) +
+    geom_errorbarh(aes(xmin = ci90_lo, xmax = ci90_hi, color = sig),
+                   height = 0, linewidth = 1.4) +
+    geom_point(aes(color = sig), size = 3.1) +
+    geom_text(aes(label = sprintf("%+.3f", coef)),
+              vjust = -1.0, size = 3.1, color = "grey25") +
+    scale_color_manual(values = c(`TRUE` = COL_RED, `FALSE` = COL_BLUE), guide = "none") +
+    scale_x_continuous(expand = expansion(mult = 0.02, add = pad),
+                       labels = scales::label_number(accuracy = 0.01)) +
+    labs(x = expression("2SLS effect of " * Delta * " log(1 + adversarial lawsuits)"),
+         y = NULL, title = title) +
+    theme_clean() +
+    theme(panel.grid.major.x = element_line(color = "grey90"),
+          panel.grid.major.y = element_blank(),
+          axis.text.y = element_text(size = 10))
+}
+
+# T1 — descriptive representation (vote share of candidates in each position)
+rep_outcomes <- c(
+  delta_female_vote_share_2024_2020              = "Female vote share",
+  delta_nonwhite_vote_share_2024_2020            = "Non-white vote share",
+  delta_new_candidate_vote_share_2024_2020       = "New-candidate vote share",
+  delta_incumbent_candidate_vote_share_2024_2020 = "Incumbent vote share",
+  delta_winner_is_female_2024_2020               = "Winner is female (Pr.)",
+  delta_winner_is_new_vs_2020_2024_2020          = "Winner is new entrant (Pr.)"
+)
+p_rep <- make_coefplot(rep_outcomes,
+  "Descriptive representation — vote share by candidate position",
+  "coefplot_representation.pdf")
+ggsave(file.path(FIG_DIR, "coefplot_representation.pdf"), p_rep, width = 8, height = 4.2)
+cat("  Saved coefplot_representation.pdf\n")
+
+# T2 — renewal / entrant typology (vote share)
+ent_outcomes <- c(
+  delta_share_first_time_candidates_2024_2020 = "First-time entrants",
+  delta_share_serial_challenger_2024_2020     = "Serial challengers",
+  delta_share_cross_cycle_returner_2024_2020  = "Cross-cycle returners"
+)
+p_ent <- make_coefplot(ent_outcomes,
+  "Renewal — vote share by entrant type",
+  "coefplot_entrant.pdf")
+ggsave(file.path(FIG_DIR, "coefplot_entrant.pdf"), p_ent, width = 8, height = 3.0)
+cat("  Saved coefplot_entrant.pdf\n")
+
+# Turnout by voter profile (compulsory vs facultative + education)
+turn_outcomes <- c(
+  delta_compulsory_turnout_2024_2020     = "Compulsory electorate",
+  delta_facultative_turnout_2024_2020    = "Facultative electorate (16-17, 70+)",
+  delta_low_ed_turnout_2024_2020         = "Low-education voters",
+  delta_high_ed_turnout_2024_2020        = "High-education voters",
+  delta_analfabeto_turnout_2024_2020     = "Illiterate voters",
+  delta_education_turnout_gap_2024_2020  = "Education turnout gap (high - low)"
+)
+p_turn <- make_coefplot(turn_outcomes,
+  "Turnout response by voter profile",
+  "coefplot_turnout_profile.pdf")
+ggsave(file.path(FIG_DIR, "coefplot_turnout_profile.pdf"), p_turn, width = 8, height = 4.2)
+cat("  Saved coefplot_turnout_profile.pdf\n")
 
 
 # ============================================================

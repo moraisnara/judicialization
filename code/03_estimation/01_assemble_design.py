@@ -34,6 +34,7 @@ SUBJECT_PANEL_PATH = CLEAN_DIR / "municipality_competition_subject_panel.csv"
 COVARIATES_PATH    = CLEAN_DIR / "municipal_covariates.csv"
 ADMIN_PATH         = CLEAN_DIR / "electoral_admin_outcomes.csv"
 EXPERIENCE_PATH    = CLEAN_DIR / "candidate_experience_panel.csv"
+VOTER_DISAGG_PATH  = CLEAN_DIR / "voter_disaggregated_outcomes.csv"
 
 # Subject code excluded from the no-RRC Bartik variant (Recursos de Reclamação)
 EXCLUDE_RRC = {"11618"}
@@ -89,11 +90,16 @@ def load_voter_behavior_deltas() -> pd.DataFrame:
     adm = adm.rename(columns=STANDARD_TO_LEGACY)
     adm["SG_UE"] = adm["SG_UE"].str.zfill(5)
     adm["ANO_ELEICAO"] = pd.to_numeric(adm["ANO_ELEICAO"], errors="coerce")
-    for col in ["turnout_rate", "null_rate", "blank_rate", "valid_vote_rate"]:
+    # Mayoral (prefeito) ballot composition + office-invariant turnout, PLUS the
+    # council (vereador) ballot composition. Turnout/abstention are reported once.
+    rate_candidates = [
+        "turnout_rate", "null_rate", "blank_rate", "valid_vote_rate",
+        "null_rate_vereador", "blank_rate_vereador", "valid_vote_rate_vereador",
+    ]
+    for col in rate_candidates:
         if col in adm.columns:
             adm[col] = pd.to_numeric(adm[col], errors="coerce")
-    rate_cols = [c for c in ["turnout_rate", "null_rate", "blank_rate", "valid_vote_rate"]
-                 if c in adm.columns]
+    rate_cols = [c for c in rate_candidates if c in adm.columns]
     a20 = adm[adm["ANO_ELEICAO"] == 2020][["SG_UF", "SG_UE"] + rate_cols]
     a24 = adm[adm["ANO_ELEICAO"] == 2024][["SG_UF", "SG_UE"] + rate_cols]
     m = a20.merge(a24, on=["SG_UF", "SG_UE"], suffixes=("_2020", "_2024"))
@@ -231,7 +237,12 @@ def main() -> None:
     print("Loading inputs...")
     design = load_design()
     design = add_zone_structure(design)
-    design["cluster_id"] = design["principal_zone_id"]
+    # Cluster at the STATE level: the leave-own-state-out shift is constant within
+    # a state, and first-instance litigation is correlated within state through the
+    # TRE (binding jurisprudence) — the electoral zone is nested in the state, so
+    # state clustering is the conservative envelope (Adão–Kolesár–Morales 2019).
+    # principal_zone_id is retained for the zone-clustering robustness column.
+    design["cluster_id"] = design["SG_UF"]
     design = build_no_rrc_variant(design, load_components(), load_subject_panel())
 
     # Covariates (drop string/identifier columns not used in regressions)
@@ -249,21 +260,67 @@ def main() -> None:
     # Voter-behavior deltas (turnout, null, blank share 2024 − 2020)
     design = design.merge(load_voter_behavior_deltas(), on=["SG_UF", "SG_UE"], how="left")
 
+    # Disaggregated turnout elastic margins (facultative/compulsory, education, sex).
+    # Under compulsory voting the aggregate turnout null is mechanical; these are the
+    # margins where a voter-engagement effect would surface. Keyed on municipality_id_tse
+    # (= SG_UE, nationally unique TSE UE code).
+    if VOTER_DISAGG_PATH.exists():
+        vdis = pd.read_csv(VOTER_DISAGG_PATH, dtype={"municipality_id_tse": str},
+                           low_memory=False)
+        vdis["SG_UE"] = vdis["municipality_id_tse"].str.strip().str.zfill(5)
+        vdis = vdis.drop(columns=["municipality_id_tse"])
+        design = design.merge(vdis, on="SG_UE", how="left", validate="m:1")
+
     # Baseline voter-behavior levels (2020) and registered voters (2024)
     adm = pd.read_csv(ADMIN_PATH, dtype={"municipality_id_tse": str}, low_memory=False)
     adm = adm.rename(columns=STANDARD_TO_LEGACY)
     adm["SG_UE"] = adm["SG_UE"].str.zfill(5)
     adm["ANO_ELEICAO"] = pd.to_numeric(adm["ANO_ELEICAO"], errors="coerce")
 
-    level_cols_2020 = [c for c in ["turnout_rate", "null_rate", "blank_rate", "valid_vote_rate"]
-                       if c in adm.columns]
+    level_cols_2020 = [c for c in [
+        "turnout_rate", "null_rate", "blank_rate", "valid_vote_rate",
+        "null_rate_vereador", "blank_rate_vereador", "valid_vote_rate_vereador",
+    ] if c in adm.columns]
     adm_2020 = (
         adm[adm["ANO_ELEICAO"] == 2020]
         [["SG_UF", "SG_UE"] + level_cols_2020]
         .rename(columns={c: f"{c}_2020" for c in level_cols_2020})
     )
-    if "turnout_rate_2020" not in design.columns:
-        design = design.merge(adm_2020, on=["SG_UF", "SG_UE"], how="left")
+    # Merge only the 2020-level columns not already present (some mayoral levels
+    # arrive earlier via the competition design); this also brings in the council
+    # ballot levels and mayoral valid-vote level used as table baseline rows.
+    new_level_cols = [f"{c}_2020" for c in level_cols_2020
+                      if f"{c}_2020" not in design.columns]
+    if new_level_cols:
+        design = design.merge(adm_2020[["SG_UF", "SG_UE"] + new_level_cols],
+                              on=["SG_UF", "SG_UE"], how="left")
+
+    # Pre-window (2016) and post (2024) voter-behavior levels. The 2016 levels
+    # come from detalhe_votacao_munzona_2016 (added to 06_electoral_admin.py);
+    # they give voter outcomes the same clean pre-window anchor the competition
+    # outcomes already have, enabling (a) ANCOVA-2016 on Y_2024 and (b) the
+    # 2016->2020 pre-trend used as a falsification check.
+    for yr in (2016, 2024):
+        cols_yr = [c for c in level_cols_2020 if c in adm.columns]
+        if not cols_yr:
+            continue
+        adm_yr = (
+            adm[adm["ANO_ELEICAO"] == yr]
+            [["SG_UF", "SG_UE"] + cols_yr]
+            .rename(columns={c: f"{c}_{yr}" for c in cols_yr})
+        )
+        new_yr = [f"{c}_{yr}" for c in cols_yr if f"{c}_{yr}" not in design.columns]
+        if new_yr:
+            design = design.merge(adm_yr[["SG_UF", "SG_UE"] + new_yr],
+                                  on=["SG_UF", "SG_UE"], how="left")
+
+    # Voter-behavior pre-trends (2020 - 2016): the change over the *pre-treatment*
+    # window. A valid instrument should not predict these.
+    for c in level_cols_2020:
+        if f"{c}_2020" in design.columns and f"{c}_2016" in design.columns:
+            design[f"pretrend_{c}_2020_2016"] = (
+                design[f"{c}_2020"] - design[f"{c}_2016"]
+            )
 
     adm_2024_aptos = (
         adm[adm["ANO_ELEICAO"] == 2024]
@@ -283,6 +340,9 @@ def main() -> None:
         cexp = pd.read_csv(EXPERIENCE_PATH, dtype={"municipality_id_tse": str}, low_memory=False)
         cexp["municipality_id_tse"] = cexp["municipality_id_tse"].str.strip().str.zfill(5)
         cexp["election_year"] = pd.to_numeric(cexp["election_year"], errors="coerce")
+        # Experience panel is now BY OFFICE; this is the executive (mayoral) design.
+        if "office_group" in cexp.columns:
+            cexp = cexp[cexp["office_group"] == "executive"]
         cexp = cexp.rename(columns={"municipality_id_tse": "SG_UE"})
 
         # 2024 wave: outcome columns

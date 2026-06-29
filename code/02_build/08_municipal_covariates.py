@@ -160,6 +160,10 @@ def main() -> None:
     print("[3] Loading candidate experience panel (2020 wave)", flush=True)
     cexp = pd.read_csv(DERIVED_DIR / "candidate_experience_panel.csv", dtype=str)
     cexp["election_year"] = pd.to_numeric(cexp["election_year"], errors="coerce")
+    # The experience panel is now BY OFFICE; these mayoral covariates use the
+    # executive race only (incumbency/open_seat are mayoral concepts).
+    if "office_group" in cexp.columns:
+        cexp = cexp[cexp["office_group"] == "executive"]
     cexp_2020 = cexp[cexp["election_year"] == 2020].copy()
     cexp_2020["municipality_id_tse"] = cexp_2020["municipality_id_tse"].str.zfill(5)
     exp_cols = ["share_first_time_candidates", "mean_prior_candidacies",

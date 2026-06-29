@@ -77,11 +77,21 @@ SECONDARY_OUTCOMES <- c(
 )
 ALL_OUTCOMES <- c(PRIMARY_OUTCOMES, SECONDARY_OUTCOMES)
 
+# V3 control philosophy (2026-06-28), identical to 02_iv_main.R: common pre-
+# determined controls + each outcome's own 2016 level (per-outcome lagged DV),
+# NO 2020 levels of competition outcomes (Lord's-paradox avoidance).
 BASELINE_CONTROLS <- c(
-  "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
-  "margin_2016",
-  "log1p_total_valid_votes_2020", "margin_top1_top2_2020",
-  "log1p_total_candidates_2020"
+  "log_pop_2010", "urban_share_2010", "log_income_pc_2010", "higher_educ_share_2010",
+  "log1p_total_valid_votes_2020",
+  "margin_2016"
+)
+
+LAG16_MAP <- c(
+  delta_runnerup_vote_share_2024_2020            = "runnerup_vote_share_2016",
+  delta_margin_top1_top2_2024_2020               = "margin_top1_top2_2016",
+  delta_winner_vote_share_2024_2020              = "winner_vote_share_2016",
+  delta_winner_majority_2024_2020                = "winner_majority_2016",
+  delta_log1p_n_candidates_with_votes_2024_2020  = "n_candidates_with_votes_2016"
 )
 
 
@@ -98,8 +108,8 @@ run_first_stage <- function(samp, controls, instrument, endogenous) {
   feols(fml, data = samp, cluster = ~cluster_id, warn = FALSE, notes = FALSE)
 }
 
-run_iv <- function(samp, outcome, controls, instrument, endogenous) {
-  ctrls    <- avail(controls, samp)
+run_iv <- function(samp, outcome, controls, instrument, endogenous, lag_col = NULL) {
+  ctrls    <- avail(c(controls, lag_col), samp)
   ctrl_rhs <- if (length(ctrls) > 0) paste(ctrls, collapse = " + ") else "1"
   fml      <- as.formula(sprintf(
     "%s ~ %s | SG_UF | %s ~ %s", outcome, ctrl_rhs, endogenous, instrument
@@ -190,10 +200,11 @@ for (iv_col in family_iv_cols) {
   for (y in ALL_OUTCOMES) {
     if (!(y %in% names(samp))) next
     if (sum(!is.na(samp[[y]])) < 20L) next
+    lag_col <- unname(LAG16_MAP[y]); if (is.na(lag_col)) lag_col <- NULL
     tryCatch({
-      iv_fit <- run_iv(samp, y, BASELINE_CONTROLS, iv_col, endogenous)
+      iv_fit <- run_iv(samp, y, BASELINE_CONTROLS, iv_col, endogenous, lag_col)
       iv_rows[[length(iv_rows) + 1]] <- extract_iv_row(
-        iv_fit, family_label, y, n_obs, n_cl, endogenous
+        iv_fit, family_label, y, nobs(iv_fit), n_cl, endogenous
       )
     }, error = function(e)
       message("  IV error [", y, "]: ", conditionMessage(e)))

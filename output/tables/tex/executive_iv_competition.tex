@@ -3,20 +3,13 @@
 
 \begin{tabular}{lccccc}
    \tabularnewline \midrule \midrule
-   Dependent Variables:                                                     & delta\_runnerup\_vote\_share\_2024\_2020      & delta\_margin\_top1\_top2\_2024\_2020      & delta\_winner\_vote\_share\_2024\_2020      & delta\_winner\_majority\_2024\_2020     & delta\_log1p\_n\_candidates\_with\_votes\_2024\_2020\\         
-   Model:                                                                   & (1)                                           & (2)                                        & (3)                                         & (4)                                     & (5)\\  
-   \midrule
-   \emph{Variables}\\
-   $\Delta$ Log(lawsuits)                                                   & -0.031                                        & 0.062                                      & 0.031                                       & 0.140                                   & -0.066$^{\dagger}$\\    
-                                                                            & (0.022)                                       & (0.043)                                    & (0.025)                                     & (0.090)                                 & (0.039)\\   
-   \midrule
-   \emph{Fixed-effects}\\
-   SG\_UF                                                                   & Yes                                           & Yes                                        & Yes                                         & Yes                                     & Yes\\  
-   \midrule
-   \emph{Fit statistics}\\
-   F-test (1st stage), delta\_log1p\_competition\_lawsuits\_2024\_2020      & 238.9                                         & 238.9                                      & 238.9                                       & 238.9                                   & 238.9\\  
-   Observations                                                             & 5,560                                         & 5,560                                      & 5,560                                       & 5,560                                   & 5,560\\  
+   Dependent Variables: & Runner-up vote share & Margin (W$-$RU) & Winner vote share & Winner majority (P50) & Log n candidates\\  
+   Model:               & (1)                  & (2)             & (3)               & (4)                   & (5)\\  
+   Judicialization      & \cellcolor{sigshade}-0.046$^{***}$       & \cellcolor{sigshade}0.092$^{***}$   & \cellcolor{sigshade}0.048$^{***}$     & 0.036                 & -0.046$^{*}$\\   
+                        & (0.015)              & (0.028)         & (0.015)           & (0.036)               & (0.026)\\   
+   2024 Mean            & 0.337                & 0.270           & 0.607             & 0.832                 & 1.268\\  
+   2016 Mean            & 0.368                & 0.193           & 0.561             & 0.767                 & 1.289\\  
    \midrule \midrule
-   \multicolumn{6}{l}{\emph{Clustered (cluster\_id) standard-errors in parentheses}}\\
-   \multicolumn{6}{l}{\emph{Signif. Codes: **: 0.01, *: 0.05, \dagger: 0.1}}\\
+   \multicolumn{6}{l}{\emph{Clustered (state) standard-errors in parentheses}}\\
+   \multicolumn{6}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
 \end{tabular}
