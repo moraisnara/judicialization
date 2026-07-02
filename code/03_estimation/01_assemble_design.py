@@ -296,7 +296,7 @@ def main() -> None:
                               on=["SG_UF", "SG_UE"], how="left")
 
     # Pre-window (2016) and post (2024) voter-behavior levels. The 2016 levels
-    # come from detalhe_votacao_munzona_2016 (added to 06_electoral_admin.py);
+    # come from detalhe_votacao_munzona_2016 (added to 05_turnout_ballot_outcomes.py);
     # they give voter outcomes the same clean pre-window anchor the competition
     # outcomes already have, enabling (a) ANCOVA-2016 on Y_2024 and (b) the
     # 2016->2020 pre-trend used as a falsification check.

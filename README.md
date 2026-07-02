@@ -19,7 +19,7 @@ where `s_{ik}` is municipality `i`'s 2020 baseline share of lawsuits in topic `k
 leave-state-out log growth of topic `k` nationally from 2020 to 2024.
 
 **Adversarial filter:** administrative and procedural classes/subjects are excluded at the build
-stage (`02_bartik_inputs.py`), retaining only substantive electoral competition cases.
+stage (`02_shift_share_design.py`), retaining only substantive electoral competition cases.
 This produces the primary instrument `bartik_iv_2020_2024` (first-stage F ≈ 19.6).
 
 Inference follows GPS (2020) Rotemberg-weight decomposition and BHJ (2022/2024) diagnostics.
@@ -81,17 +81,17 @@ Intermediate datasets produced by the `02_build` pipeline.
 |---|---|---|
 | `zona_lawsuit_panel.csv` | `01_lawsuit_panel.py` | Zone × class × subject panel, pre-election cases (2018–2024) |
 | `shift_share_subject_crosswalk.csv` | manual | Subject code → litigation family mapping |
-| `municipality_bartik_components.csv` | `02_bartik_inputs.py` | Per (municipality, subject): Bartik component `s_{ik}×g_k`, baseline share, shock |
-| `municipality_competition_subject_panel.csv` | `02_bartik_inputs.py` | Per (municipality, subject, year): lawsuit counts (2020 and 2024) |
-| `office_candidate_outcomes_panel.csv` | `02_bartik_inputs.py` | Office-level candidate composition outcomes |
-| `executive_shift_share_design.csv` | `02_bartik_inputs.py` | Executive design with Bartik IV before vote outcomes are joined |
-| `legislative_shift_share_design.csv` | `02_bartik_inputs.py` | Legislative (vereadores) design with Bartik IV |
+| `municipality_bartik_components.csv` | `02_shift_share_design.py` | Per (municipality, subject): Bartik component `s_{ik}×g_k`, baseline share, shock |
+| `municipality_competition_subject_panel.csv` | `02_shift_share_design.py` | Per (municipality, subject, year): lawsuit counts (2020 and 2024) |
+| `office_candidate_outcomes_panel.csv` | `02_shift_share_design.py` | Office-level candidate composition outcomes |
+| `executive_shift_share_design.csv` | `02_shift_share_design.py` | Executive design with Bartik IV before vote outcomes are joined |
+| `legislative_shift_share_design.csv` | `02_shift_share_design.py` | Legislative (vereadores) design with Bartik IV |
 | `executive_vote_shift_share_design.csv` | `03_vote_outcomes.py` | Executive design with vote outcomes merged in |
-| `electoral_admin_outcomes.csv` | `06_electoral_admin.py` | Turnout, blank/null share, registered voters (2020 and 2024) |
-| `electoral_controls_2016.csv` | `07_electoral_controls_2016.py` | 2016 baseline: margin, HHI, ENP, winner identity |
-| `candidate_experience_panel.csv` | `05_candidate_history.py` | Prior candidacies and wins per municipality (2012–2024) |
-| `censo2010_municipal_ibge.csv` | `05_download_census_covariates.R` | Census 2010: population, urban share, income per capita |
-| `municipal_covariates.csv` | `08_municipal_covariates.py` | Master covariate table (merges all of the above) |
+| `electoral_admin_outcomes.csv` | `05_turnout_ballot_outcomes.py` | Turnout, blank/null share, registered voters (2020 and 2024) |
+| `electoral_controls_2016.csv` | `08_electoral_controls_2016.py` | 2016 baseline: margin, HHI, ENP, winner identity |
+| `candidate_experience_panel.csv` | `04_candidate_history.py` | Prior candidacies and wins per municipality (2012–2024) |
+| `censo2010_municipal_ibge.csv` | `05_municipal_characteristics.R` | Census 2010: population, urban share, income per capita |
+| `municipal_covariates.csv` | `09_municipal_covariates.py` | Master covariate table (merges all of the above) |
 | `zona_eleitoral_lookup.csv` | `01_lawsuit_panel.py` | Zone-level lookup (zone → municipality, state) |
 
 ### `data/estimation/`
@@ -100,7 +100,7 @@ Flat files that enter the regressions directly. Produced by `03_estimation` asse
 
 | File | Produced by | Contents |
 |---|---|---|
-| `executive_margin_design.csv` | `01_assemble_design.py` + `05_patch_family_ivs.py` | One row per municipality (N ≈ 5,571). Instrument `bartik_iv_2020_2024`, treatment `delta_log1p_competition_lawsuits_2024_2020`, all outcomes, controls, family IVs, topic shares, cluster ID. |
+| `executive_margin_design.csv` | `01_assemble_design.py` + `01c_patch_family_ivs.py` | One row per municipality (N ≈ 5,571). Instrument `bartik_iv_2020_2024`, treatment `delta_log1p_competition_lawsuits_2024_2020`, all outcomes, controls, family IVs, topic shares, cluster ID. |
 | `legislative_design.csv` | `01b_assemble_legislative_design.py` | One row per municipality (N ≈ 5,560). Same instrument and controls; outcomes cover candidate composition and elected composition for vereadores. |
 
 ---
@@ -114,12 +114,12 @@ Scripts that download and verify raw data. Run once before the build pipeline.
 | Script | Purpose |
 |---|---|
 | `00_verify_raw_data.py` | Checks that expected raw files exist |
-| `01_download_processual.py` | Downloads TSE processual docket files (processo, assuntos, decisoes, recursos) |
-| `02_download_candidate_data.py` | Downloads TSE candidate registry files (consulta_cand) |
-| `02_download_covariates_data.py` | Downloads vote results, detalhe_votacao, and candidate history files |
-| `04_download_vote_results.py` | Downloads candidate vote count files |
-| `05_download_census_covariates.R` | Downloads Census 2010 microdata via `censobr` |
-| `06_download_municipality_crosswalk.R` | Downloads the IBGE ↔ TSE crosswalk from Base dos Dados |
+| `01_lawsuits.py` | Downloads TSE processual docket files (processo, assuntos, decisoes, recursos) |
+| `02_candidates.py` | Downloads TSE candidate registry files (consulta_cand 2020/2024) |
+| `03_historical_elections.py` | Downloads 2016 votes, 2012/2016 candidate history, and detalhe_votacao |
+| `04_votes.py` | Downloads candidate vote count files (2020/2024) |
+| `05_municipal_characteristics.R` | Downloads Census 2010 microdata via `censobr` |
+| `06_municipality_crosswalk.R` | Downloads the IBGE ↔ TSE crosswalk from Base dos Dados |
 
 ### `code/02_build/`
 
@@ -127,14 +127,16 @@ Sequential pipeline that transforms raw data into analysis-ready inputs.
 
 | Script | Inputs | Output |
 |---|---|---|
-| `00_verify_processual.py` | `data/raw/` | Verification log to `logs/` |
+| `00_verify_lawsuits.py` | `data/raw/` | Verification log to `logs/` |
 | `01_lawsuit_panel.py` | processo_eleitoral + assuntos + zone lookup | `zona_lawsuit_panel.csv` |
-| `02_bartik_inputs.py` | zona_lawsuit_panel + crosswalk + consulta_cand | `municipality_bartik_components.csv`, `municipality_competition_subject_panel.csv`, `office_candidate_outcomes_panel.csv`, `executive_shift_share_design.csv`, `legislative_shift_share_design.csv` |
+| `02_shift_share_design.py` | zona_lawsuit_panel + crosswalk + consulta_cand | `municipality_bartik_components.csv`, `municipality_competition_subject_panel.csv`, `office_candidate_outcomes_panel.csv`, `executive_shift_share_design.csv`, `legislative_shift_share_design.csv` |
 | `03_vote_outcomes.py` | executive_shift_share_design + votacao files | `executive_vote_shift_share_design.csv` |
-| `05_candidate_history.py` | consulta_cand 2012–2024 | `candidate_experience_panel.csv` |
-| `06_electoral_admin.py` | detalhe_votacao_munzona 2020 + 2024 | `electoral_admin_outcomes.csv` |
-| `07_electoral_controls_2016.py` | votacao_candidato_munzona_2016 | `electoral_controls_2016.csv` |
-| `08_municipal_covariates.py` | censo2010 + electoral_controls + candidate_experience + electoral_admin | `municipal_covariates.csv` |
+| `04_candidate_history.py` | consulta_cand 2012–2024 | `candidate_experience_panel.csv` |
+| `05_turnout_ballot_outcomes.py` | detalhe_votacao_munzona 2020 + 2024 | `electoral_admin_outcomes.csv` |
+| `06_turnout_profile_panel.py` | perfil_comparecimento_abstencao 2020 + 2024 | `comparecimento_disaggregated.csv` (long turnout panel by voter trait) |
+| `07_turnout_profile_outcomes.py` | comparecimento_disaggregated | `voter_disaggregated_outcomes.csv` (wide facultative / low-education turnout outcomes) |
+| `08_electoral_controls_2016.py` | votacao_candidato_munzona_2016 | `electoral_controls_2016.csv` |
+| `09_municipal_covariates.py` | censo2010 + electoral_controls + candidate_experience + electoral_admin | `municipal_covariates.csv` |
 
 ### `code/03_estimation/`
 
@@ -144,10 +146,14 @@ Design assembly and IV estimation. All regression estimation is done in R via `f
 |---|---|---|
 | `01_assemble_design.py` | Merges executive clean data, Bartik components, subject panel, and covariates into a flat regression file | `data/estimation/executive_margin_design.csv` |
 | `01b_assemble_legislative_design.py` | Builds the legislative design matrix by merging legislative shift-share design with executive controls | `data/estimation/legislative_design.csv` |
-| `05_patch_family_ivs.py` | Adds family-level Bartik IVs, family-specific endogenous variables, and top-topic baseline shares to the executive design | Patches `executive_margin_design.csv` in-place |
+| `01c_patch_family_ivs.py` | Adds family-level Bartik IVs, family-specific endogenous variables, and top-topic baseline shares to the executive design | Patches `executive_margin_design.csv` in-place |
 | `02_iv_main.R` | Main 2SLS for executive outcomes: 6 specs × primary and secondary outcomes. Includes tF correction, LIML comparison, and variant comparison tables. | `executive_margin_iv_fixest.csv`, `executive_margin_first_stage_fixest.csv`, `liml_single_iv.csv`, `liml_comparison.csv` |
 | `02b_iv_legislative.R` | 2SLS for legislative outcomes (vereadores): 5 specs × 14 outcomes | `legislative_iv_fixest.csv`, `legislative_first_stage_fixest.csv` |
-| `04_family_iv_inference.R` | Family-split IV: each topic family IV instruments its family-specific endogenous variable. Mechanism analysis. | `family_iv_results.csv`, `family_iv_results.md` |
+| `03_family_iv.R` | Family-split IV: each topic family IV instruments its family-specific endogenous variable. Mechanism analysis. | `family_iv_results.csv`, `family_iv_results.md` |
+| `04_placebo_nonadversarial.R` | Placebo shift-share on excluded (non-adversarial) filings + non-adversarial intensity control (BHJ generic-shares test) | `nonadversarial_placebo.csv`, `nonadversarial_placebo_rf.tex`, `nonadversarial_robustness.tex` |
+| `05_pretrend_balance.R` | Instrument pre-trend / balance falsification (2016→2020 placebo-in-time) | `pretrend_balance.csv`, `pretrend_balance_*.tex`, `coefplot_pretrend_balance.pdf` |
+| `06_wild_bootstrap_ar.R` | Anderson–Rubin wild-cluster restricted bootstrap inference (G = 26 states) | `wild_bootstrap_ar.csv` |
+| `07_multiplicity.R` | Family-wise multiple-testing correction (Holm + Benjamini–Hochberg) over the primary executive family | `multiplicity_adjusted.csv` |
 
 **Instrument variants in `02_iv_main.R`:**
 

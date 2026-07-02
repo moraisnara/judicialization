@@ -86,14 +86,14 @@ Vote-share columns (only in `executive_vote_shift_share_design.csv`):
 | `female_vote_share_{year}` | Vote share received by female candidates |
 | `nonwhite_vote_share_{year}` | Vote share received by nonwhite candidates |
 | `higher_education_vote_share_{year}` | Vote share by higher-ed candidates |
-| `new_candidate_vote_share_{year}` | Vote share by new entrants |
-| `incumbent_candidate_vote_share_{year}` | Vote share by incumbents |
+| `new_candidate_vote_share_{year}` | Vote share by new entrants (year-relative: did not contest this seat in the prior cycle) |
+| `incumbent_candidate_vote_share_{year}` | Vote share by incumbents (won this seat in the prior cycle) |
 | `winner_vote_share_{year}` | First-place vote share |
 | `runnerup_vote_share_{year}` | Second-place vote share |
 | `margin_top1_top2_{year}` | Margin (winner − runner-up) |
 | `winner_majority_{year}` | Indicator: winner got > 50% |
 | `winner_is_female_{year}` | Winner gender indicator |
-| `winner_is_new_vs_2020_{year}` | Winner was new entrant |
+| `winner_is_new_{year}` | Winner was a new entrant (did not contest this seat in the prior cycle) |
 | `effective_n_candidates_vote_{year}` | ENP by votes |
 | `vote_hhi_candidate_{year}` / `vote_hhi_party_{year}` | Vote HHI |
 
@@ -210,7 +210,7 @@ Composition (candidate pool):
 
 Composition (vote-weighted):
 `delta_female_vote_share_2024_2020`, `delta_nonwhite_vote_share_2024_2020`,
-`delta_winner_is_female_2024_2020`, `delta_winner_is_new_vs_2020_2024_2020`,
+`delta_winner_is_female_2024_2020`, `delta_winner_is_new_2024_2020`,
 `delta_new_candidate_vote_share_2024_2020`, `delta_incumbent_candidate_vote_share_2024_2020`
 
 Entry typology (deltas):

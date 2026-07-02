@@ -2,21 +2,24 @@
 % Do not edit manually -- rerun the generating script to update
 
 \begin{tabular}{lcccc}
-\toprule
- & \multicolumn{2}{c}{Mayoral ballot} & \multicolumn{2}{c}{Council ballot} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}
- & Open seat & Contested & Open seat & Contested \\
+\toprule\toprule
+ & \textbf{Blank vote} & \textbf{Null vote} & \textbf{Valid vote} & $N$ \\
 \midrule
-Blank vote rate & $+0.003$ & $+0.007$$^{***}$ & $+0.000$ & $+0.001$ \\
- & (0.002) & (0.002) & (0.001) & (0.001) \\
-\quad {\footnotesize Mean of dep.\ var.} & {\footnotesize 0.014} & {\footnotesize 0.017} & {\footnotesize 0.013} & {\footnotesize 0.013} \\[2pt]
-Null vote rate & $+0.004$ & $+0.006$$^{**}$ & $-0.001$ & $+0.000$ \\
- & (0.004) & (0.003) & (0.001) & (0.001) \\
-\quad {\footnotesize Mean of dep.\ var.} & {\footnotesize 0.025} & {\footnotesize 0.028} & {\footnotesize 0.018} & {\footnotesize 0.019} \\[2pt]
-Valid vote rate & $+0.006$ & $-0.023$$^{***}$ & $+0.012$ & $-0.015$$^{***}$ \\
- & (0.010) & (0.007) & (0.008) & (0.005) \\
-\quad {\footnotesize Mean of dep.\ var.} & {\footnotesize 0.797} & {\footnotesize 0.790} & {\footnotesize 0.805} & {\footnotesize 0.803} \\[2pt]
+\multicolumn{5}{l}{\emph{Mayoral (prefeito)}}\\[1pt]
+\quad Open seat & $0.003$ & $0.004$ & $0.006$ & 1,994 \\
+ & \textcolor{mygray}{(0.002)} & \textcolor{mygray}{(0.004)} & \textcolor{mygray}{(0.010)} & \\
+\rowcolor{mylight}
+\quad \textbf{Contested} & $0.007$$^{***}$ & $0.006$$^{**}$ & $-0.023$$^{***}$ & 3,566 \\
+\rowcolor{mylight}
+ & \textcolor{mygray}{(0.002)} & \textcolor{mygray}{(0.003)} & \textcolor{mygray}{(0.007)} & \\
+\addlinespace[2pt]
+\multicolumn{5}{l}{\emph{Council (vereador)}}\\[1pt]
+\quad Open seat & $0.000$ & $-0.001$ & $0.012$ & 1,994 \\
+ & \textcolor{mygray}{(0.001)} & \textcolor{mygray}{(0.001)} & \textcolor{mygray}{(0.008)} & \\
+\quad Contested & $0.001$ & $0.000$ & $-0.015$$^{***}$ & 3,566 \\
+ & \textcolor{mygray}{(0.001)} & \textcolor{mygray}{(0.001)} & \textcolor{mygray}{(0.005)} & \\
 \midrule
-$N$ & 1,994 & 3,566 & 1,994 & 3,566 \\
-\bottomrule
+\emph{2024 mean (mayoral)} & 0.016 & 0.027 & 0.792 & \\
+\emph{2024 mean (council)} & 0.013 & 0.018 & 0.804 & \\
+\bottomrule\bottomrule
 \end{tabular}

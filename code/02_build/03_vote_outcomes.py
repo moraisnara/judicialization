@@ -14,13 +14,16 @@ TABLES_DIR = PROJECT_ROOT / "output" / "tables" / "descriptives"
 
 EXECUTIVE_DESIGN_PATH = DERIVED_DIR / "executive_shift_share_design.csv"
 LEGISLATIVE_DESIGN_PATH = DERIVED_DIR / "legislative_shift_share_design.csv"
-# Candidate-level career/experience flags produced by 05_candidate_history.py.
+# Candidate-level career/experience flags produced by 04_candidate_history.py.
 # Merged onto the vote panel to build vote-weighted (intensive-margin) versions
 # of the career categories, parallel to female_vote_share etc.
 CAND_FLAGS_PATH = DERIVED_DIR / "candidate_experience_flags.csv"
 EXPERIENCE_FLAGS = [
     "is_first_time", "is_career", "is_prior_winner",
     "is_serial_challenger", "is_cross_cycle_returner",
+    # Year-relative renewal/incumbency (same seat vs each cycle's own prior
+    # cycle), so 2016/2020/2024 are all comparable and a 2016 baseline exists.
+    "is_new_vs_prior", "is_incumbent_from_prior",
 ]
 
 # 2016 is included to build a pre-treatment outcome baseline (lagged levels and
@@ -131,7 +134,7 @@ def load_candidate_metadata() -> pd.DataFrame:
         candidates["NR_TITULO_ELEITORAL_CANDIDATO"].fillna("").str.strip()
     )
     candidates["title_key"] = candidates["title_key"].replace({"-4": "", "-1": "", "#NULO#": ""})
-    # person_key must match 05_candidate_history.py exactly so the experience
+    # person_key must match 04_candidate_history.py exactly so the experience
     # flags merge aligns: title when it has >3 chars, else name|dob fallback.
     candidates["person_key"] = (
         candidates["NM_CANDIDATO"].map(normalize_text)
@@ -159,46 +162,14 @@ def load_candidate_metadata() -> pd.DataFrame:
     candidates["is_married"] = (candidates["DS_ESTADO_CIVIL"] == "CASADO(A)").astype(int)
     candidates["is_elected"] = candidates["DS_SIT_TOT_TURNO"].isin(ELECTED_STATUSES).astype(int)
 
-    baseline = candidates[candidates["ANO_ELEICAO"] == 2020].copy()
-    baseline_keys = (
-        baseline.loc[baseline["person_key"].ne(""), ["SG_UF", "SG_UE", "office_group", "person_key"]]
-        .drop_duplicates()
-        .assign(ran_in_2020=1)
-    )
-    elected_keys = (
-        baseline.loc[
-            (baseline["person_key"].ne("")) & (baseline["is_elected"] == 1),
-            ["SG_UF", "SG_UE", "office_group", "person_key"],
-        ]
-        .drop_duplicates()
-        .assign(elected_in_2020=1)
-    )
-    candidates = candidates.merge(
-        baseline_keys,
-        on=["SG_UF", "SG_UE", "office_group", "person_key"],
-        how="left",
-    )
-    candidates = candidates.merge(
-        elected_keys,
-        on=["SG_UF", "SG_UE", "office_group", "person_key"],
-        how="left",
-    )
-    candidates["ran_in_2020"] = candidates["ran_in_2020"].fillna(0).astype(int)
-    candidates["elected_in_2020"] = candidates["elected_in_2020"].fillna(0).astype(int)
-    candidates["is_new_candidate_vs_2020"] = (
-        (candidates["ANO_ELEICAO"] == 2024)
-        & candidates["person_key"].ne("")
-        & (candidates["ran_in_2020"] == 0)
-    ).astype(int)
-    candidates["is_incumbent_from_2020"] = (
-        (candidates["ANO_ELEICAO"] == 2024)
-        & candidates["person_key"].ne("")
-        & (candidates["elected_in_2020"] == 1)
-    ).astype(int)
-
-    # Attach career/experience flags (extensive-margin source) so the vote panel
-    # can build their vote-weighted (intensive-margin) twins.
+    # Renewal/incumbency (is_new_vs_prior, is_incumbent_from_prior) and the
+    # career/experience flags are year-relative and history-aware; they are built
+    # once in 04_candidate_history.py and merged here so the vote panel can build
+    # their vote-weighted (intensive-margin) twins.
     candidates = attach_experience_flags(candidates)
+    for col in ("is_new_vs_prior", "is_incumbent_from_prior"):
+        if col in candidates.columns:
+            candidates[col] = candidates[col].fillna(0).astype(int)
 
     return candidates[
         [
@@ -214,20 +185,18 @@ def load_candidate_metadata() -> pd.DataFrame:
             "is_married",
             "candidate_age",
             "is_elected",
-            "is_new_candidate_vs_2020",
-            "is_incumbent_from_2020",
             *EXPERIENCE_FLAGS,
         ]
     ]
 
 
 def attach_experience_flags(candidates: pd.DataFrame) -> pd.DataFrame:
-    """Merge candidate-level career flags from 05_candidate_history.py onto the
+    """Merge candidate-level career flags from 04_candidate_history.py onto the
     candidate metadata, keyed on (year, office, state, municipality, person)."""
     if not CAND_FLAGS_PATH.exists():
         print(
             f"  WARNING: {CAND_FLAGS_PATH.name} not found; experience vote shares "
-            "will be NaN. Run 05_candidate_history.py first.",
+            "will be NaN. Run 04_candidate_history.py first.",
             flush=True,
         )
         for col in EXPERIENCE_FLAGS:
@@ -351,11 +320,11 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
     winner_chars = (
         candidate_rank[candidate_rank["vote_rank"] == 1]
         [["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE",
-          "is_female", "is_new_candidate_vs_2020"]]
+          "is_female", "is_new_vs_prior"]]
         .drop_duplicates(subset=["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE"])
         .rename(columns={
             "is_female": "winner_is_female",
-            "is_new_candidate_vs_2020": "winner_is_new_vs_2020",
+            "is_new_vs_prior": "winner_is_new",
         })
     )
 
@@ -404,10 +373,10 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
                 s[panel.loc[s.index, "is_higher_education"] == 1].sum() / s.sum()
             ) if s.sum() > 0 else np.nan),
             new_candidate_vote_share=("candidate_vote_total", lambda s: float(
-                s[panel.loc[s.index, "is_new_candidate_vs_2020"] == 1].sum() / s.sum()
+                s[panel.loc[s.index, "is_new_vs_prior"] == 1].sum() / s.sum()
             ) if s.sum() > 0 else np.nan),
             incumbent_candidate_vote_share=("candidate_vote_total", lambda s: float(
-                s[panel.loc[s.index, "is_incumbent_from_2020"] == 1].sum() / s.sum()
+                s[panel.loc[s.index, "is_incumbent_from_prior"] == 1].sum() / s.sum()
             ) if s.sum() > 0 else np.nan),
             # Vote-weighted (intensive-margin) career categories
             first_time_vote_share=("candidate_vote_total", lambda s: float(
@@ -497,14 +466,12 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
     )
     wide.columns = [f"{name}_{year}" for name, year in wide.columns]
     wide = wide.reset_index()
-    # Renewal/incumbency outcomes are defined relative to 2020; their 2016 pivot
-    # slot is a definitional zero (no 2016 candidate can be "new vs 2020"), so
-    # drop those columns to avoid a misleading baseline.
+    # Renewal/incumbency are now YEAR-RELATIVE (new/incumbent vs each cycle's own
+    # prior cycle), so 2016 (vs 2012) is a valid baseline and is KEPT. What stays
+    # genuinely left-censored at 2016: career (needs 3+ prior cycles, i.e. 2008 +
+    # 2004) and cross-cycle return (needs a prior BEFORE the skipped cycle); both
+    # are ~0 in 2016 by construction, so their 2016 slot is still dropped.
     invalid_2016 = [
-        "new_candidate_vote_share_2016",
-        "incumbent_candidate_vote_share_2016",
-        "winner_is_new_vs_2020_2016",
-        # career (3+ priors) and cross-cycle return are ~0 in 2016 by left-censor
         "career_vote_share_2016",
         "cross_cycle_returner_vote_share_2016",
     ]
@@ -537,7 +504,7 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
         "cross_cycle_returner_vote_share": "delta_cross_cycle_returner_vote_share_2024_2020",
         # Winner identity
         "winner_is_female": "delta_winner_is_female_2024_2020",
-        "winner_is_new_vs_2020": "delta_winner_is_new_vs_2020_2024_2020",
+        "winner_is_new": "delta_winner_is_new_2024_2020",
         # Electorate size
         "total_valid_votes": "delta_total_valid_votes_2024_2020",
     }
@@ -549,10 +516,10 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
 
     # Pre-treatment trend (2020 - 2016) for the outcomes that are defined
     # identically in 2016. Used as a placebo (reduced form should be flat
-    # pre-2020) and to absorb pre-existing convergence. Renewal/incumbency
-    # outcomes are excluded -- they require a prior cycle (2012 votes) absent
-    # from 2016. The 2016 *levels* (e.g. winner_vote_share_2016) flow through
-    # the pivot above and serve as lagged controls.
+    # pre-2020) and to absorb pre-existing convergence. Year-relative
+    # renewal/incumbency now qualify (each cycle vs its own prior cycle, so 2016
+    # is defined vs 2012). The 2016 *levels* (e.g. winner_vote_share_2016) flow
+    # through the pivot above and serve as lagged controls.
     pretrend_bases = [
         "winner_vote_share", "runnerup_vote_share", "margin_top1_top2",
         "top2_vote_share", "others_vote_share", "winner_majority",
@@ -560,6 +527,8 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
         "vote_hhi_party", "effective_n_parties_vote",
         "female_vote_share", "nonwhite_vote_share", "higher_education_vote_share",
         "winner_is_female", "total_valid_votes",
+        # Year-relative renewal/incumbency now have a valid 2016 (vs 2012) baseline.
+        "new_candidate_vote_share", "incumbent_candidate_vote_share", "winner_is_new",
         # Career categories well-defined in 2016 (2012 is an available prior cycle).
         # career_vote_share and cross_cycle_returner_vote_share are excluded: both
         # are mechanically ~0 in 2016 given the 2012 left-censor (no pre-trend).
@@ -602,7 +571,8 @@ def write_note(vote_outcomes: pd.DataFrame) -> None:
         "- candidate-vote HHI and effective number of candidates",
         "- party-vote HHI and effective number of parties",
         "- vote shares for female, nonwhite, and highly educated candidates",
-        "- vote shares for new candidates and incumbents in 2024",
+        "- vote shares for new candidates and incumbents (year-relative: each",
+        "  cycle vs its own prior cycle, so 2016/2020/2024 are comparable)",
         "- vote-weighted (intensive-margin) career categories: first-time,",
         "  career (3+ priors), prior-winner, serial-challenger, cross-cycle returner",
         "",
@@ -619,7 +589,8 @@ def write_note(vote_outcomes: pd.DataFrame) -> None:
         "exist only for 2020/2024, and 2012 vote microdata are unavailable. The",
         "design files therefore carry `*_2016` levels (lagged controls) and",
         "`pretrend_*_2020_2016` trends (placebo). Renewal/incumbency outcomes are",
-        "2020-relative and are NOT produced for 2016.",
+        "year-relative (each cycle vs its own prior cycle) so they DO carry a 2016",
+        "(vs 2012) baseline; only career and cross-cycle return stay left-censored.",
         "",
         f"- municipality-office-year rows in vote panel: {len(vote_outcomes):,}",
         f"- election cycles: {sorted(vote_outcomes['ANO_ELEICAO'].unique().tolist())}",

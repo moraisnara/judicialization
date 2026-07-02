@@ -73,7 +73,7 @@ cat(sprintf("Loaded design: %d municipalities\n", nrow(df)))
 
 # ---- Instrument variant ----
 # bartik_iv_2020_2024 is built with the adversarial filter applied at the
-# build stage (DROP_CLASSES + DROP_SUBJECTS in 02_bartik_inputs.py).
+# build stage (DROP_CLASSES + DROP_SUBJECTS in 02_shift_share_design.py).
 # It is the single coherent instrument for this pipeline.
 VARIANTS <- list(
   list(
@@ -100,13 +100,38 @@ COMPOSITION_OUTCOMES <- c(
   "delta_new_candidate_vote_share_2024_2020",
   "delta_incumbent_candidate_vote_share_2024_2020",
   "delta_winner_is_female_2024_2020",
-  "delta_winner_is_new_vs_2020_2024_2020"
+  "delta_winner_is_new_2024_2020"
 )
 # Entry typology outcomes: change in share of each entrant type in the candidate pool
 ENTRY_OUTCOMES <- c(
   "delta_share_first_time_candidates_2024_2020",
   "delta_share_serial_challenger_2024_2020",
   "delta_share_cross_cycle_returner_2024_2020"
+)
+# Field-concentration ladder (the candidate-side "winner consolidation" spine):
+# whole-distribution measures of how concentrated the vote is, NOT just the top
+# two. Under consolidation the effective field shrinks (eff. N candidates down),
+# the vote concentrates (HHI up), while the top-2 bloc's COMBINED share need not
+# move (the winner pulls away from the runner-up rather than the duo capturing
+# more). Party-concentration twins (effective_n_parties, vote_hhi_party) are
+# byte-identical to the candidate versions in mayoral races (one candidate per
+# party) so they are intentionally omitted here; they matter only in the
+# legislative (proportional) design.
+CONCENTRATION_OUTCOMES <- c(
+  "delta_effective_n_candidates_vote_2024_2020",
+  "delta_vote_hhi_candidate_2024_2020",
+  "delta_top2_vote_share_2024_2020"
+)
+# Pre-trend falsification: the 2016->2020 change in each headline competition /
+# concentration outcome, regressed on the (instrumented) 2020->2024 treatment. A
+# future shock cannot cause a past change, so a clean design wants these ~0. They
+# carry no ANCOVA map entry, so run_iv estimates them as pure first differences
+# (the pretrend column IS the LHS). Reported as an openly-shown falsification.
+PRETREND_OUTCOMES <- c(
+  "pretrend_margin_top1_top2_2020_2016",
+  "pretrend_effective_n_candidates_vote_2020_2016",
+  "pretrend_vote_hhi_candidate_2020_2016",
+  "pretrend_top2_vote_share_2020_2016"
 )
 # Voter behaviour, split BY OFFICE SOUGHT. Turnout is office-invariant (a voter
 # shows up once for both ballots) so it is single; ballot composition (blank, null,
@@ -134,7 +159,8 @@ VOTER_DISAGG_OUTCOMES <- c(
 )
 ALL_OUTCOMES <- c(PRIMARY_OUTCOMES, SECONDARY_OUTCOMES,
                   COMPOSITION_OUTCOMES, VOTER_BEHAVIOR_OUTCOMES,
-                  VOTER_DISAGG_OUTCOMES, ENTRY_OUTCOMES)
+                  VOTER_DISAGG_OUTCOMES, ENTRY_OUTCOMES,
+                  CONCENTRATION_OUTCOMES, PRETREND_OUTCOMES)
 
 # ---- Control philosophy (V3, adopted 2026-06-28) ----
 # BASELINE_CONTROLS are pre-determined and COMMON to every outcome:
@@ -148,11 +174,24 @@ ALL_OUTCOMES <- c(PRIMARY_OUTCOMES, SECONDARY_OUTCOMES,
 # change). The principled pre-window anchor is instead each outcome's OWN 2016
 # level, added per-outcome via LAG16_MAP below (V3). Where no clean 2016 analog
 # exists (voter behaviour, extensive candidate shares) the outcome falls back to
-# the common set only (V2). See code/04_analysis/13_lagged_dv_diagnostic.R.
+# the common set only (V2).
 BASELINE_CONTROLS <- c(
   "log_pop_2010", "urban_share_2010", "log_income_pc_2010", "higher_educ_share_2010",
   "log1p_total_valid_votes_2020",
   "margin_2016"
+)
+
+# Strictly PRE-DETERMINED (2010 Census) subset. Used for the PRETREND_OUTCOMES
+# only: a balance test on a 2016->2020 change must NOT condition on margin_2016
+# (the 2016 baseline of the consolidation ladder -> Lord's-paradox / regression-
+# to-the-mean, which MANUFACTURES a pre-trend) nor on log1p_total_valid_votes_2020
+# (an end-of-pre-window 2020 quantity). Diagnosed 2026-07-01: with margin_2016 in
+# the set, margin balance p=.019; on the predetermined set, p=.94 -- the apparent
+# pre-trend was the control, not the data. Standalone falsification + coefplot in
+# code/03_estimation/05_pretrend_balance.R. See also the control philosophy note above,
+# which already bars 2020 competition LEVELS on the same Lord's-paradox grounds.
+PREDET_CONTROLS <- c(
+  "log_pop_2010", "urban_share_2010", "log_income_pc_2010", "higher_educ_share_2010"
 )
 
 # The OLD ANCOVA stance (V1): adds the two 2020 competition levels back, no 2016
@@ -192,9 +231,9 @@ LAG16_MAP <- c(
 # assumption is empirically rejected and over-differences the signal. ANCOVA-2016
 # uses a CLEAN pre-treatment baseline (2016 levels predate the 2020 instrument
 # shares), and a pre-trend falsification + non-adversarial placebo both pass
-# (code/04_analysis/15_ancova_validation.R). The first-difference (FD) estimates
+# (code/04_analysis/05_validation.R). The first-difference (FD) estimates
 # are retained as a labelled robustness column (spec "fd"). See
-# code/04_analysis/14_fd_vs_ancova.R for the full FD-vs-ANCOVA comparison.
+# code/04_analysis/05_validation.R for the full FD-vs-ANCOVA comparison.
 #
 # ANCOVA_MAP: delta-outcome key -> c(<2024 level LHS>, <2016 lag>). Only outcomes
 # with BOTH a 2016 and a 2024 level appear; the rest stay first-difference.
@@ -208,13 +247,19 @@ ANCOVA_MAP <- list(
   delta_female_vote_share_2024_2020             = c("female_vote_share_2024",  "female_vote_share_2016"),
   delta_nonwhite_vote_share_2024_2020           = c("nonwhite_vote_share_2024","nonwhite_vote_share_2016"),
   delta_winner_is_female_2024_2020              = c("winner_is_female_2024",   "winner_is_female_2016"),
+  delta_new_candidate_vote_share_2024_2020      = c("new_candidate_vote_share_2024",       "new_candidate_vote_share_2016"),
+  delta_incumbent_candidate_vote_share_2024_2020 = c("incumbent_candidate_vote_share_2024", "incumbent_candidate_vote_share_2016"),
+  delta_winner_is_new_2024_2020                 = c("winner_is_new_2024",      "winner_is_new_2016"),
   delta_blank_rate_2024_2020                    = c("blank_rate_2024",         "blank_rate_2016"),
   delta_null_rate_2024_2020                     = c("null_rate_2024",          "null_rate_2016"),
   delta_turnout_rate_2024_2020                  = c("turnout_rate_2024",       "turnout_rate_2016"),
   delta_valid_vote_rate_2024_2020               = c("valid_vote_rate_2024",    "valid_vote_rate_2016"),
   delta_blank_rate_vereador_2024_2020           = c("blank_rate_vereador_2024","blank_rate_vereador_2016"),
   delta_null_rate_vereador_2024_2020            = c("null_rate_vereador_2024", "null_rate_vereador_2016"),
-  delta_valid_vote_rate_vereador_2024_2020      = c("valid_vote_rate_vereador_2024", "valid_vote_rate_vereador_2016")
+  delta_valid_vote_rate_vereador_2024_2020      = c("valid_vote_rate_vereador_2024", "valid_vote_rate_vereador_2016"),
+  delta_effective_n_candidates_vote_2024_2020   = c("effective_n_candidates_vote_2024", "effective_n_candidates_vote_2016"),
+  delta_vote_hhi_candidate_2024_2020            = c("vote_hhi_candidate_2024",  "vote_hhi_candidate_2016"),
+  delta_top2_vote_share_2024_2020               = c("top2_vote_share_2024",     "top2_vote_share_2016")
 )
 
 # Resolve the LHS + lag for a given outcome and form.
@@ -358,7 +403,7 @@ specs <- list(
   list("broader_treatment", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"), "SG_UF", FALSE, NULL,           "ancova2016"),
   # Robustness bracket: pure first difference (delta outcome, no own-lag). The FD
   # form pins the 2016->2024 persistence to 1; reported alongside the headline so
-  # the over-differencing is visible (see 14_fd_vs_ancova.R).
+  # the over-differencing is visible (see 05_validation.R).
   list("fd",                BASELINE_CONTROLS,                                  "SG_UF", FALSE, NULL,           "fd"),
   # Legacy V1 stance check: delta outcome + 2020 competition levels as controls.
   list("ancova_2020lvl",    c(BASELINE_CONTROLS, ANCOVA_2020_LEVELS),           "SG_UF", FALSE, NULL,           "fd")
@@ -381,13 +426,11 @@ liml_rows <- list()
 # subsamples that carry the voter-disengagement result. single_zone / broader_treatment
 # are robustness slices reported elsewhere, not in the headline first-stage table.
 FS_TEX_SPECS       <- c("baseline", "extended_controls", "open_seat", "contested_seat")
-ROBUSTNESS_TEX_SPECS <- c("baseline", "single_zone", "extended_controls", "broader_treatment")
 BLANK_SUBGROUP_SPECS <- c("baseline", "open_seat", "contested_seat")
 
 tex_fs_fits       <- list()   # [spec_name] = feols (first stage)
 tex_base_iv_fits  <- list()   # [outcome]   = feols (baseline ANCOVA-2016 IV)
 tex_fd_iv_fits    <- list()   # [outcome]   = feols (pure first-difference, appendix)
-tex_robust_iv_fits <- list()  # [spec_name] = feols (winner majority, robustness specs)
 tex_blank_sub_fits <- list()  # [spec_name] = feols (blank rate, subgroup specs)
 tex_vb_oc_fits     <- list()  # [spec_name][[outcome]] = feols (voter beh., open/contested)
 
@@ -423,6 +466,10 @@ for (vr in VARIANTS) {
     n_cl  <- length(unique(samp$cluster_id))
     cat(sprintf("  %s: N=%d, clusters=%d\n", spec_name, n_obs, n_cl))
 
+    # Keep the baseline ANCOVA sample + variant around for the tex-stage
+    # pre-trend-robustness re-fit (block 9j) -- needs the same rows/instrument.
+    if (spec_name == "baseline") { tex_base_samp <- samp; tex_base_variant <- vr }
+
     # First stage
     fs_fit <- NULL
     tryCatch({
@@ -442,9 +489,16 @@ for (vr in VARIANTS) {
                 else if (y %in% SECONDARY_OUTCOMES)  "secondary"
                 else if (y %in% COMPOSITION_OUTCOMES) "composition"
                 else if (y %in% ENTRY_OUTCOMES)       "entry"
+                else if (y %in% CONCENTRATION_OUTCOMES) "concentration"
+                else if (y %in% PRETREND_OUTCOMES)    "pretrend"
                 else                                  "voter_behavior"
+      # Pre-trend/balance outcomes drop the two non-predetermined controls
+      # (margin_2016, 2020 vote volume) to avoid Lord's-paradox self-conditioning
+      # on the outcome's own 2016 baseline. See PREDET_CONTROLS note above.
+      controls_y <- if (y %in% PRETREND_OUTCOMES)
+                      intersect(controls, PREDET_CONTROLS) else controls
       tryCatch({
-        iv_fit  <- run_iv(samp, y, controls, fe_col, instrument, endogenous, form)
+        iv_fit  <- run_iv(samp, y, controls_y, fe_col, instrument, endogenous, form)
         lhs_used <- attr(iv_fit, "ancova_lhs")
         lag_used <- attr(iv_fit, "lag_col")
         # Per-outcome N (the level / own-lag may drop a few rows with missing data)
@@ -468,8 +522,6 @@ for (vr in VARIANTS) {
           tex_base_iv_fits[[y]] <- iv_fit
         if (spec_name == "fd")
           tex_fd_iv_fits[[y]] <- iv_fit
-        if (y == "delta_winner_majority_2024_2020" && spec_name %in% ROBUSTNESS_TEX_SPECS)
-          tex_robust_iv_fits[[spec_name]] <- iv_fit
         if (y == "delta_blank_rate_2024_2020" && spec_name %in% BLANK_SUBGROUP_SPECS)
           tex_blank_sub_fits[[spec_name]] <- iv_fit
         if (spec_name %in% c("open_seat", "contested_seat") &&
@@ -488,10 +540,14 @@ for (vr in VARIANTS) {
                   else if (y %in% SECONDARY_OUTCOMES)  "secondary"
                   else if (y %in% COMPOSITION_OUTCOMES) "composition"
                   else if (y %in% ENTRY_OUTCOMES)       "entry"
+                  else if (y %in% CONCENTRATION_OUTCOMES) "concentration"
+                  else if (y %in% PRETREND_OUTCOMES)    "pretrend"
                   else                                  "voter_behavior"
         tryCatch({
+          controls_y <- if (y %in% PRETREND_OUTCOMES)
+                          intersect(controls, PREDET_CONTROLS) else controls
           r_l        <- resolve_lhs(y, form, samp)
-          ctrls_l    <- avail(c(controls, r_l$lag), samp)
+          ctrls_l    <- avail(c(controls_y, r_l$lag), samp)
           ctrl_rhs_l <- if (length(ctrls_l) > 0) paste(ctrls_l, collapse = " + ") else "1"
           fml_l      <- as.formula(sprintf(
             "%s ~ %s | %s | %s ~ %s", r_l$lhs, ctrl_rhs_l, fe_col, endogenous, instrument
@@ -551,7 +607,7 @@ report <- c(
   "",
   "## Instrument",
   "- **adversarial** : bartik_iv_2020_2024 / delta_log1p_competition_lawsuits_2024_2020",
-  "  (adversarial class/subject filter applied at build stage in 02_bartik_inputs.py)",
+  "  (adversarial class/subject filter applied at build stage in 02_shift_share_design.py)",
   "",
   "## Specifications (headline = ANCOVA on the 2016 pre-window baseline)",
   "Baseline (V3) controls: 2010 Census structure (log pop, urban share, log income p.c., higher-ed share),",
@@ -702,7 +758,7 @@ OUTCOME_LABELS <- c(
   delta_new_candidate_vote_share_2024_2020          = "$\\Delta$ New-cand.\\ vote share",
   delta_incumbent_candidate_vote_share_2024_2020    = "$\\Delta$ Incumbent vote share",
   delta_winner_is_female_2024_2020                  = "$\\Delta$ Winner is female",
-  delta_winner_is_new_vs_2020_2024_2020             = "$\\Delta$ Winner is new entrant",
+  delta_winner_is_new_2024_2020                     = "$\\Delta$ Winner is new entrant",
   delta_turnout_rate_2024_2020                      = "$\\Delta$ Turnout (any ballot)",
   delta_null_rate_2024_2020                         = "$\\Delta$ Null (mayoral)",
   delta_blank_rate_2024_2020                        = "$\\Delta$ Blank (mayoral)",
@@ -712,7 +768,14 @@ OUTCOME_LABELS <- c(
   delta_valid_vote_rate_vereador_2024_2020          = "$\\Delta$ Valid (council)",
   delta_share_first_time_candidates_2024_2020       = "$\\Delta$ New entrant share",
   delta_share_serial_challenger_2024_2020           = "$\\Delta$ Serial challenger",
-  delta_share_cross_cycle_returner_2024_2020        = "$\\Delta$ Cross-cycle returner"
+  delta_share_cross_cycle_returner_2024_2020        = "$\\Delta$ Cross-cycle returner",
+  delta_effective_n_candidates_vote_2024_2020       = "$\\Delta$ Eff.\\ N candidates",
+  delta_vote_hhi_candidate_2024_2020                = "$\\Delta$ Vote HHI",
+  delta_top2_vote_share_2024_2020                   = "$\\Delta$ Top-2 vote share",
+  pretrend_margin_top1_top2_2020_2016               = "Margin (W$-$RU)",
+  pretrend_effective_n_candidates_vote_2020_2016    = "Eff.\\ N candidates",
+  pretrend_vote_hhi_candidate_2020_2016             = "Vote HHI",
+  pretrend_top2_vote_share_2020_2016                = "Top-2 vote share"
 )
 
 # Under the ANCOVA-2016 headline the LHS is the 2024 LEVEL (the 2016 level enters
@@ -736,7 +799,10 @@ ANCOVA_LABELS <- c(
   valid_vote_rate_2024               = "Valid (mayoral)",
   blank_rate_vereador_2024           = "Blank (council)",
   null_rate_vereador_2024            = "Null (council)",
-  valid_vote_rate_vereador_2024      = "Valid (council)"
+  valid_vote_rate_vereador_2024      = "Valid (council)",
+  effective_n_candidates_vote_2024   = "Eff.\\ N candidates",
+  vote_hhi_candidate_2024            = "Vote HHI",
+  top2_vote_share_2024               = "Top-2 vote share"
 )
 
 SPEC_LABELS <- c(
@@ -816,10 +882,13 @@ etab_base <- list(
   signif.code  = ETABLE_SIGNIF,
   digits       = 3,
   digits.stats = 1,
+  # Suppress fixed-effect group sizes ("(nb: ...)") so the FE rows read as a
+  # clean Yes/Yes -- matches the sectioned house style ported from judicial_bias.
+  fixef_sizes  = FALSE,
   notes        = "SE clustered by state (UF).",
-  # Drop the "Variables" section title -- the single coefficient row is labelled
-  # "Judicialization" and needs no header above it.
-  style.tex    = style.tex(arraystretch = 1.2, var.title = "")
+  # Keep the sectioned layout (Variables / Fixed-effects / Fit statistics
+  # dividers) so each table is self-documenting in the judicial_bias style.
+  style.tex    = style.tex(arraystretch = 1.2)
 )
 
 # Convenience: filter NULLs and apply spec/outcome labels to a model sub-list
@@ -842,36 +911,61 @@ mean_2016_row <- function(mods)
     if (is.null(v) || is.na(v)) "" else sprintf("%.3f", v)
   }, character(1)))
 
-# Wrapper: emit an IV etable with the outcome-mean row appended.
-# Table conventions: every column carries the same state (UF) fixed effect, so
-# the fixed-effects section is dropped from the body and stated in the note. The
-# observations row is shown only when N varies across columns; when it is
-# constant it is reported once in the note. The homoskedastic ivf F is never
-# shown (it understates the cluster-robust weak-IV diagnostic); the dedicated
-# first_stage.tex carries the correct cluster-robust first-stage F and tF cv.
-# All columns carry the same state (UF) fixed effect, so the fixed-effects
-# section is dropped (drop.section = "fixef") and stated in the frame caption.
-# The observations row is shown only when N varies across columns; when N is
-# constant it is omitted from the table and reported in the caption. (etable's
-# `notes` are emitted outside \end{tabular} and stripped by write_etable_frag,
-# which is why FE / constant-N facts live in the slide caption, not the note.)
-iv_etable <- function(mods, path, note_extra = NULL) {
-  ns      <- vapply(mods, function(m) as.integer(nobs(m)), integer(1))
-  same_n  <- length(unique(ns)) == 1L
+# ---- Hand-built "highlighted-band" table (judicial_bias SGD aesthetic) ----
+# Horizontal band: the Judicialization coefficient row (and the gray SE beneath
+# it) are shaded top-to-bottom in pale blue via \rowcolor{mylight} -- the
+# judicial_bias house style, where the finding IS the coefficient row. Bold
+# outcome headers, gray SEs beneath the coefficient, booktabs double rules, and
+# an N + dependent-variable-mean footer. No Variables/Fixed-effects scaffolding
+# -- the uniform state (UF) FE and the state-clustered SE are stated in the slide
+# caption. The misleading homoskedastic ivf F is never shown (firststage.tex
+# carries the cluster-robust F + tF cv).
+hb_star <- function(p) {
+  if (is.na(p))      return("")
+  if (p < .01) "$^{***}$" else if (p < .05) "$^{**}$" else if (p < .10) "$^{*}$" else ""
+}
+# Coefficient string ("0.092$^{***}$") and gray SE string for one IV fit.
+hb_coef_se <- function(m) {
+  cf <- coef(m); se <- se(m); pv <- pvalue(m)
+  k  <- grep("^fit_", names(cf))[1L]
+  list(coef = sprintf("%.3f%s", cf[[k]], hb_star(pv[[k]])),
+       se   = sprintf("(%.3f)", se[[k]]))
+}
+hb_row <- function(label, cells) paste0(label, " & ", paste(cells, collapse = " & "), " \\\\")
+
+iv_etable <- function(mods, path, note_extra = NULL,
+                      coef_label = "\\textbf{Judicialization}",
+                      mean_label = "2024 Mean") {
   any_anc <- any(vapply(mods, function(m) isTRUE(attr(m, "is_ancova")), logical(1)))
-  # Self-documenting mean rows: spell out that these are the dependent variable's
-  # own average in the outcome year (2024) and in the pre-period baseline (2016)
-  # that the ANCOVA conditions on -- not a generic "mean of dep. var.".
-  extra   <- list("2024 Mean" = mean_row(mods))
-  if (any_anc)
-    extra[["2016 Mean"]] <- mean_2016_row(mods)
-  out <- do.call(etable, c(list(
-    mods, keep_raw = iv_keep_raw,
-    drop.section = "fixef",
-    fitstat = if (same_n) NA else ~ n,
-    extralines = extra
-  ), etab_base))
-  write_etable_frag(out, path, pvals = vapply(mods, iv_pval, numeric(1)))
+  K   <- length(mods)
+  cs  <- lapply(mods, hb_coef_se)
+  hdr <- sprintf("\\textbf{%s}", names(mods))
+  coef_cells <- vapply(cs, `[[`, "", "coef")
+  se_cells   <- vapply(cs, function(x) sprintf("\\textcolor{mygray}{%s}", x$se), "")
+  n_cells    <- vapply(mods, function(m) formatC(nobs(m), format = "d", big.mark = ","), "")
+  lines <- c(
+    sprintf("\\begin{tabular}{l*{%d}{c}}", K),
+    "\\toprule\\toprule",
+    hb_row("Dep.\\ var.:", hdr),
+    "\\midrule",
+    "\\rowcolor{mylight}",
+    hb_row(coef_label, coef_cells),
+    "\\rowcolor{mylight}",
+    hb_row("", se_cells),
+    "\\midrule",
+    hb_row("$N$", n_cells),
+    hb_row(mean_label, mean_row(mods))
+  )
+  if (any_anc) lines <- c(lines, hb_row("2016 Mean", mean_2016_row(mods)))
+  lines <- c(lines, "\\bottomrule\\bottomrule", "\\end{tabular}")
+  dir.create(dirname(path), showWarnings = FALSE, recursive = TRUE)
+  writeLines(c(
+    "% Auto-generated by code/03_estimation/02_iv_main.R",
+    "% Do not edit manually -- rerun the generating script to update",
+    "",
+    lines
+  ), con = path)
+  cat("  Wrote:", path, "\n")
 }
 
 # ---- 9a. First Stage (cols = specs) ----
@@ -891,34 +985,82 @@ iv_etable <- function(mods, path, note_extra = NULL) {
     contested_seat    = "Contested"
   )
   mods <- tex_fs_fits[valid_fs]
-  out <- do.call(etable, c(list(
-    mods,
-    headers      = list("Design:" = unname(FS_SHORT_LABELS[valid_fs])),
-    keep_raw     = paste0("^", instrument, "$"),
-    drop.section = "fixef",
-    fitstat      = NA,
-    extralines = list(
-      "First-stage $F$"          = fs_F_row,
-      "$N$"                      = fs_N_row
-    )
-  ), etab_base))
-  write_etable_frag(out, file.path(TEX_DIR, "first_stage.tex"))
+  # Hand-built to match the highlighted-band house style: bold design headers,
+  # the predicted-judicialization coefficient in a pale-blue band with the gray
+  # SE beneath, then the cluster-robust first-stage F and N.
+  fs_cs <- lapply(mods, function(m) {
+    cf <- coef(m)[instrument]; sev <- se(m)[instrument]; pv <- pvalue(m)[instrument]
+    list(coef = sprintf("%.3f%s", cf, hb_star(pv)), se = sprintf("(%.3f)", sev))
+  })
+  fs_lines <- c(
+    sprintf("\\begin{tabular}{l*{%d}{c}}", length(mods)),
+    "\\toprule\\toprule",
+    hb_row("Design:", sprintf("\\textbf{%s}", unname(FS_SHORT_LABELS[valid_fs]))),
+    "\\midrule",
+    "\\rowcolor{mylight}",
+    hb_row("\\textbf{Predicted judicialization}", vapply(fs_cs, `[[`, "", "coef")),
+    "\\rowcolor{mylight}",
+    hb_row("", vapply(fs_cs, function(x) sprintf("\\textcolor{mygray}{%s}", x$se), "")),
+    "\\midrule",
+    hb_row("First-stage $F$", fs_F_row),
+    hb_row("$N$", fs_N_row),
+    "\\bottomrule\\bottomrule",
+    "\\end{tabular}"
+  )
+  dir.create(TEX_DIR, showWarnings = FALSE, recursive = TRUE)
+  writeLines(c(
+    "% Auto-generated by code/03_estimation/02_iv_main.R",
+    "% Do not edit manually -- rerun the generating script to update",
+    "",
+    fs_lines
+  ), con = file.path(TEX_DIR, "firststage.tex"))
+  cat("  Wrote:", file.path(TEX_DIR, "firststage.tex"), "\n")
 }
 
 # IV coef name as stored by fixest (fit_<endogenous>)
 iv_keep_raw <- paste0("^fit_", endogenous, "$")
 
 # ---- 9b. Electoral Competition (cols = outcomes, baseline spec) ----
+# Spine 1 = the top two only: runner-up down / margin up / winner up (all ***).
+# The binary winner-majority (P50, low-power discretisation of the margin) and the
+# raw log-n-candidates (redundant with Eff.\ N in the concentration ladder, 9b-ii)
+# are demoted to an appendix robustness table (9b-app) rather than shown here.
 {
   outs <- c(
     "delta_runnerup_vote_share_2024_2020",
     "delta_margin_top1_top2_2024_2020",
-    "delta_winner_vote_share_2024_2020",
+    "delta_winner_vote_share_2024_2020"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  iv_etable(mods, file.path(TEX_DIR, "executive_iv_competition.tex"))
+}
+
+# ---- 9b-app. Appendix: binary/raw-count closeness outcomes ----
+# Kept on record but off the main spine: winner-majority (P50) is the underpowered
+# binary face of the margin; log-n-candidates is the raw-count analog of Eff.\ N.
+{
+  outs <- c(
     "delta_winner_majority_2024_2020",
     "delta_log1p_n_candidates_with_votes_2024_2020"
   )
   mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
-  iv_etable(mods, file.path(TEX_DIR, "executive_iv_competition.tex"))
+  iv_etable(mods, file.path(TEX_DIR, "appendix_competition_binary.tex"))
+}
+
+# ---- 9b-ii. Field concentration ladder (the winner-consolidation spine) ----
+# Whole-distribution concentration: effective number of candidates (field size),
+# vote HHI (concentration), and the top-2 combined share. Read with the
+# competition table: winner up / runner-up down / margin up, eff. N down, HHI up,
+# but top-2 COMBINED share flat == the winner pulls away (winner-take-more), not a
+# drift to a two-horse duopoly, and with composition unchanged (see 9d).
+{
+  outs <- c(
+    "delta_effective_n_candidates_vote_2024_2020",
+    "delta_vote_hhi_candidate_2024_2020",
+    "delta_top2_vote_share_2024_2020"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  iv_etable(mods, file.path(TEX_DIR, "executive_iv_concentration.tex"))
 }
 
 # ---- 9c-i. Turnout (office-invariant): one standalone column ----
@@ -940,14 +1082,13 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
     if (is.null(p) || is.na(p)) return("")
     if (p < .01) "$^{***}$" else if (p < .05) "$^{**}$" else if (p < .10) "$^{*}$" else ""
   }
-  # coefficient cell: shade when significant at 5%
+  # coefficient cell (the whole coef + SE rows are banded in mylight below)
   pcell_coef <- function(fit) {
     if (is.null(fit)) return("---")
     b <- unname(coef(fit)[iv_name]); p <- unname(pvalue(fit)[iv_name])
-    shade <- if (!is.na(p) && p < SIG_SHADE_P) "\\cellcolor{sigshade}" else ""
-    sprintf("%s$%+.3f$%s", shade, b, star_std(p))
+    sprintf("$%.3f$%s", b, star_std(p))
   }
-  pcell_se   <- function(fit) if (is.null(fit)) "" else sprintf("(%.3f)", unname(se(fit)[iv_name]))
+  pcell_se   <- function(fit) if (is.null(fit)) "" else sprintf("\\textcolor{mygray}{(%.3f)}", unname(se(fit)[iv_name]))
   pcell_m24  <- function(fit) if (is.null(fit)) "" else sprintf("%.3f", attr(fit, "mean_delta"))
   pcell_m16  <- function(fit) {
     if (is.null(fit)) return("")
@@ -955,13 +1096,19 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
   }
 
   ballot_cols <- c("delta_blank_rate", "delta_null_rate", "delta_valid_vote_rate")
-  panel_block <- function(title, suffix) {
+  # `band` shades the Judicialization coef + SE rows in pale blue (horizontal
+  # band, judicial_bias house style). Only the mayoral panel (where the effect
+  # lands) is banded; the council panel is left plain for contrast.
+  panel_block <- function(title, suffix, band = FALSE) {
     fits <- lapply(ballot_cols, function(b)
       tex_base_iv_fits[[paste0(b, suffix, "_2024_2020")]])
+    rc <- if (band) "\\rowcolor{mylight}" else character(0)
     c(
       sprintf("\\multicolumn{4}{l}{\\emph{%s}}\\\\[1pt]", title),
-      sprintf("\\quad Judicialization & %s \\\\",
+      rc,
+      sprintf("\\quad \\textbf{Judicialization} & %s \\\\",
               paste(vapply(fits, pcell_coef, ""), collapse = " & ")),
+      rc,
       sprintf(" & %s \\\\", paste(vapply(fits, pcell_se, ""), collapse = " & ")),
       sprintf("\\quad {\\footnotesize 2024 Mean} & %s \\\\",
               paste(vapply(fits, function(f) paste0("{\\footnotesize ", pcell_m24(f), "}"), ""),
@@ -981,15 +1128,15 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
     "% Do not edit manually -- rerun the generating script to update",
     "",
     "\\begin{tabular}{lccc}",
-    "\\toprule",
-    " & Blank vote & Null vote & Valid vote \\\\",
+    "\\toprule\\toprule",
+    " & \\textbf{Blank vote} & \\textbf{Null vote} & \\textbf{Valid vote} \\\\",
     "\\midrule",
-    panel_block("Panel A. Mayoral (prefeito) ballot", ""),
+    panel_block("Panel A. Mayoral (prefeito) ballot", "", band = TRUE),
     "\\midrule",
-    panel_block("Panel B. Council (vereador) ballot", "_vereador"),
+    panel_block("Panel B. Council (vereador) ballot", "_vereador", band = FALSE),
     "\\midrule",
     sprintf("Municipalities ($N$) & \\multicolumn{3}{c}{%s} \\\\", n_obs_ballot),
-    "\\bottomrule",
+    "\\bottomrule\\bottomrule",
     "\\end{tabular}"
   )
   out_path <- file.path(TEX_DIR, "executive_iv_ballot_panel.tex")
@@ -998,74 +1145,75 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
 }
 
 # ---- 9c-bis. Voter Behavior: office x open-seat heterogeneity (hand-built) ----
-# Columns = {Mayoral, Council} x {Open seat, Contested seat}; rows = ballot
-# composition (blank/null/valid). Turnout is office-invariant and is reported in
-# the by-office table above, so it is omitted here. Built directly from the
-# stored 2SLS fits (open_seat / contested_seat specs) so each cell carries its
-# own coefficient, cluster-robust SE and subsample dep-var mean.
+# Reframed (2026-06-30): rows = the four office x open/contested SUBSAMPLES,
+# columns = ballot composition (blank/null/valid) + N. The gray SE sits STACKED
+# beneath each coefficient (house style; Nara, 2026-06-30 -- SE below, not on the
+# side), and the per-office 2024 dependent-variable means return as two footer
+# rows. Positive coefficients carry NO "+" sign (absence already reads positive).
+# Horizontal band: the mayoral-contested coef + SE rows -- where the
+# disengagement concentrates -- are shaded via \rowcolor{mylight}.
 {
   iv_name <- paste0("fit_", endogenous)
   vb_get <- function(fit) {
     if (is.null(fit)) return(NULL)
     list(coef = unname(coef(fit)[iv_name]),
          se   = unname(se(fit)[iv_name]),
-         p    = unname(pvalue(fit)[iv_name]),
-         mean = attr(fit, "mean_delta"))
+         p    = unname(pvalue(fit)[iv_name]))
   }
   star_std <- function(p) {
     if (is.null(p) || is.na(p)) return("")
     if (p < .01) "$^{***}$" else if (p < .05) "$^{**}$" else if (p < .10) "$^{*}$" else ""
   }
-  cell_coef <- function(g) if (is.null(g)) "---" else sprintf("$%+.3f$%s", g$coef, star_std(g$p))
-  cell_se   <- function(g) if (is.null(g)) "" else sprintf("(%.3f)", g$se)
-  cell_mean <- function(g) if (is.null(g)) "" else sprintf("%.3f", g$mean)
+  # coefficient (no + sign) and the gray SE that stacks on the line beneath it
+  cell_coef <- function(g) if (is.null(g)) "---" else
+    sprintf("$%.3f$%s", g$coef, star_std(g$p))
+  cell_se   <- function(g) if (is.null(g)) "" else
+    sprintf("\\textcolor{mygray}{(%.3f)}", g$se)
 
-  # rows: (label, mayoral outcome, council outcome)
-  vb_rows <- list(
-    c("Blank vote rate", "delta_blank_rate_2024_2020",      "delta_blank_rate_vereador_2024_2020"),
-    c("Null vote rate",  "delta_null_rate_2024_2020",       "delta_null_rate_vereador_2024_2020"),
-    c("Valid vote rate", "delta_valid_vote_rate_2024_2020", "delta_valid_vote_rate_vereador_2024_2020")
-  )
-  # column order: mayoral-open, mayoral-contested, council-open, council-contested
-  col_specs <- list(
-    c("open_seat",      "mayoral"), c("contested_seat", "mayoral"),
-    c("open_seat",      "council"), c("contested_seat", "council")
-  )
-  body <- character(0)
-  for (r in vb_rows) {
-    lab <- r[[1]]; y_may <- r[[2]]; y_cou <- r[[3]]
-    gs <- lapply(col_specs, function(cs) {
-      y <- if (cs[2] == "mayoral") y_may else y_cou
-      vb_get(tex_vb_oc_fits[[cs[1]]][[y]])
-    })
-    body <- c(body,
-      sprintf("%s & %s \\\\", lab, paste(vapply(gs, cell_coef, ""), collapse = " & ")),
-      sprintf(" & %s \\\\", paste(vapply(gs, cell_se, ""), collapse = " & ")),
-      sprintf("\\quad {\\footnotesize Mean of dep.\\ var.} & %s \\\\[2pt]",
-              paste(vapply(gs, function(g) paste0("{\\footnotesize ", cell_mean(g), "}"), ""),
-                    collapse = " & ")))
+  out_may <- c("delta_blank_rate_2024_2020", "delta_null_rate_2024_2020", "delta_valid_vote_rate_2024_2020")
+  out_cou <- c("delta_blank_rate_vereador_2024_2020", "delta_null_rate_vereador_2024_2020", "delta_valid_vote_rate_vereador_2024_2020")
+
+  # two body lines per subsample (office x seat): coef row + SE row beneath;
+  # `band` shades both lines of the headline row
+  sub_row <- function(office, seat, seatlab, band = FALSE) {
+    yv  <- if (office == "mayoral") out_may else out_cou
+    gs  <- lapply(yv, function(y) vb_get(tex_vb_oc_fits[[seat]][[y]]))
+    nf  <- Filter(Negate(is.null), tex_vb_oc_fits[[seat]])
+    n   <- if (length(nf) == 0) "" else formatC(as.integer(nobs(nf[[1]])), format = "d", big.mark = ",")
+    lab <- if (band) sprintf("\\quad \\textbf{%s}", seatlab) else sprintf("\\quad %s", seatlab)
+    coef_line <- sprintf("%s & %s & %s \\\\", lab,
+                         paste(vapply(gs, cell_coef, ""), collapse = " & "), n)
+    se_line   <- sprintf(" & %s & \\\\",
+                         paste(vapply(gs, cell_se, ""), collapse = " & "))
+    rc <- if (band) "\\rowcolor{mylight}" else character(0)
+    c(rc, coef_line, rc, se_line)
   }
-  # N per column (open vs contested differ); pull from any present fit in that spec
-  col_n <- vapply(col_specs, function(cs) {
-    fits <- Filter(Negate(is.null), tex_vb_oc_fits[[cs[1]]])
-    if (length(fits) == 0) return("")
-    formatC(as.integer(nobs(fits[[1]])), format = "d", big.mark = ",")
-  }, "")
+  # 2024 dependent-variable mean per outcome, by office (full-sample pooled means
+  # = the ballot-panel numbers); recovered from the pooled base IV fits.
+  mean_cells <- function(yv) paste(vapply(yv, function(y) {
+    f <- tex_base_iv_fits[[y]]
+    if (is.null(f)) "" else sprintf("%.3f", attr(f, "mean_delta"))
+  }, ""), collapse = " & ")
 
   tbl <- c(
     "% Auto-generated by code/03_estimation/02_iv_main.R",
     "% Do not edit manually -- rerun the generating script to update",
     "",
     "\\begin{tabular}{lcccc}",
-    "\\toprule",
-    " & \\multicolumn{2}{c}{Mayoral ballot} & \\multicolumn{2}{c}{Council ballot} \\\\",
-    "\\cmidrule(lr){2-3}\\cmidrule(lr){4-5}",
-    " & Open seat & Contested & Open seat & Contested \\\\",
+    "\\toprule\\toprule",
+    " & \\textbf{Blank vote} & \\textbf{Null vote} & \\textbf{Valid vote} & $N$ \\\\",
     "\\midrule",
-    body,
+    "\\multicolumn{5}{l}{\\emph{Mayoral (prefeito)}}\\\\[1pt]",
+    sub_row("mayoral", "open_seat",      "Open seat"),
+    sub_row("mayoral", "contested_seat", "Contested", band = TRUE),
+    "\\addlinespace[2pt]",
+    "\\multicolumn{5}{l}{\\emph{Council (vereador)}}\\\\[1pt]",
+    sub_row("council", "open_seat",      "Open seat"),
+    sub_row("council", "contested_seat", "Contested"),
     "\\midrule",
-    sprintf("$N$ & %s \\\\", paste(col_n, collapse = " & ")),
-    "\\bottomrule",
+    sprintf("\\emph{2024 mean (mayoral)} & %s & \\\\", mean_cells(out_may)),
+    sprintf("\\emph{2024 mean (council)} & %s & \\\\", mean_cells(out_cou)),
+    "\\bottomrule\\bottomrule",
     "\\end{tabular}"
   )
   out_path <- file.path(TEX_DIR, "executive_iv_voter_behavior_office_openseat.tex")
@@ -1081,7 +1229,7 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
     "delta_new_candidate_vote_share_2024_2020",
     "delta_incumbent_candidate_vote_share_2024_2020",
     "delta_winner_is_female_2024_2020",
-    "delta_winner_is_new_vs_2020_2024_2020"
+    "delta_winner_is_new_2024_2020"
   )
   mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
   iv_etable(mods, file.path(TEX_DIR, "executive_iv_composition.tex"))
@@ -1109,18 +1257,12 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
   iv_etable(mods, file.path(TEX_DIR, "open_seat_blank_rate.tex"))
 }
 
-# ---- 9g. Robustness — Winner Majority (cols = specs) ----
-{
-  mods <- label_mods(tex_robust_iv_fits, ROBUSTNESS_TEX_SPECS, SPEC_LABELS)
-  iv_etable(mods, file.path(TEX_DIR, "robustness_winner_majority.tex"))
-}
-
-# ---- 9h. Appendix — pure first-difference bracket (cols = headline outcomes) ----
+# ---- 9g. Appendix — pure first-difference bracket (cols = headline outcomes) ----
 # The headline is ANCOVA-2016 (Y_2024 ~ D + Y_2016); this appendix table reports
 # the SAME outcomes under a pure first difference (delta_Y ~ D), which pins the
 # 2016->2024 persistence to one. Municipal margins barely persist, so FD
 # over-differences and the consolidation/disengagement coefficients attenuate
-# toward zero -- the contrast is the point (see 14_fd_vs_ancova.R). All-FD here,
+# toward zero -- the contrast is the point (see 05_validation.R). All-FD here,
 # so the dep-var means are delta means and no 2016-baseline row is added.
 {
   outs <- c(
@@ -1133,6 +1275,62 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
   )
   mods <- label_mods(tex_fd_iv_fits, outs, OUTCOME_LABELS)
   iv_etable(mods, file.path(TEX_DIR, "appendix_first_difference.tex"))
+}
+
+# ---- 9i. Pre-trend falsification (placebo: future shock on the PAST change) ----
+# Each column regresses the 2016->2020 change in a consolidation outcome on the
+# (instrumented) 2020->2024 treatment. A future shock cannot cause a past change,
+# so a clean design wants ~0. These fits use PREDET_CONTROLS (the 2020->2024 loop
+# strips margin_2016 + 2020 vote volume for pretrend outcomes), so the columns
+# are the correctly-specified balance test: the WHOLE consolidation ladder is
+# falsification-clean (margin/effN/HHI/top-2 all p>.3). The earlier "eff.N/HHI/
+# margin carry a pre-trend" reading was an artifact of conditioning on margin_2016
+# (Lord's paradox); see the standalone falsification + coefplot in 05_pretrend_balance.R
+# and the PREDET_CONTROLS note. The placebo coefficient is NOT a treatment effect,
+# so the row is labelled accordingly and the footer mean is the pre-trend mean.
+{
+  outs <- c(
+    "pretrend_margin_top1_top2_2020_2016",
+    "pretrend_effective_n_candidates_vote_2020_2016",
+    "pretrend_vote_hhi_candidate_2020_2016",
+    "pretrend_top2_vote_share_2020_2016"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  iv_etable(mods, file.path(TEX_DIR, "pretrend_falsification.tex"),
+            coef_label = "\\textbf{Placebo (judicialization)}",
+            mean_label = "Pre-trend mean")
+}
+
+# ---- 9j. Pre-trend-robust consolidation (control for the full pre-trajectory) ----
+# Belt-and-suspenders (NOT a rescue): the correctly-specified balance test (9i /
+# 05_pretrend_balance.R) already shows the consolidation ladder carries NO pre-trend once
+# margin_2016 is dropped. This block goes further and conditions on the 2020
+# base-year level IN ADDITION to the 2016 lag, so the coefficient is identified
+# off the 2024 deviation from each municipality's OWN pre-treatment path
+# ({2016, 2020} levels span the level and the pre-slope). The 2020 level is
+# pre-determined w.r.t. the 2020->2024 shock (the instrument's shares are dated
+# 2020), so it is a legitimate control. The consolidation survives essentially
+# unchanged. Same house style/footer as the 2016-only concentration table.
+if (exists("tex_base_samp")) {
+  PT_2020_LEVEL <- c(
+    delta_margin_top1_top2_2024_2020            = "margin_top1_top2_2020",
+    delta_effective_n_candidates_vote_2024_2020 = "effective_n_candidates_vote_2020",
+    delta_vote_hhi_candidate_2024_2020          = "vote_hhi_candidate_2020",
+    delta_top2_vote_share_2024_2020             = "top2_vote_share_2020"
+  )
+  ptr_mods <- list()
+  for (y in names(PT_2020_LEVEL)) {
+    lvl20 <- PT_2020_LEVEL[[y]]
+    if (!(lvl20 %in% names(tex_base_samp))) next
+    fit <- run_iv(tex_base_samp, y, c(BASELINE_CONTROLS, lvl20), "SG_UF",
+                  tex_base_variant$instrument, tex_base_variant$endogenous,
+                  form = "ancova2016")
+    lhs_used <- attr(fit, "ancova_lhs"); lag_used <- attr(fit, "lag_col")
+    attr(fit, "mean_delta") <- mean(tex_base_samp[[lhs_used]], na.rm = TRUE)
+    attr(fit, "mean_2016")  <- if (!is.na(lag_used)) mean(tex_base_samp[[lag_used]], na.rm = TRUE) else NA_real_
+    ptr_mods[[OUTCOME_LABELS[[y]]]] <- fit
+  }
+  iv_etable(ptr_mods, file.path(TEX_DIR, "executive_iv_concentration_ptrobust.tex"))
 }
 
 cat("\nLaTeX fragments written to", TEX_DIR, "\n")

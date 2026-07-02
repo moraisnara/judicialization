@@ -11,7 +11,8 @@ first-instance shift-share design.
 - candidate-vote HHI and effective number of candidates
 - party-vote HHI and effective number of parties
 - vote shares for female, nonwhite, and highly educated candidates
-- vote shares for new candidates and incumbents in 2024
+- vote shares for new candidates and incumbents (year-relative: each
+  cycle vs its own prior cycle, so 2016/2020/2024 are comparable)
 - vote-weighted (intensive-margin) career categories: first-time,
   career (3+ priors), prior-winner, serial-challenger, cross-cycle returner
 
@@ -28,7 +29,8 @@ separately by office (executive = PREFEITO, legislative = VEREADOR).
 exist only for 2020/2024, and 2012 vote microdata are unavailable. The
 design files therefore carry `*_2016` levels (lagged controls) and
 `pretrend_*_2020_2016` trends (placebo). Renewal/incumbency outcomes are
-2020-relative and are NOT produced for 2016.
+year-relative (each cycle vs its own prior cycle) so they DO carry a 2016
+(vs 2012) baseline; only career and cross-cycle return stay left-censored.
 
 - municipality-office-year rows in vote panel: 33,368
 - election cycles: [2016, 2020, 2024]
