@@ -1,3 +1,30 @@
+"""Office-specific shift-share design build.
+
+Lawsuits come from the SIG TSE microdata export, which resolves each case to its
+municipality of origin directly. Only first-instance (Originario) cases filed
+before first-round election day are kept. This replaces the old zona-eleitoral
+panel and its zona->municipality many-to-many merge, which duplicated each
+multi-municipality zona's caseload across its municipalities.
+
+Core choices:
+  - exposure unit: municipality, resolved directly by SIG (no zona expansion)
+  - treatment universe: adversarial lawsuits only (administrative/procedural
+    classes and subjects excluded via DROP_CLASSES and DROP_SUBJECTS)
+  - outcome panels separated by office sought (executive = PREFEITO,
+    legislative = VEREADOR)
+
+Derived files:
+  data/clean/office_candidate_outcomes_panel.csv,
+  municipality_competition_subject_panel.csv, municipality_bartik_components.csv,
+  executive_shift_share_design.csv, legislative_shift_share_design.csv
+
+Notes:
+  - new_candidate_* and incumbent_* are defined only relative to 2020 and are
+    substantively meaningful for 2024 outcomes.
+  - candidate-file-based concentration metrics (candidate_hhi_party,
+    effective_party_count_candidates) are fragmentation proxies, not a full
+    ideological polarization measure.
+"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -183,10 +210,29 @@ def norm_label(value: object) -> str:
     return re.sub(r"\s+", " ", text).upper().strip()
 
 
+LABEL_BRIDGE_CACHE = DERIVED_DIR / "label_code_bridge.csv"
+
+
+def _load_label_bridge_cache() -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
+    """Reload the three label<->code dicts from the cached crosswalk (long form:
+    columns map/key/value). Used when the raw processo dockets are off disk."""
+    cache = pd.read_csv(LABEL_BRIDGE_CACHE, dtype=str, keep_default_na=False)
+    def as_dict(name: str) -> dict[str, str]:
+        sub = cache[cache["map"] == name]
+        return dict(zip(sub["key"], sub["value"]))
+    return as_dict("class"), as_dict("subject"), as_dict("code_to_ds")
+
+
 def build_label_code_bridges() -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
     """Build normalized-label -> code dictionaries from the raw-TSE processo files,
     which carry both CD_CLASSE/DS_CLASSE and CD_ASSUNTO_PRINCIPAL/DS_ASSUNTO_PRINCIPAL.
-    Returns (class_label->code, subject_label->code, subject_code->canonical_DS)."""
+    Returns (class_label->code, subject_label->code, subject_code->canonical_DS).
+
+    The processo dockets are large and transient (not committed; they get swept off
+    disk). The bridge itself is a tiny STATIC crosswalk, so we cache it to
+    data/clean/label_code_bridge.csv on the first successful build and fall back to
+    that cache whenever the raw dockets are absent -- a clean rebuild then needs no
+    71 MB re-download. Delete the cache (or re-run 01_lawsuits.py) to refresh it."""
     cols = ["CD_CLASSE", "DS_CLASSE", "CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL"]
     frames: list[pd.DataFrame] = []
     for year in TARGET_YEARS:
@@ -196,6 +242,15 @@ def build_label_code_bridges() -> tuple[dict[str, str], dict[str, str], dict[str
         frames.append(pd.read_csv(
             path, sep=";", encoding="latin-1", usecols=cols, dtype=str, low_memory=False,
         ))
+    if not frames:
+        if LABEL_BRIDGE_CACHE.exists():
+            print(f"  [label bridge] raw processo dockets absent -> using cache "
+                  f"{LABEL_BRIDGE_CACHE.name}", flush=True)
+            return _load_label_bridge_cache()
+        raise FileNotFoundError(
+            f"No processo_eleitoral_* dockets in {RAW_DIR} and no cache at "
+            f"{LABEL_BRIDGE_CACHE}. Run code/01_download/01_lawsuits.py to fetch them."
+        )
     tse = pd.concat(frames, ignore_index=True)
 
     class_map: dict[str, str] = {}
@@ -207,6 +262,13 @@ def build_label_code_bridges() -> tuple[dict[str, str], dict[str, str], dict[str
     for _, row in tse[["CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL"]].drop_duplicates().iterrows():
         subject_map.setdefault(norm_label(row["DS_ASSUNTO_PRINCIPAL"]), row["CD_ASSUNTO_PRINCIPAL"])
         code_to_ds.setdefault(row["CD_ASSUNTO_PRINCIPAL"], row["DS_ASSUNTO_PRINCIPAL"])
+
+    # Persist the static crosswalk so future rebuilds survive docket sweeps.
+    rows = ([("class", k, v) for k, v in class_map.items()]
+            + [("subject", k, v) for k, v in subject_map.items()]
+            + [("code_to_ds", k, v) for k, v in code_to_ds.items()])
+    LABEL_BRIDGE_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(rows, columns=["map", "key", "value"]).to_csv(LABEL_BRIDGE_CACHE, index=False)
     return class_map, subject_map, code_to_ds
 
 
@@ -400,29 +462,46 @@ def build_municipality_bartik_components(
         )
         .agg(national_lawsuits=("n_lawsuits", "sum"))
     )
-    shifter_base = by_uf.merge(
-        national,
-        on=["ANO_ELEICAO", "CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL", "topic_family"],
+    # Build the leave-state-out shock on the COMPLETE (UF x subject x year) grid. The
+    # leave-out aggregate must NEVER be filled with 0 for absent cells: a (UF, subject,
+    # year) cell absent from `by_uf` means the UF had zero OWN cases that year, so its
+    # true leave-out is the FULL national total (national - 0), not 0. We therefore pivot
+    # the OWN-UF count and the NATIONAL total separately -- each with a genuine 0 fill --
+    # and subtract at the wide stage, so leave_out = national - own holds in every cell.
+    national_wide = (
+        national.pivot_table(
+            index=["CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL", "topic_family"],
+            columns="ANO_ELEICAO",
+            values="national_lawsuits",
+            fill_value=0,  # a subject absent nationally in a year genuinely has 0 filings
+        )
+        .rename(columns={2020: "national_2020", 2024: "national_2024"})
+        .reset_index()
+    )
+    uf_wide = (
+        by_uf.pivot_table(
+            index=["SG_UF", "CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL", "topic_family"],
+            columns="ANO_ELEICAO",
+            values="uf_lawsuits",
+            fill_value=0,  # a UF with no cases of a subject in a year has 0 OWN cases
+        )
+        .rename(columns={2020: "uf_2020", 2024: "uf_2024"})
+        .reset_index()
+    )
+    for frame, cols in ((national_wide, ["national_2020", "national_2024"]),
+                        (uf_wide, ["uf_2020", "uf_2024"])):
+        for column in cols:
+            if column not in frame.columns:
+                frame[column] = 0
+
+    shifters = uf_wide.merge(
+        national_wide,
+        on=["CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL", "topic_family"],
         how="left",
         validate="many_to_one",
     )
-    shifter_base["leave_uf_out_lawsuits"] = (
-        shifter_base["national_lawsuits"] - shifter_base["uf_lawsuits"]
-    )
-
-    shifters = (
-        shifter_base.pivot_table(
-            index=["SG_UF", "CD_ASSUNTO_PRINCIPAL", "DS_ASSUNTO_PRINCIPAL", "topic_family"],
-            columns="ANO_ELEICAO",
-            values="leave_uf_out_lawsuits",
-            fill_value=0,
-        )
-        .rename(columns={2020: "leave_uf_out_2020", 2024: "leave_uf_out_2024"})
-        .reset_index()
-    )
-    for column in ["leave_uf_out_2020", "leave_uf_out_2024"]:
-        if column not in shifters.columns:
-            shifters[column] = 0
+    shifters["leave_uf_out_2020"] = shifters["national_2020"] - shifters["uf_2020"]
+    shifters["leave_uf_out_2024"] = shifters["national_2024"] - shifters["uf_2024"]
     shifters["shock_log_growth_2020_2024"] = (
         np.log1p(shifters["leave_uf_out_2024"]) - np.log1p(shifters["leave_uf_out_2020"])
     )
@@ -547,8 +626,11 @@ def load_candidates() -> pd.DataFrame:
         (candidates["DT_ELEICAO"] - candidates["DT_NASCIMENTO"]).dt.days / 365.25
     )
     candidates["is_female"] = (candidates["DS_GENERO"] == "FEMININO").astype(int)
-    candidates["is_nonwhite"] = candidates["DS_COR_RACA"].isin(
-        ["PRETA", "PARDA", "AMARELA", "INDÃGENA", "INDIGENA"]
+    # Accent-fold before matching: TSE files are latin-1 and the raw value is "INDIGENA"
+    # with an accent (U+00CD); matching the literal accented/mojibake spelling silently
+    # dropped every indigenous candidate (~2.2-2.6k/cycle) into the white bucket.
+    candidates["is_nonwhite"] = candidates["DS_COR_RACA"].map(normalize_text).isin(
+        ["PRETA", "PARDA", "AMARELA", "INDIGENA"]
     ).astype(int)
     candidates["is_higher_education"] = candidates["DS_GRAU_INSTRUCAO"].fillna("").str.contains(
         "SUPERIOR", regex=False
@@ -779,12 +861,23 @@ def build_design_for_office(
             col for col in office_panel.columns
             if col not in {"office_group", "SG_UF", "SG_UE", "NM_UE", "ANO_ELEICAO"}
         ]
+        # Pivot with NaN for missing muni x office x year cells. A blanket
+        # fill_value=0 would turn a missing year into fake zeros for continuous
+        # levels (mean_age, sd_age, elected_mean_age) and shares, corrupting the
+        # delta outcomes. Zero-fill ONLY genuine counts below.
         office_wide = office_panel.pivot_table(
             index=["SG_UF", "SG_UE"],
             columns="ANO_ELEICAO",
             values=value_cols,
-            fill_value=0,
         )
+        office_count_cols = {
+            "total_candidates", "elected_candidates", "party_count",
+            "coalition_count", "new_candidate_count", "incumbent_candidate_count",
+            "incumbent_reelected_count",
+        }
+        for name, year in office_wide.columns:
+            if name in office_count_cols:
+                office_wide[(name, year)] = office_wide[(name, year)].fillna(0)
         office_wide.columns = [f"{name}_{year}" for name, year in office_wide.columns]
         office_wide = office_wide.reset_index()
         design = design.merge(office_wide, on=["SG_UF", "SG_UE"], how="left")
@@ -837,54 +930,6 @@ def build_municipality_universe(
             .agg(NM_UE=("NM_UE", "first"))
         )
     return universe
-
-
-def write_setup_note(
-    executive_design: pd.DataFrame,
-    legislative_design: pd.DataFrame,
-    office_outcomes: pd.DataFrame,
-) -> None:
-    lines = [
-        "# Office-Specific Shift-Share Setup",
-        "",
-        "Lawsuits come from the SIG TSE microdata export, which resolves each case to",
-        "its **municipality of origin** directly. Only first-instance (`Originário`)",
-        "cases filed before first-round election day are kept. This replaces the old",
-        "zona-eleitoral panel and its zona->municipality many-to-many merge, which",
-        "duplicated each multi-municipality zona's caseload across its municipalities.",
-        "",
-        "## Core Choices",
-        "",
-        "- exposure unit: municipality, resolved directly by SIG (no zona expansion)",
-        "- treatment universe: adversarial lawsuits only (administrative and procedural",
-        "  classes/subjects excluded via DROP_CLASSES and DROP_SUBJECTS in 02_shift_share_design.py)",
-        "- outcome panels are separated by office sought",
-        "- executive office: `PREFEITO`",
-        "- legislative office: `VEREADOR`",
-        "",
-        "## Derived Files",
-        "",
-        "- `data/clean/office_candidate_outcomes_panel.csv`",
-        "- `data/clean/municipality_competition_subject_panel.csv`",
-        "- `data/clean/municipality_bartik_components.csv`",
-        "- `data/clean/executive_shift_share_design.csv`",
-        "- `data/clean/legislative_shift_share_design.csv`",
-        "",
-        "## Coverage",
-        "",
-        f"- office outcome rows: {len(office_outcomes):,}",
-        f"- executive design municipalities: {len(executive_design):,}",
-        f"- legislative design municipalities: {len(legislative_design):,}",
-        "",
-        "## Notes",
-        "",
-        "- `new_candidate_*` and `incumbent_*` variables are defined only relative to 2020 and",
-        "  therefore are substantively meaningful for 2024 outcomes.",
-        "- candidate-file-based concentration metrics (`candidate_hhi_party`,",
-        "  `effective_party_count_candidates`) are useful fragmentation proxies, but not a full",
-        "  ideological polarization measure.",
-    ]
-    (TABLES_DIR / "office_shift_share_setup.md").write_text("\n".join(lines), encoding="utf-8")
 
 
 def main() -> None:
@@ -973,7 +1018,6 @@ def main() -> None:
         encoding="utf-8-sig",
     )
 
-    write_setup_note(executive_design, legislative_design, office_outcomes)
     print("Wrote office-specific shift-share inputs.")
 
 

@@ -233,7 +233,7 @@ cat("\nSaved:", file.path(ESTIMATES_DIR, "nonadversarial_placebo.csv"), "\n")
 # ============================================================
 # 5. LaTeX FRAGMENTS  (table conventions: readable labels, mean row)
 # ============================================================
-ETABLE_SIGNIF <- c("**" = .01, "*" = .05, "\\dagger" = .10)
+ETABLE_SIGNIF <- c("***" = .01, "**" = .05, "*" = .10)  # house convention: ***=1% **=5% *=10%
 ETABLE_DICT <- c(
   "fit_delta_log1p_competition_lawsuits_2024_2020" = "$\\Delta$ Log(adversarial lawsuits)",
   "placebo_bartik_iv_2020_2024"                    = "Placebo Bartik (non-adv.)",

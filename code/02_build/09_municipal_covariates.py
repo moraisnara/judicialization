@@ -81,10 +81,12 @@ def load_consulta_cand(year: int) -> pd.DataFrame:
     df = pd.concat(frames, ignore_index=True)
     if "CD_TIPO_ELEICAO" in df.columns:
         df = df[df["CD_TIPO_ELEICAO"] == "2"].copy()
-    if "NR_TURNO" in df.columns:
-        df = df[df["NR_TURNO"] == "1"].copy()
+    # Head-of-ticket only: exact match on "PREFEITO". A `contains("PREFEITO")` also matches
+    # "VICE-PREFEITO", and since the running mate is also "ELEITO" it made ~half the
+    # identified winners vice-mayors. Keep BOTH turnos so runoff winners (whose turno-1
+    # status is "2º TURNO") are captured via their turno-2 "ELEITO" row below.
     if "DS_CARGO" in df.columns:
-        df = df[df["DS_CARGO"].str.upper().str.contains("PREFEITO", na=False)].copy()
+        df = df[df["DS_CARGO"].str.upper().str.strip() == "PREFEITO"].copy()
 
     df["ANO_ELEICAO"] = year
     df["title_key"] = df["NR_TITULO_ELEITORAL_CANDIDATO"].fillna("").str.strip()

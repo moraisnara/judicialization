@@ -267,21 +267,11 @@ iv_results  <- do.call(rbind, iv_rows)
 
 
 # ============================================================
-# 6. tF WEAK-INSTRUMENT CORRECTION
+# 6. tF WEAK-INSTRUMENT CORRECTION (Lee et al. 2022, AER)
 # ============================================================
-
-tF_lookup <- data.frame(
-  F_val = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-            16, 17, 18, 19, 20, 21, 22, 23.1, 25, 30, 40),
-  tF_cv = c(13.99, 7.13, 5.24, 4.31, 3.78, 3.44, 3.21, 3.02, 2.86, 2.73,
-             2.62, 2.53, 2.46, 2.39, 2.33, 2.28, 2.24, 2.20, 2.17, 2.14,
-             2.11, 2.00, 1.96, 1.96, 1.96)
-)
-get_tF_cv <- function(f) {
-  if (is.na(f) || f >= 23.1) return(1.96)
-  if (f <= 2)               return(13.99)
-  approx(tF_lookup$F_val, tF_lookup$tF_cv, xout = f, rule = 2)$y
-}
+# Authoritative table + get_tF_cv() from the shared util (cv reaches 1.96 only
+# at F ~ 104.7, not F = 23.1). See code/utils/tf_critical_values.R.
+source(file.path(PROJECT_ROOT, "code", "utils", "tf_critical_values.R"))
 
 fs_F_map <- stats::setNames(
   first_stage$first_stage_F,
@@ -305,46 +295,9 @@ first_stage$tF_cv <- sapply(first_stage$first_stage_F, get_tF_cv)
 fwrite(first_stage, file.path(ESTIMATES_DIR, "legislative_first_stage_fixest.csv"))
 fwrite(iv_results,  file.path(ESTIMATES_DIR, "legislative_iv_fixest.csv"))
 
-# Markdown report
-fmt4 <- function(x) ifelse(is.na(x), "", sprintf("%.4f", as.numeric(x)))
-fmt2 <- function(x) ifelse(is.na(x), "", sprintf("%.2f",  as.numeric(x)))
-df_to_md <- function(df) {
-  cols   <- names(df)
-  header <- paste0("| ", paste(cols, collapse = " | "), " |")
-  sep    <- paste0("| ", paste(rep("---", length(cols)), collapse = " | "), " |")
-  rows   <- apply(df, 1, function(r) paste0("| ", paste(r, collapse = " | "), " |"))
-  paste(c(header, sep, rows), collapse = "\n")
-}
-
-fs_fmt <- first_stage
-fs_fmt[c("coef","se","p")] <- lapply(fs_fmt[c("coef","se","p")], fmt4)
-fs_fmt[c("t","first_stage_F")] <- lapply(fs_fmt[c("t","first_stage_F")], fmt2)
-
-iv_fmt <- iv_results
-iv_fmt[c("coef","se","p")] <- lapply(iv_fmt[c("coef","se","p")], fmt4)
-iv_fmt[c("t","ivf")]        <- lapply(iv_fmt[c("t","ivf")], fmt2)
-
-report <- c(
-  "# Legislative Analysis — fixest 2SLS (R)",
-  "",
-  "Adversarial Bartik shift-share IV. Same instrument as executive analysis.",
-  "Formula: `y ~ controls | state FE | Δlog(lawsuits) ~ Bartik_IV`.",
-  "SE clustered by principal electoral zone.",
-  "",
-  "## First Stage",
-  "",
-  df_to_md(fs_fmt),
-  "",
-  "## IV Results",
-  "",
-  df_to_md(iv_fmt)
-)
-writeLines(report, file.path(ESTIMATES_DIR, "legislative_fixest.md"))
-
 cat("\nResults saved:\n")
 cat("  ", file.path(ESTIMATES_DIR, "legislative_first_stage_fixest.csv"), "\n")
 cat("  ", file.path(ESTIMATES_DIR, "legislative_iv_fixest.csv"), "\n")
-cat("  ", file.path(ESTIMATES_DIR, "legislative_fixest.md"), "\n")
 
 
 # ============================================================

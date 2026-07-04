@@ -1,3 +1,27 @@
+"""Municipality-level vote outcomes by office, built on the first-instance
+shift-share design.
+
+Outcome families: winner/runner-up vote shares; victory margin; top-two
+concentration; candidate-vote HHI and effective number of candidates; party-vote
+HHI and effective number of parties; vote shares for female, nonwhite, and
+highly-educated candidates; vote shares for new candidates and incumbents
+(year-relative: each cycle vs its own prior cycle); and vote-weighted
+(intensive-margin) career categories (first-time, career 3+ priors, prior-winner,
+serial-challenger, cross-cycle returner).
+
+Each categorical trait has BOTH an extensive-margin candidate share (in
+candidate_experience_panel.csv / office_candidate_outcomes_panel.csv) and an
+intensive-margin *_vote_share here. Career and cross-cycle vote shares are
+left-censored before 2024 (no 2016 baseline).
+
+Years and the 2016 baseline: outcomes are built for 2016, 2020 and 2024 with
+identical definitions, separately by office (executive = PREFEITO, legislative =
+VEREADOR). 2016 is a pre-treatment outcome baseline only (lawsuits exist only for
+2020/2024; 2012 vote microdata are unavailable), so the design files carry *_2016
+levels (lagged controls) and pretrend_*_2020_2016 trends (placebo). Renewal/
+incumbency outcomes are year-relative and so DO carry a 2016 (vs 2012) baseline;
+only career and cross-cycle return stay left-censored.
+"""
 from __future__ import annotations
 
 from pathlib import Path
@@ -153,8 +177,10 @@ def load_candidate_metadata() -> pd.DataFrame:
         keep="last",
     )
     candidates["is_female"] = (candidates["DS_GENERO"] == "FEMININO").astype(int)
-    candidates["is_nonwhite"] = candidates["DS_COR_RACA"].isin(
-        ["PRETA", "PARDA", "AMARELA", "INDÃGENA", "INDIGENA"]
+    # Accent-fold before matching (see 02_shift_share_design): raw latin-1 value is
+    # "INDIGENA" with an accent; the literal spelling dropped indigenous candidates.
+    candidates["is_nonwhite"] = candidates["DS_COR_RACA"].map(normalize_text).isin(
+        ["PRETA", "PARDA", "AMARELA", "INDIGENA"]
     ).astype(int)
     candidates["is_higher_education"] = candidates["DS_GRAU_INSTRUCAO"].fillna("").str.contains(
         "SUPERIOR", regex=False
@@ -556,48 +582,6 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
     return out
 
 
-def write_note(vote_outcomes: pd.DataFrame) -> None:
-    lines = [
-        "# Vote Outcomes Setup",
-        "",
-        "This build adds municipality-level vote outcomes by office on top of the",
-        "first-instance shift-share design.",
-        "",
-        "## Outcome Families",
-        "",
-        "- winner and runner-up vote shares",
-        "- victory margin",
-        "- top-two concentration",
-        "- candidate-vote HHI and effective number of candidates",
-        "- party-vote HHI and effective number of parties",
-        "- vote shares for female, nonwhite, and highly educated candidates",
-        "- vote shares for new candidates and incumbents (year-relative: each",
-        "  cycle vs its own prior cycle, so 2016/2020/2024 are comparable)",
-        "- vote-weighted (intensive-margin) career categories: first-time,",
-        "  career (3+ priors), prior-winner, serial-challenger, cross-cycle returner",
-        "",
-        "Each categorical trait now has BOTH an extensive-margin share (fraction of",
-        "candidates, in candidate_experience_panel.csv / office_candidate_outcomes_panel.csv)",
-        "and an intensive-margin `*_vote_share` (fraction of votes) here. career and",
-        "cross-cycle vote shares are left-censored before 2024 (no 2016 baseline).",
-        "",
-        "## Years and the 2016 baseline",
-        "",
-        "Outcomes are built for 2016, 2020 and 2024 with identical definitions,",
-        "separately by office (executive = PREFEITO, legislative = VEREADOR).",
-        "2016 is a pre-treatment outcome baseline only: lawsuits (the treatment)",
-        "exist only for 2020/2024, and 2012 vote microdata are unavailable. The",
-        "design files therefore carry `*_2016` levels (lagged controls) and",
-        "`pretrend_*_2020_2016` trends (placebo). Renewal/incumbency outcomes are",
-        "year-relative (each cycle vs its own prior cycle) so they DO carry a 2016",
-        "(vs 2012) baseline; only career and cross-cycle return stay left-censored.",
-        "",
-        f"- municipality-office-year rows in vote panel: {len(vote_outcomes):,}",
-        f"- election cycles: {sorted(vote_outcomes['ANO_ELEICAO'].unique().tolist())}",
-    ]
-    (TABLES_DIR / "vote_outcomes_setup.md").write_text("\n".join(lines), encoding="utf-8")
-
-
 def main() -> None:
     DERIVED_DIR.mkdir(parents=True, exist_ok=True)
     TABLES_DIR.mkdir(parents=True, exist_ok=True)
@@ -629,7 +613,6 @@ def main() -> None:
         index=False,
         encoding="utf-8-sig",
     )
-    write_note(vote_outcomes)
     print("Wrote vote-outcome design files.")
 
 

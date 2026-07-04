@@ -1,19 +1,20 @@
 """
 04_iv_diagnostics.py — shift-share IV diagnostics for the adversarial Bartik
-instrument (merged). Three sections run IN ORDER because each consumes the CSV
-the previous one writes:
+instrument (merged). Two sections run IN ORDER because the second consumes the
+CSV the first writes:
 
   [A] rotemberg_weights()   — GPS (2020) Rotemberg-weight decomposition
         tau_IV = sum_k alpha_k * tau_k; per-topic alpha_k, F_k, tau_k.
-        -> descriptives/rotemberg_weights.{csv,md}
+        -> descriptives/rotemberg_weights.csv
 
   [B] gps_balance_tests()   — GPS (2020) Section V.A share-exogeneity tests
         (covariate balance + pre-trend placebo) for top-|alpha| + IE topics.
-        reads rotemberg_weights.csv  -> descriptives/gps_balance_tests.{csv,md}
+        reads rotemberg_weights.csv  -> descriptives/gps_balance_tests.csv
 
-  [C] exposure_robust_se()  — BHJ (2024) / AKM (2019) exposure-robust SEs.
-        reads rotemberg_weights.csv + the first-stage / IV regression CSVs
-        -> regressions/exposure_robust_se.{csv,md}
+Exposure-robust (AKM 2019 / BHJ 2022) SEs are computed separately, in R, by
+code/04_analysis/07_exposure_robust_se.R (regressions-in-R rule). The former
+Python [C] heuristic here measured per-topic IV-coefficient dispersion rather
+than sampling variance and has been removed.
 
 Inputs:
   data/estimation/executive_margin_design.csv
@@ -35,8 +36,6 @@ COMPONENTS_PATH = PROJECT_ROOT / "data" / "clean" / "municipality_bartik_compone
 DESC_DIR        = PROJECT_ROOT / "output" / "tables" / "descriptives"
 REG_DIR         = PROJECT_ROOT / "output" / "tables" / "regressions"
 ROTEMBERG_PATH  = DESC_DIR / "rotemberg_weights.csv"
-FS_PATH         = REG_DIR / "executive_margin_first_stage_fixest.csv"
-IV_PATH         = REG_DIR / "executive_margin_iv_fixest.csv"
 DESC_DIR.mkdir(parents=True, exist_ok=True)
 REG_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -188,41 +187,6 @@ def rotemberg_weights() -> None:
     rw.to_csv(ROTEMBERG_PATH, index=False, encoding="utf-8-sig")
     print(f"Saved: {ROTEMBERG_PATH.relative_to(PROJECT_ROOT)}")
 
-    top10 = rw.head(10).copy()
-    top10["alpha_pct"] = top10["alpha_pct"].map(lambda x: f"{x:+.1f}%")
-    top10["cum_alpha"] = top10["cum_alpha"].map(lambda x: f"{x:.2f}")
-    for out in avail_outcomes:
-        short = out.replace("delta_", "").replace("_2024_2020", "")
-        top10 = top10.rename(columns={f"tau_{out}": short})
-
-    md_rows = ["# Rotemberg Weights — Adversarial Bartik IV", "",
-               "GPS (2020) decomposition: tau_IV = sum_k alpha_k * tau_k.", "",
-               f"**HHI** = {hhi:.4f} | **Positive-weight topics** = {n_positive} / {len(rw)}",
-               "", "## Top 10 Topics by Rotemberg Weight", ""]
-    hdr = ["Rank", "Code", "Topic", "alpha (%)", "Cum.", "F_k"] + \
-          [o.replace("delta_", "").replace("_2024_2020", "") for o in avail_outcomes]
-    md_rows.append("| " + " | ".join(hdr) + " |")
-    md_rows.append("| " + " | ".join(["---"] * len(hdr)) + " |")
-    for i, row in top10.iterrows():
-        fk = row.get("f_stat_k", np.nan)
-        vals = [str(i + 1), row["topic_code"], row["topic_name"][:45],
-                row["alpha_pct"], row["cum_alpha"],
-                f"{fk:.1f}" if not np.isnan(fk) else "—"]
-        for o in avail_outcomes:
-            short = o.replace("delta_", "").replace("_2024_2020", "")
-            v = row.get(short, np.nan)
-            vals.append(f"{v:.3f}" if not np.isnan(v) else "—")
-        md_rows.append("| " + " | ".join(vals) + " |")
-    md_rows += [
-        "", "## Notes",
-        "- `alpha_k = (z_k_tilde' d_tilde) / (Z_tilde' d_tilde)`  where tilde = residual on state FE + 7 baseline controls.",
-        "- `tau_k` = just-identified IV using topic k alone as instrument.",
-        "- `F_k` = just-identified first-stage F using topic k component as sole instrument (regression through origin on residualised variables, df = N-1).",
-        "- HHI < 0.15 → many-shock instrument (Borusyak et al. 2022 criterion).",
-    ]
-    (DESC_DIR / "rotemberg_weights.md").write_text("\n".join(md_rows), encoding="utf-8")
-    print(f"Saved: {(DESC_DIR / 'rotemberg_weights.md').relative_to(PROJECT_ROOT)}")
-
 
 # ============================================================================
 # [B] GPS BALANCE TESTS — share exogeneity
@@ -363,213 +327,14 @@ def gps_balance_tests() -> None:
     print(f"Saved: {out_csv.relative_to(PROJECT_ROOT)}")
     print(df[["topic_code", "topic_name", "alpha", "r2_cov_balance", "p_cov_balance"]].to_string(index=False))
 
-    md = ["# GPS (2020) Balance Tests on Topic Shares", "",
-          "Tests share exogeneity for the adversarial-only instrument (no-RRC, no-DRAP).",
-          "DRAP (12044) is included as a diagnostic even though excluded from the main spec.",
-          "", "## Test 1: Covariate Balance (OLS: s_ik ~ state FE + 7 controls)", "",
-          "High R² indicates the share correlates with observables (endogeneity concern).", ""]
-    hdr1 = ["Rank", "Code", "Topic", "alpha", "R²", "F", "p"]
-    md.append("| " + " | ".join(hdr1) + " |")
-    md.append("| " + " | ".join(["---"] * len(hdr1)) + " |")
-    for i, r in df.iterrows():
-        tag = " *(DRAP)*" if r["is_drap"] else ""
-        md.append("| " + " | ".join([
-            str(i + 1), r["topic_code"] + tag, r["topic_name"][:40],
-            f"{r['alpha']:+.3f}" if not np.isnan(r["alpha"]) else "—",
-            f"{r['r2_cov_balance']:.3f}", f"{r['f_cov_balance']:.1f}", f"{r['p_cov_balance']:.3f}",
-        ]) + " |")
-
-    md += ["", "## Test 2: Pre-trend Balance (OLS: delta_outcome_2016_2020 ~ s_ik | state FE)", "",
-           "Under share exogeneity, topic shares should not predict 2016→2020 electoral trends.", ""]
-    for col in pretrend_cols:
-        label = col.replace("delta_", "").replace("_2020_2016", "")
-        md.append(f"### Outcome: {col}")
-        md.append("")
-        hdr2 = ["Rank", "Code", "Topic", "alpha", "beta", "SE", "p"]
-        md.append("| " + " | ".join(hdr2) + " |")
-        md.append("| " + " | ".join(["---"] * len(hdr2)) + " |")
-        for i, r in df.iterrows():
-            tag = " *(DRAP)*" if r["is_drap"] else ""
-            b = r.get(f"beta_{label}", np.nan)
-            s = r.get(f"se_{label}", np.nan)
-            p = r.get(f"p_{label}", np.nan)
-            sig = " *" if (not np.isnan(p) and p < 0.05) else ""
-            md.append("| " + " | ".join([
-                str(i + 1), r["topic_code"] + tag, r["topic_name"][:40],
-                f"{r['alpha']:+.3f}" if not np.isnan(r["alpha"]) else "—",
-                f"{b:+.4f}" if not np.isnan(b) else "—",
-                f"{s:.4f}"  if not np.isnan(s) else "—",
-                (f"{p:.3f}" if not np.isnan(p) else "—") + sig,
-            ]) + " |")
-        md.append("")
-
-    ie_df = df[df["is_ie"]].copy()
-    md += ["## Information Environment Focus (all 6 topics)", "",
-           "The preferred instrument (`bartik_iv_information_environment`) is built from these 6 topics.",
-           "Share exogeneity must hold for each individual topic for the family IV to be valid.", ""]
-    hdr_ie = ["Code", "Topic", "alpha", "Family", "R²(cov)", "p(cov)", "p(margin)", "p(top1)", "p(ncand)"]
-    md.append("| " + " | ".join(hdr_ie) + " |")
-    md.append("| " + " | ".join(["---"] * len(hdr_ie)) + " |")
-    for _, r in ie_df.iterrows():
-        def _p(col):
-            v = r.get(col, np.nan)
-            if np.isnan(v): return "—"
-            return (f"{v:.3f}" + (" *" if v < 0.05 else ""))
-        md.append("| " + " | ".join([
-            r["topic_code"], r["topic_name"][:45],
-            f"{r['alpha']:+.3f}" if not np.isnan(r["alpha"]) else "—",
-            r["topic_family"], f"{r['r2_cov_balance']:.3f}",
-            _p("p_cov_balance"), _p("p_margin"), _p("p_top1"), _p("p_ncand"),
-        ]) + " |")
-    md += ["", "(*) significant at 5% — signals potential share endogeneity.", "",
-           "## Notes",
-           "- All regressions include state fixed effects. State FE are partialled out before the pre-trend regression.",
-           "- Pre-trends: delta_margin = margin_top1_top2_2020 - margin_2016; delta_top1 = winner_vote_share_2020 - top1_share_2016; delta_ncand = total_candidates_2020 - n_candidates_2016.",
-           "- DRAP (12044) is excluded from the adversarial-only instrument but shown here to evaluate its share exogeneity.",
-           "  Low R² and non-significant pre-trend coefficients for DRAP would support its inclusion as an instrument."]
-    out_md = DESC_DIR / "gps_balance_tests.md"
-    out_md.write_text("\n".join(md), encoding="utf-8")
-    print(f"Saved: {out_md.relative_to(PROJECT_ROOT)}")
-
-
-# ============================================================================
-# [C] EXPOSURE-ROBUST SE — BHJ (2024) / AKM (2019)
-# ============================================================================
-EXP_OUTCOMES = [
-    "delta_winner_majority_2024_2020",
-    "delta_margin_top1_top2_2024_2020",
-    "delta_winner_vote_share_2024_2020",
-    "delta_blank_rate_2024_2020",
-    "delta_runnerup_vote_share_2024_2020",
-]
-SPEC    = "baseline"
-VARIANT = "adversarial"
-
-
-def exposure_robust_se() -> None:
-    print("\n" + "=" * 70)
-    print("[C] Exposure-robust SE (BHJ 2024 / AKM 2019)")
-    print("=" * 70)
-
-    rw = pd.read_csv(ROTEMBERG_PATH, dtype={"topic_code": str})
-    K  = len(rw)
-    hhi = (rw["alpha"] ** 2).sum()
-    k_eff = 1.0 / hhi
-    print(f"K topics = {K}, HHI = {hhi:.4f}, K_eff = {k_eff:.2f}")
-
-    iv_res = pd.read_csv(IV_PATH)
-    iv_base = iv_res[(iv_res["spec"] == SPEC) & (iv_res["variant"] == VARIANT)].copy()
-
-    fs_res = pd.read_csv(FS_PATH)
-    fs_row = fs_res[(fs_res["spec"] == SPEC) & (fs_res["variant"] == VARIANT)]
-    fs_F = fs_row["first_stage_F"].values[0] if len(fs_row) > 0 else np.nan
-    print(f"First-stage F ({VARIANT}, {SPEC}) = {fs_F:.2f}" if not np.isnan(fs_F)
-          else f"First-stage F ({VARIANT}, {SPEC}) = not found")
-
-    rows = []
-    for out in EXP_OUTCOMES:
-        tau_col = f"tau_{out}"
-        if tau_col not in rw.columns:
-            continue
-        alpha = rw["alpha"].values
-        tau_k = rw[tau_col].values
-        tau_2sls_check = np.nansum(alpha * tau_k)
-
-        iv_row = iv_base[iv_base["outcome"] == out]
-        if len(iv_row) == 0:
-            continue
-        b_2sls_conv = iv_row["coef"].values[0]
-        se_conv     = iv_row["se"].values[0]
-        p_conv      = iv_row["p"].values[0]
-
-        mask = ~np.isnan(tau_k)
-        alpha_v = alpha[mask]
-        tau_v   = tau_k[mask]
-        K_valid = mask.sum()
-
-        residuals_k = alpha_v * (tau_v - tau_2sls_check)
-        sum_alpha2  = np.sum(alpha_v ** 2)
-        se_bhj = np.sqrt(np.sum(residuals_k ** 2)) / sum_alpha2 if sum_alpha2 > 0 else np.nan
-        se_akm = se_bhj * np.sqrt(K_valid / (K_valid - 1)) if K_valid > 1 else np.nan
-
-        tF_cv = 1.96
-        if not np.isnan(fs_F) and fs_F < 23.1:
-            tF_table_F  = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-                                     16, 17, 18, 19, 20, 21, 22, 23.1, 25])
-            tF_table_cv = np.array([13.99, 7.13, 5.24, 4.31, 3.78, 3.44, 3.21, 3.02,
-                                     2.86,  2.73, 2.62, 2.53, 2.46, 2.39, 2.33, 2.28,
-                                     2.24,  2.20, 2.17, 2.14, 2.11, 2.00, 1.96])
-            tF_cv = float(np.interp(fs_F, tF_table_F, tF_table_cv))
-
-        rows.append({
-            "variant": VARIANT, "spec": SPEC, "outcome": out,
-            "tau_2sls": b_2sls_conv, "se_conventional": se_conv, "p_conventional": p_conv,
-            "ci_low_conv": b_2sls_conv - 1.96 * se_conv,
-            "ci_high_conv": b_2sls_conv + 1.96 * se_conv,
-            "se_bhj": se_bhj, "se_akm": se_akm,
-            "ci_low_bhj":  b_2sls_conv - 1.96 * se_bhj if not np.isnan(se_bhj) else np.nan,
-            "ci_high_bhj": b_2sls_conv + 1.96 * se_bhj if not np.isnan(se_bhj) else np.nan,
-            "ci_low_akm":  b_2sls_conv - 1.96 * se_akm if not np.isnan(se_akm) else np.nan,
-            "ci_high_akm": b_2sls_conv + 1.96 * se_akm if not np.isnan(se_akm) else np.nan,
-            "tF_cv": tF_cv,
-            "ci_low_tF":  b_2sls_conv - tF_cv * se_conv,
-            "ci_high_tF": b_2sls_conv + tF_cv * se_conv,
-            "K_valid": K_valid, "K_eff_rotemberg": k_eff,
-        })
-        print(f"\n  {out}")
-        print(f"    tau_2SLS = {b_2sls_conv:.4f}")
-        print(f"    SE: conv={se_conv:.4f}  BHJ={se_bhj:.4f}  AKM={se_akm:.4f}")
-        print(f"    tF_cv = {tF_cv:.2f}  |  SE ratio (BHJ/conv) = {se_bhj/se_conv:.2f}")
-
-    df = pd.DataFrame(rows)
-    out_csv = REG_DIR / "exposure_robust_se.csv"
-    df.to_csv(out_csv, index=False, encoding="utf-8-sig")
-    print(f"\nSaved: {out_csv.relative_to(PROJECT_ROOT)}")
-
-    md = ["# Exposure-Robust SE — BHJ (2024) / AKM (2019)", "",
-          f"Adversarial IV (administrative/procedural excluded at build stage), {SPEC}.",
-          f"K = {K} topics | HHI = {hhi:.4f} | K_eff (Rotemberg) = {k_eff:.2f}"]
-    tF_cv_display = f"{rows[0]['tF_cv']:.2f}" if rows else "—"
-    fs_F_display  = f"{fs_F:.1f}" if not np.isnan(fs_F) else "—"
-    md.append(f"First-stage F = {fs_F_display} -> tF critical value (Lee et al. 2022) = {tF_cv_display}")
-    md += ["", "**Caveat:** BHJ exposure-robust asymptotics require K_eff >> 1.",
-           f"Here K_eff = {k_eff:.2f} (Rotemberg-weight HHI = {hhi:.3f}).",
-           "These SEs should be treated as a sensitivity bound, not a replacement",
-           "for the conventional municipality-clustered SE.", "",
-           "## SE Comparison by Outcome", ""]
-    hdr = ["Outcome", "tau_2SLS", "SE_conv", "SE_BHJ", "SE_AKM",
-           "SE_BHJ/SE_conv", "tF_cv", "CI95_tF"]
-    md.append("| " + " | ".join(hdr) + " |")
-    md.append("| " + " | ".join(["---"] * len(hdr)) + " |")
-    for _, r in df.iterrows():
-        ratio = r["se_bhj"] / r["se_conventional"] if r["se_conventional"] > 0 else np.nan
-        md.append("| " + " | ".join([
-            r["outcome"].replace("delta_", "").replace("_2024_2020", ""),
-            f"{r['tau_2sls']:.4f}", f"{r['se_conventional']:.4f}",
-            f"{r['se_bhj']:.4f}" if not np.isnan(r["se_bhj"]) else "—",
-            f"{r['se_akm']:.4f}" if not np.isnan(r["se_akm"]) else "—",
-            f"{ratio:.2f}" if not np.isnan(ratio) else "—",
-            f"{r['tF_cv']:.2f}",
-            f"[{r['ci_low_tF']:.4f}, {r['ci_high_tF']:.4f}]",
-        ]) + " |")
-    md += ["", "## Notes",
-           "- **SE_conv**: clustered by principal electoral zone (fixest output).",
-           "- **SE_BHJ**: BHJ exposure-robust SE = sqrt(sum_k (alpha_k * (tau_k - tau_2SLS))^2) / sum_k alpha_k^2.",
-           "  Valid asymptotically when K_eff -> ∞; here K_eff = {:.2f}.".format(k_eff),
-           "- **SE_AKM**: SE_BHJ * sqrt(K/(K-1)) — Adao, Kolesar & Morales (2019) finite-K correction.",
-           "- **tF_cv**: Lee et al. (2022) critical value; CIs use tF_cv instead of 1.96.",
-           "- The BHJ SE uses residuals from the *shift-level* regression: residual_k = alpha_k * (tau_k - tau_2SLS).",
-           "  A large SE_BHJ/SE_conv ratio suggests the Bartik estimate is driven by a few shocks",
-           "  (consistent with K_eff = {:.2f}).".format(k_eff)]
-    out_md = REG_DIR / "exposure_robust_se.md"
-    out_md.write_text("\n".join(md), encoding="utf-8")
-    print(f"Saved: {out_md.relative_to(PROJECT_ROOT)}")
-
 
 def main() -> None:
-    rotemberg_weights()   # writes rotemberg_weights.csv (consumed by [B] and [C])
+    rotemberg_weights()   # writes rotemberg_weights.csv (consumed by [B] + R script)
     gps_balance_tests()
-    exposure_robust_se()
+    # Exposure-robust (AKM 2019 / BHJ 2022) SEs are produced in R by
+    # code/04_analysis/07_exposure_robust_se.R. The old Python heuristic that
+    # lived here measured per-topic IV-coefficient dispersion, not sampling
+    # variance (it spuriously inflated SEs ~11x), and has been deleted.
     print("\nAll IV diagnostics complete.")
 
 

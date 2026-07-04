@@ -4,11 +4,11 @@
 PURPOSE: all descriptive TABLES describing the data (candidates, voters,
 lawsuits, and the shift-share ingredients). Figures live in the R figure
 scripts (02_descriptive_figures.R, 03_result_figures.R); this file only writes
-CSV/MD tables. Three sections, each self-contained:
+CSV tables. Three sections, each self-contained:
 
   [A] candidate_pool_descriptives()  — weighted candidate/elected pool means by
         office × year (+ vote-weighted executive demographics).
-        -> descriptives/candidate_pool_descriptives.{csv,md}
+        -> descriptives/candidate_pool_descriptives.csv
 
   [B] overview_stats()               — lawsuit / voter / candidate "scale of the
         phenomenon" counts and ratios (feed the deck macros via 06_abstract_macros.py).
@@ -16,7 +16,7 @@ CSV/MD tables. Three sections, each self-contained:
 
   [C] shift_descriptives()           — BHJ (2024) checklist item 5: per-topic
         shifts g_k, importance weights s_k_bar, HHI / K_eff.
-        -> descriptives/shift_descriptives.{csv,md}
+        -> descriptives/shift_descriptives.csv
 
 Inputs:
   data/clean/office_candidate_outcomes_panel.csv
@@ -44,7 +44,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CLEAN        = PROJECT_ROOT / "data" / "clean"
 ESTIMATION   = PROJECT_ROOT / "data" / "estimation"
 OUT_DIR      = PROJECT_ROOT / "output" / "tables" / "descriptives"
+TEX_DIR      = PROJECT_ROOT / "output" / "tables" / "tex"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+TEX_DIR.mkdir(parents=True, exist_ok=True)
 
 YEARS = [2020, 2024]
 
@@ -112,47 +114,7 @@ def candidate_pool_descriptives() -> None:
             stats.loc[mask, col] = val
 
     stats.to_csv(OUT_DIR / "candidate_pool_descriptives.csv", index=False)
-
-    pct = lambda x: f"{x * 100:.1f}\\%" if pd.notna(x) else "---"
-    dec = lambda x: f"{x:.1f}" if pd.notna(x) else "---"
-
-    lines = [
-        "# Candidate and Elected Pool Descriptives\n",
-        "Weighted by total candidates per municipality.\n",
-        "| Statistic | Exec 2020 | Exec 2024 | Leg 2020 | Leg 2024 |",
-        "|-----------|-----------|-----------|----------|----------|",
-    ]
-
-    def row(label, col, fmt):
-        vals = []
-        for office, year in [("executive", 2020), ("executive", 2024),
-                             ("legislative", 2020), ("legislative", 2024)]:
-            mask = (stats["office"] == office) & (stats["year"] == year)
-            v = stats.loc[mask, col].values
-            vals.append(fmt(v[0]) if len(v) else "---")
-        lines.append(f"| {label} | {' | '.join(vals)} |")
-
-    lines.append("| **Candidate pool** | | | | |")
-    row("Female share",          "cand_female_share",           pct)
-    row("Nonwhite share",        "cand_nonwhite_share",         pct)
-    row("Higher education",      "cand_higher_education_share", pct)
-    row("Mean age (years)",      "cand_mean_age",               dec)
-    lines.append("| **Elected pool** | | | | |")
-    row("Female share",          "elected_female_share",          pct)
-    row("Nonwhite share",        "elected_nonwhite_share",        pct)
-    row("Higher education",      "elected_higher_education_share", pct)
-    row("Mean age (years)",      "elected_mean_age",               dec)
-    lines.append("| **Vote-weighted (executive only)** | | | | |")
-    row("Female vote share",     "female_vote_share",   pct)
-    row("Nonwhite vote share",   "nonwhite_vote_share", pct)
-    row("Winner is female",      "winner_is_female",    pct)
-    lines.append("| **Incumbency (exec 2024 only)** | | | | |")
-    row("New candidate share",       "new_candidate_share",       pct)
-    row("Incumbent candidate share", "incumbent_candidate_share", pct)
-    row("Incumbent reelected share", "incumbent_reelected_share", pct)
-
-    (OUT_DIR / "candidate_pool_descriptives.md").write_text("\n".join(lines), encoding="utf-8")
-    print(f"  Saved candidate_pool_descriptives.{{csv,md}}")
+    print("  Saved candidate_pool_descriptives.csv")
 
 
 # ============================================================================
@@ -394,34 +356,56 @@ def litigation_composition() -> None:
         fam[f"share_{y}"] = fam[y] / fam[y].sum()
     fam = fam.sort_values(2024, ascending=False).reset_index()
     fam.to_csv(OUT_DIR / "litigation_family_shares.csv", index=False)
+    print("  Saved litigation_composition.csv + litigation_family_shares.csv")
 
-    # markdown summary -------------------------------------------------------------
-    c20 = comp[comp.election_year == 2020].iloc[0]
-    c24 = comp[comp.election_year == 2024].iloc[0]
-    pp = lambda a, b: f"{(b - a) * 100:+.1f} pp"
-    md = [
-        "# Litigation Composition — coverage-robust facts (SIG)\n",
-        "Volume is flat (no count trend reported — SIG 2024 under-captures; see",
-        "`sig_undercaptures_2024_coverage`). The change is in COMPOSITION.\n",
-        "| Coverage-robust ratio | 2020 | 2024 | Change |",
-        "|---|---|---|---|",
-        f"| Post-election share of adversarial | {c20['post_election_share_adv']*100:.1f}\\% "
-        f"| {c24['post_election_share_adv']*100:.1f}\\% | {pp(c20['post_election_share_adv'], c24['post_election_share_adv'])} |",
-        f"| Appeal escalation (recursal/originário) | {c20['appeal_escalation_rate']*100:.2f}\\% "
-        f"| {c24['appeal_escalation_rate']*100:.2f}\\% | {pp(c20['appeal_escalation_rate'], c24['appeal_escalation_rate'])} |",
-        f"| Adversarial appeals per 1,000 cand. | {c20['adv_appeals_per_1000cand']:.1f} "
-        f"| {c24['adv_appeals_per_1000cand']:.1f} | {c24['adv_appeals_per_1000cand']/c20['adv_appeals_per_1000cand']-1:+.1%} |",
+    _write_composition_tex(comp, fam)
+
+
+# ----------------------------------------------------------------------------
+# Deck fragment for the A3 "recomposition, not a wave" frame. Two stacked
+# panels in one booktabs tabular: (A) within-adversarial topic-family shares
+# 2020 vs 2024 (WHAT the arena litigates), (B) coverage-robust character ratios
+# (WHEN it files + HOW FAR it escalates). Descriptive, so NO mylight coef band.
+# All numbers flow from the CSVs above — nothing is hard-coded in the deck.
+# ----------------------------------------------------------------------------
+_FAMILY_LABELS = {
+    "campaign_conduct":        "Campaign conduct",
+    "information_environment":  "Information environment",
+    "abuse_misuse_office":      "Abuse / misuse of office",
+    "eligibility_ballot_access": "Eligibility \\& ballot access",
+}
+
+
+def _write_composition_tex(comp: pd.DataFrame, fam: pd.DataFrame) -> None:
+    c = {int(r["election_year"]): r for _, r in comp.iterrows()}
+    L = [
+        "% Auto-generated by code/04_analysis/01_descriptives.py",
+        "% Do not edit manually -- rerun the generating script to update",
         "",
-        "## Within-adversarial composition by family (share of adversarial)",
-        "",
-        "| Family | 2020 | 2024 | Change |",
-        "|---|---|---|---|",
+        "\\begin{tabular}{lcc}",
+        "\\toprule\\toprule",
+        " & \\textbf{2020} & \\textbf{2024} \\\\",
+        "\\midrule",
+        "\\multicolumn{3}{l}{\\textit{Within-adversarial composition (share of filings)}} \\\\",
     ]
     for _, r in fam.iterrows():
-        md.append(f"| {r['family']} | {r['share_2020']*100:.1f}\\% | {r['share_2024']*100:.1f}\\% "
-                  f"| {pp(r['share_2020'], r['share_2024'])} |")
-    (OUT_DIR / "litigation_composition.md").write_text("\n".join(md), encoding="utf-8")
-    print("  Saved litigation_composition.{csv,md} + litigation_family_shares.csv")
+        lab = _FAMILY_LABELS.get(r["family"], r["family"])
+        L.append(f"{lab} & {r['share_2020']:.3f} & {r['share_2024']:.3f} \\\\")
+    L += [
+        "\\midrule",
+        "\\multicolumn{3}{l}{\\textit{Character of the arena}} \\\\",
+        f"Post-election filing share & {c[2020]['post_election_share_adv']:.3f} "
+        f"& {c[2024]['post_election_share_adv']:.3f} \\\\",
+        f"Appeal escalation rate & {c[2020]['appeal_escalation_rate']:.3f} "
+        f"& {c[2024]['appeal_escalation_rate']:.3f} \\\\",
+        f"Adversarial appeals per 1{{,}}000 candidates & {c[2020]['adv_appeals_per_1000cand']:.1f} "
+        f"& {c[2024]['adv_appeals_per_1000cand']:.1f} \\\\",
+        "\\bottomrule\\bottomrule",
+        "\\end{tabular}",
+    ]
+    path = TEX_DIR / "litigation_composition.tex"
+    path.write_text("\n".join(L) + "\n", encoding="utf-8")
+    print(f"  Wrote {path}")
 
 
 # ============================================================================
@@ -509,48 +493,7 @@ def shift_descriptives() -> None:
 
     df = df.sort_values("s_k_bar_norm", ascending=False).reset_index(drop=True)
     df.to_csv(OUT_DIR / "shift_descriptives.csv", index=False, encoding="utf-8-sig")
-
-    md = []
-    md.append("# Shift Descriptives — Adversarial Bartik IV")
-    md.append("")
-    md.append("BHJ (2024) checklist item 5: distribution of shifts g_k and importance weights s_k_bar.")
-    md.append("")
-    md.append(f"**K** = {K} topics | **N** = {N:,} municipalities")
-    md.append(f"| HHI (importance) | K_eff | Positive shifts | Negative shifts |")
-    md.append(f"| --- | --- | --- | --- |")
-    md.append(f"| {hhi:.4f} | {k_eff:.2f} | {n_pos} | {n_neg} |")
-    md.append("")
-    md.append("## Per-Topic Statistics (sorted by importance weight)")
-    md.append("")
-    hdr = ["Code", "Topic (truncated)", "Family", "N munis",
-           "s̄_k (%)", "g_mean", "g_sd", "g_p10", "g_p50", "g_p90", "HHI contrib"]
-    md.append("| " + " | ".join(hdr) + " |")
-    md.append("| " + " | ".join(["---"] * len(hdr)) + " |")
-    for _, r in df.iterrows():
-        md.append("| " + " | ".join([
-            r["topic_code"],
-            r["topic_name"][:40],
-            r["topic_family"][:20] if r["topic_family"] else "",
-            str(int(r["n_munis"])),
-            f"{r['s_k_bar_norm']*100:.2f}%",
-            f"{r['g_mean']:+.3f}",
-            f"{r['g_sd']:.3f}",
-            f"{r['g_p10']:+.3f}",
-            f"{r['g_p50']:+.3f}",
-            f"{r['g_p90']:+.3f}",
-            f"{r['s_k_bar2']:.4f}",
-        ]) + " |")
-    md.append("")
-    md.append("## Notes")
-    md.append("- `s̄_k` = mean share of topic k across all N municipalities (including zeros), re-normalised to sum to 1.")
-    md.append("- `g_k` = leave-state-out log growth 2020→2024 for topic k; values vary by municipality (own-state excluded).")
-    md.append("  Statistics above are computed across municipalities that have the topic in 2020.")
-    md.append("- **HHI** = Σ_k (s̄_k)² — measures concentration of instrument in few topics.")
-    md.append("  K_eff = 1/HHI is the effective number of topics driving the Bartik estimate.")
-    md.append("- BHJ (2024) criterion: K_eff >> 1 needed for exposure-robust SE asymptotics.")
-    md.append(f"  Here K_eff = {k_eff:.2f} → GPS share-exogeneity identification is the primary justification.")
-    (OUT_DIR / "shift_descriptives.md").write_text("\n".join(md), encoding="utf-8")
-    print(f"  Saved shift_descriptives.{{csv,md}}")
+    print(f"  Saved shift_descriptives.csv")
 
 
 def main() -> None:

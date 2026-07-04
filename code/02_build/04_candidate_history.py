@@ -88,12 +88,13 @@ def load_year(year: int) -> pd.DataFrame:
 
     df = pd.concat(frames, ignore_index=True)
 
-    # Municipal ordinary elections (CD_TIPO_ELEICAO == "2"), first round, both
-    # mayoral and council races (office tracked via office_group).
+    # Municipal ordinary elections (CD_TIPO_ELEICAO == "2"), both mayoral and council
+    # races (office tracked via office_group). Keep BOTH turnos: runoff winners are
+    # decided in turno 2, and their turno-1 status is "2º TURNO", not "ELEITO". Filtering
+    # to turno 1 would flag zero elected candidates in every runoff municipality (the
+    # largest cities); is_elected is collapsed across turnos below.
     if "CD_TIPO_ELEICAO" in df.columns:
         df = df[df["CD_TIPO_ELEICAO"] == "2"].copy()
-    if "NR_TURNO" in df.columns:
-        df = df[df["NR_TURNO"] == "1"].copy()
     df["office_group"] = df["DS_CARGO"].str.upper().str.strip().map(OFFICE_MAP)
     df = df[df["office_group"].notna()].copy()
 
@@ -111,10 +112,12 @@ def load_year(year: int) -> pd.DataFrame:
         df["DS_SIT_TOT_TURNO"].str.upper().str.strip().isin(ELECTED_STATUSES)
     ).astype(int)
 
-    # One row per candidate per office per municipality. (A person contests a
-    # single office in a single municipality per cycle, so person_key is unique
-    # within a year across offices — preserved for any-office pooling.)
-    df = df.drop_duplicates(subset=["ANO_ELEICAO", "office_group", "SG_UF", "SG_UE", "person_key"])
+    # One row per candidate per office per municipality, collapsing across turnos: a
+    # candidate is elected if elected in ANY round (their final-round result). Take the
+    # group-max of is_elected before dedup so runoff winners keep their turno-2 "ELEITO".
+    grp = ["ANO_ELEICAO", "office_group", "SG_UF", "SG_UE", "person_key"]
+    df["is_elected"] = df.groupby(grp)["is_elected"].transform("max")
+    df = df.drop_duplicates(subset=grp)
     df = df[["ANO_ELEICAO", "office_group", "SG_UF", "SG_UE", "NM_UE", "person_key", "is_elected"]]
     return df.rename(columns={
         "ANO_ELEICAO": "election_year",

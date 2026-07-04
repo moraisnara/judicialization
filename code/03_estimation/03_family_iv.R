@@ -11,7 +11,6 @@
 #
 # Outputs:
 #   output/tables/regressions/family_iv_results.csv
-#   output/tables/regressions/family_iv_results.md
 
 suppressPackageStartupMessages({
   user_lib <- "C:/Users/naral/R/win-library/4.6"
@@ -217,21 +216,11 @@ fs_results <- do.call(rbind, fs_rows)
 
 
 # ============================================================
-# 6. tF WEAK-INSTRUMENT CORRECTION
+# 6. tF WEAK-INSTRUMENT CORRECTION (Lee et al. 2022, AER)
 # ============================================================
-
-tF_lookup <- data.frame(
-  F_val = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-            16, 17, 18, 19, 20, 21, 22, 23.1, 25, 30, 40),
-  tF_cv = c(13.99, 7.13, 5.24, 4.31, 3.78, 3.44, 3.21, 3.02, 2.86, 2.73,
-             2.62, 2.53, 2.46, 2.39, 2.33, 2.28, 2.24, 2.20, 2.17, 2.14,
-             2.11, 2.00, 1.96, 1.96, 1.96)
-)
-get_tF_cv <- function(f) {
-  if (is.na(f) || f >= 23.1) return(1.96)
-  if (f <= 2) return(13.99)
-  approx(tF_lookup$F_val, tF_lookup$tF_cv, xout = f, rule = 2)$y
-}
+# Authoritative table + get_tF_cv() from the shared util (cv reaches 1.96 only
+# at F ~ 104.7, not F = 23.1). See code/utils/tf_critical_values.R.
+source(file.path(PROJECT_ROOT, "code", "utils", "tf_critical_values.R"))
 
 fs_F_map <- stats::setNames(fs_results$f_stat, fs_results$family)
 iv_results$first_stage_F  <- fs_F_map[iv_results$family]
@@ -247,41 +236,5 @@ iv_results$reject_tF_5pct <- abs(iv_results$t) > iv_results$tF_cv
 
 fwrite(iv_results, file.path(ESTIMATES_DIR, "family_iv_results.csv"))
 
-fmt4 <- function(x) ifelse(is.na(x), "", sprintf("%.4f", as.numeric(x)))
-fmt2 <- function(x) ifelse(is.na(x), "", sprintf("%.2f",  as.numeric(x)))
-df_to_md <- function(df) {
-  cols   <- names(df)
-  header <- paste0("| ", paste(cols, collapse = " | "), " |")
-  sep    <- paste0("| ", paste(rep("---", length(cols)), collapse = " | "), " |")
-  rows   <- apply(df, 1, function(r) paste0("| ", paste(r, collapse = " | "), " |"))
-  paste(c(header, sep, rows), collapse = "\n")
-}
-
-fs_fmt <- fs_results
-fs_fmt[c("coef_fs", "se_fs", "f_stat")] <- lapply(fs_fmt[c("coef_fs", "se_fs", "f_stat")], fmt2)
-
-iv_fmt <- iv_results
-iv_fmt[c("coef", "se", "p")] <- lapply(iv_fmt[c("coef", "se", "p")], fmt4)
-iv_fmt[c("t", "ivf")]        <- lapply(iv_fmt[c("t", "ivf")], fmt2)
-
-report <- c(
-  "# Family-Split IV Analysis — fixest 2SLS",
-  "",
-  paste0("Each family IV = sum of bartik_component restricted to topics in that family."),
-  paste0("Each family IV instruments its family-specific endogenous (delta_log1p_{family}_2024_2020)."),
-  "Formula: `y ~ controls | state FE | delta_log1p_{family} ~ bartik_iv_{family}`.",
-  "SE clustered by principal electoral zone.",
-  "",
-  "## First Stage by Family",
-  "",
-  df_to_md(fs_fmt),
-  "",
-  "## IV Results by Family x Outcome (family-specific endogenous)",
-  "",
-  df_to_md(iv_fmt)
-)
-writeLines(report, file.path(ESTIMATES_DIR, "family_iv_results.md"))
-
 cat("Results saved:\n")
 cat("  ", file.path(ESTIMATES_DIR, "family_iv_results.csv"), "\n")
-cat("  ", file.path(ESTIMATES_DIR, "family_iv_results.md"), "\n")

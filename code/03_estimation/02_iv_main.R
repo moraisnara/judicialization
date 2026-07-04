@@ -577,93 +577,22 @@ iv_results  <- do.call(rbind, iv_rows)
 fwrite(first_stage, file.path(ESTIMATES_DIR, "executive_margin_first_stage_fixest.csv"))
 fwrite(iv_results,  file.path(ESTIMATES_DIR, "executive_margin_iv_fixest.csv"))
 
-# Markdown helpers
-fmt4 <- function(x) ifelse(is.na(x), "", sprintf("%.4f", as.numeric(x)))
-fmt2 <- function(x) ifelse(is.na(x), "", sprintf("%.2f",  as.numeric(x)))
-
-df_to_md <- function(df) {
-  cols   <- names(df)
-  header <- paste0("| ", paste(cols, collapse = " | "), " |")
-  sep    <- paste0("| ", paste(rep("---", length(cols)), collapse = " | "), " |")
-  rows   <- apply(df, 1, function(r) paste0("| ", paste(r, collapse = " | "), " |"))
-  paste(c(header, sep, rows), collapse = "\n")
-}
-
-# Build and write markdown report
-fs_fmt <- first_stage
-fs_fmt[c("coef", "se", "p")] <- lapply(fs_fmt[c("coef", "se", "p")], fmt4)
-fs_fmt[c("t", "first_stage_F")] <- lapply(fs_fmt[c("t", "first_stage_F")], fmt2)
-
-iv_fmt <- iv_results
-iv_fmt[c("coef", "se", "p")] <- lapply(iv_fmt[c("coef", "se", "p")], fmt4)
-iv_fmt[c("t", "ivf")]        <- lapply(iv_fmt[c("t", "ivf")],        fmt2)
-
-report <- c(
-  "# Executive Margin Analysis — fixest 2SLS (R)",
-  "",
-  "Benchmark: Ash, Morelli & Vannoni (2025, JPE) — `ivreghdfe` → `feols()` in fixest.",
-  "Formula: `y ~ controls | FE | Δlog(lawsuits) ~ Bartik_IV`.",
-  "SE clustered by state (UF); leave-own-state-out shift is constant within state.",
-  "",
-  "## Instrument",
-  "- **adversarial** : bartik_iv_2020_2024 / delta_log1p_competition_lawsuits_2024_2020",
-  "  (adversarial class/subject filter applied at build stage in 02_shift_share_design.py)",
-  "",
-  "## Specifications (headline = ANCOVA on the 2016 pre-window baseline)",
-  "Baseline (V3) controls: 2010 Census structure (log pop, urban share, log income p.c., higher-ed share),",
-  "log valid-vote volume (2020), 2016 victory margin, PLUS each outcome's own 2016 level where one exists",
-  "(per-outcome lagged DV). No 2020 levels of competition outcomes (avoids Lord's-paradox bias).",
-  "",
-  "1. **baseline** — ANCOVA-2016: per-outcome 2016 level as free lag + common controls + state FE",
-  "2. **single_zone** — baseline, single-zone municipalities only",
-  "3. **extended_controls** — baseline + extended 2020 covariates + state FE",
-  "4. **open_seat** — baseline, open-seat municipalities (2020 winner term-limited)",
-  "5. **contested_seat** — baseline, contested-seat municipalities",
-  "6. **broader_treatment** — baseline + log1p_lawsuits_no_rrc_2020 as additional control",
-  "7. **fd** — appendix robustness: pure first difference (delta_Y ~ D, persistence pinned to 1)",
-  "8. **ancova_2020lvl** — legacy V1 stance check: delta outcome + 2020 competition levels as controls",
-  "",
-  "## First Stage",
-  "",
-  df_to_md(fs_fmt),
-  "",
-  "## IV Results",
-  "",
-  df_to_md(iv_fmt)
-)
-
-writeLines(report, file.path(ESTIMATES_DIR, "executive_margin_fixest.md"))
-
-
 cat("\nResults saved to:\n")
 cat("  ", file.path(ESTIMATES_DIR, "executive_margin_first_stage_fixest.csv"), "\n")
 cat("  ", file.path(ESTIMATES_DIR, "executive_margin_iv_fixest.csv"), "\n")
-cat("  ", file.path(ESTIMATES_DIR, "executive_margin_fixest.md"), "\n")
 
 
 # ============================================================
-# 7. tF WEAK-INSTRUMENT CORRECTION (Lee et al. 2022, RESTUD)
+# 7. tF WEAK-INSTRUMENT CORRECTION (Lee et al. 2022, AER)
 # ============================================================
-# For first-stage F < 23.1, the standard normal critical value (1.96) is
-# anti-conservative. The tF procedure uses a larger critical value that
-# achieves correct 5% size when F = F_hat.
-# Reference: Lee, McCrary, Moreira & Porter (2022) "Valid t-ratio Inference
-# for IV", RESTUD (forthcoming). Table 1, alpha=0.05.
-
-# Lookup table from Lee et al. (2022) Table 1 (5% two-sided, K1=1 instrument)
-tF_lookup <- data.frame(
-  F_val = c(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-            16, 17, 18, 19, 20, 21, 22, 23.1, 25, 30, 40),
-  tF_cv = c(13.99, 7.13, 5.24, 4.31, 3.78, 3.44, 3.21, 3.02, 2.86, 2.73,
-             2.62, 2.53, 2.46, 2.39, 2.33, 2.28, 2.24, 2.20, 2.17, 2.14,
-             2.11, 2.00, 1.96, 1.96, 1.96)
-)
-
-get_tF_cv <- function(f) {
-  if (is.na(f) || f >= 23.1) return(1.96)
-  if (f <= 2)               return(13.99)
-  approx(tF_lookup$F_val, tF_lookup$tF_cv, xout = f, rule = 2)$y
-}
+# For first-stage F < 104.7, the usual normal critical value (1.96) is
+# anti-conservative for the just-identified 2SLS t-test; the tF procedure
+# replaces it with a larger, F-dependent critical value that restores correct
+# 5% size. Reference: Lee, McCrary, Moreira & Porter (2022) "Valid t-ratio
+# Inference for IV", AER 112(10): 3260-90, Table 3 (alpha = 0.05).
+# The authoritative table + get_tF_cv() live in the shared util (one source of
+# truth; an earlier hand-typed copy wrongly capped the correction at F = 23.1).
+source(file.path(PROJECT_ROOT, "code", "utils", "tf_critical_values.R"))
 
 # Look up first-stage F for each variant x spec
 fs_F_map <- stats::setNames(
