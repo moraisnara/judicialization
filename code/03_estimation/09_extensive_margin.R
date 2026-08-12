@@ -42,6 +42,7 @@ OUT_MAC <- file.path(ROOT, "output/tables/tex/extensive_margin_macros.tex")
 INSTR  <- "bartik_iv_2020_2024"
 ENDOG  <- "delta_log1p_competition_lawsuits_2024_2020"
 BASE20 <- "competition_lawsuits_2020"        # adversarial filing count in the base year
+END24  <- "competition_lawsuits_2024"        # adversarial filing count in the end year (for PPML)
 CTRL   <- c("log_pop_2010", "urban_share_2010", "log_income_pc_2010",
             "higher_educ_share_2010", "log1p_total_valid_votes_2020", "margin_2016")
 # headline ANCOVA-2016 outcomes: LHS 2024 level + free 2016 lag
@@ -55,8 +56,9 @@ OUTCOMES <- list(
 grab <- function(fit, term) {
   ct <- fit$coeftable
   if (!term %in% rownames(ct)) return(c(coef = NA, se = NA, p = NA))
+  pcol <- grep("^Pr", colnames(ct), value = TRUE)[1]   # "Pr(>|t|)" (feols) or "Pr(>|z|)" (fepois/fenegbin)
   c(coef = unname(ct[term, "Estimate"]), se = unname(ct[term, "Std. Error"]),
-    p = unname(ct[term, "Pr(>|t|)"]))
+    p = unname(ct[term, pcol]))
 }
 Fstat <- function(fit, term) { g <- grab(fit, term); unname((g["coef"] / g["se"])^2) }
 
@@ -65,10 +67,11 @@ ctrl_rhs <- function() paste(CTRL, collapse = " + ")
 load_data <- function() {
   df <- fread(DESIGN, colClasses = list(character = c("state", "municipality_id_tse", "cluster_id")))
   setnames(df, "state", "SG_UF")
-  req <- unique(c(INSTR, ENDOG, "cluster_id", "SG_UF", BASE20, CTRL,
+  req <- unique(c(INSTR, ENDOG, "cluster_id", "SG_UF", BASE20, END24, CTRL,
                   unlist(lapply(OUTCOMES, unname))))
   full <- df[complete.cases(df[, ..req])]
   full[, D0 := as.integer(get(BASE20) > 0)]      # presence dummy: any 2020 adversarial litigation
+  full[, l20log := log1p(get(BASE20))]           # baseline lag for the count-native ANCOVA
   full[]
 }
 
@@ -232,6 +235,59 @@ reduced_form_decomposition <- function(full) {
 }
 
 # ============================================================================
+# [E] Count-native first stage (Poisson / Negative Binomial).
+#   The log1p transform floors every silent muni at 0, so the strong headline
+#   first stage (F=102) could in principle be an artifact of that floor rather
+#   than a real response of the caseload to Z. A count model has no floor: its
+#   conditional mean exp(beta*Z) is a PROPORTIONAL (intensive) response that
+#   accommodates zeros natively. So PPML is the clean test of whether the
+#   intensive margin is genuinely null or merely a log1p artifact.
+#     E[ell_2024 | .] = exp( beta*Z + rho*log1p(ell_2020) + X'g + delta_UF )
+#   Run full AND litigating-only; NegBin as an overdispersion robustness
+#   (the 2024 count is heavily overdispersed, var >> mean). A null beta here
+#   CONFIRMS the extensive-margin reading: relevance is onset (zero-vs-any),
+#   not proportional growth among already-litigating municipalities.
+# ============================================================================
+count_native_first_stage <- function(full) {
+  pos <- full[D0 == 1]
+  disp <- var(full[[END24]]) / mean(full[[END24]])   # >1 => overdispersed
+  fml_anc <- as.formula(sprintf("%s ~ %s + l20log + %s | SG_UF", END24, INSTR, ctrl_rhs()))
+  fml_rel <- as.formula(sprintf("%s ~ %s + %s | SG_UF", END24, INSTR, ctrl_rhs()))
+  fit1 <- function(fn, d, fml)
+    fn(fml, data = d, cluster = ~cluster_id, warn = FALSE, notes = FALSE)
+
+  specs <- list(
+    list(key = "ppml_anc_full",  fn = fepois,   d = full, fml = fml_anc),
+    list(key = "ppml_anc_litig", fn = fepois,   d = pos,  fml = fml_anc),
+    list(key = "ppml_rel_full",  fn = fepois,   d = full, fml = fml_rel),
+    list(key = "negbin_anc_full",  fn = fenegbin, d = full, fml = fml_anc),
+    list(key = "negbin_anc_litig", fn = fenegbin, d = pos,  fml = fml_anc)
+  )
+  rows <- list()
+  for (s in specs) {
+    fit <- tryCatch(fit1(s$fn, s$d, s$fml), error = function(e) NULL)
+    g <- if (is.null(fit)) c(coef = NA, se = NA, p = NA) else grab(fit, INSTR)
+    dt <- data.table(                          # NB: avoid the reserved `key=` constructor arg
+      block = "count_native", outcome = NA_character_, n = nrow(s$d),
+      coef = unname(g["coef"]), se = unname(g["se"]), p = unname(g["p"]),
+      aux = unname((g["coef"] / g["se"])^2))   # Wald chi-sq(1), comparable to F
+    dt[, key := s$key]
+    rows[[length(rows) + 1]] <- dt
+  }
+  res <- rbindlist(rows)
+  disp_row <- data.table(block = "count_native", outcome = NA_character_, n = nrow(full),
+                         coef = NA_real_, se = NA_real_, p = NA_real_, aux = disp)
+  disp_row[, key := "dispersion_var_over_mean"]
+  res <- rbind(res, disp_row)
+  cat("\n==== [E] COUNT-NATIVE FIRST STAGE (PPML / NegBin) ====\n")
+  cat(sprintf("2024-count overdispersion var/mean = %.1f (>>1)\n", disp))
+  print(res[key != "dispersion_var_over_mean",
+            .(key, n, coef = round(coef, 4), se = round(se, 4),
+              p = round(p, 4), Wald = round(aux, 1))])
+  res
+}
+
+# ============================================================================
 # Deck outputs: house-style two-panel table + inline-prose macros.
 # Panel A shows the relevance is EXTENSIVE (first stage collapses among
 # litigating munis); Panel B shows the FINDING is not (the margin reduced form
@@ -246,7 +302,7 @@ star <- function(p) {
 }
 f3 <- function(x) sprintf("%.3f", x)
 
-write_deck_outputs <- function(full, b, d) {
+write_deck_outputs <- function(full, b, d, e) {
   bq <- function(q) b[quantity == q]
   fs_full <- bq("endog ~ Z (full, headline FS)")
   fs_int  <- bq("endog ~ Z (intensive slope, positive only)")
@@ -302,7 +358,15 @@ write_deck_outputs <- function(full, b, d) {
     sprintf("\\newcommand{\\ExtRFfullP}{%.3f}", rf_full$p),
     sprintf("\\newcommand{\\ExtRFpositiveP}{%.3f}", rf_pos$p),
     sprintf("\\newcommand{\\ExtRFhorseZP}{%.3f}", rf_hz$p),
-    sprintf("\\newcommand{\\ExtRFhorseDzeroP}{%.2f}", rf_hd$p)
+    sprintf("\\newcommand{\\ExtRFhorseDzeroP}{%.2f}", rf_hd$p),
+    # [E] count-native (Poisson / NegBin) confirmation that the intensive margin
+    # is genuinely null -- not a log1p-floor artifact.
+    sprintf("\\newcommand{\\ExtPPMLfullP}{%.2f}",  e[key == "ppml_anc_full",  p]),
+    sprintf("\\newcommand{\\ExtPPMLlitigP}{%.2f}", e[key == "ppml_anc_litig", p]),
+    sprintf("\\newcommand{\\ExtPPMLlitigCoef}{%s}", f3(e[key == "ppml_anc_litig", coef])),
+    sprintf("\\newcommand{\\ExtNBfullP}{%.2f}",    e[key == "negbin_anc_full",  p]),
+    sprintf("\\newcommand{\\ExtNBlitigP}{%.2f}",   e[key == "negbin_anc_litig", p]),
+    sprintf("\\newcommand{\\ExtDisp}{%.0f}",       e[key == "dispersion_var_over_mean", aux])
   )
   writeLines(mac, OUT_MAC)
   cat(sprintf("\nWrote %s\n      %s\n", OUT_TEX, OUT_MAC))
@@ -315,12 +379,14 @@ main <- function() {
   b <- first_stage_decomposition(full)
   c <- presence_instrument_2sls(full)
   d <- reduced_form_decomposition(full)
-  write_deck_outputs(full, b, d)
-  # decomposition CSV: stack [B]-[D] (common cols; [A] has its own file)
+  e <- count_native_first_stage(full)
+  write_deck_outputs(full, b, d, e)
+  # decomposition CSV: stack [B]-[E] (common cols; [A] has its own file)
   dc <- rbindlist(list(
     b[, .(block, key = quantity, outcome = NA_character_, n, coef, se, p, aux = F_or_R2)],
     c[, .(block, key = instrument, outcome, n = NA_integer_, coef, se, p, aux = first_stage_F)],
-    d[, .(block, key = spec, outcome, n, coef, se, p, aux = NA_real_)]
+    d[, .(block, key = spec, outcome, n, coef, se, p, aux = NA_real_)],
+    e[, .(block, key, outcome, n, coef, se, p, aux)]
   ), fill = TRUE)
   fwrite(dc, OUT_DC)
   cat(sprintf("\nWrote %s\n      %s\n", OUT_MP, OUT_DC))

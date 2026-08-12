@@ -7,8 +7,11 @@
 #   (administrative and procedural classes/subjects excluded at build stage)
 #
 # fixest formula: y ~ controls | FE | endogenous ~ instrument
-# Clustering: by principal electoral zone (within-municipality; avoids spatial correlation).
-# Benchmark: ivreghdfe y (endog = instr), absorb(state) cl(zone)
+# Clustering: by state (UF, G = 26). The leave-own-state-out shift is constant within a
+#   state and first-instance litigation is correlated within state through the TRE, so
+#   the state is the conservative envelope (Adao-Kolesar-Morales 2019). Set in
+#   01_assemble_design.py as cluster_id = SG_UF.
+# Benchmark: ivreghdfe y (endog = instr), absorb(state) cl(state)
 
 suppressPackageStartupMessages({
   user_lib <- "C:/Users/naral/R/win-library/4.6"
@@ -63,6 +66,16 @@ for (yr in c("2016", "2024")) {
   if (src %in% names(df))
     df[[paste0("log1p_n_candidates_with_votes_", yr)]] <- log1p(df[[src]])
 }
+# Candidate-pool demographic deltas ("who runs" face). The 2020/2024 LEVELS ship in
+# the design but the first differences were never pre-built; compute them here so the
+# non-gender traits get the same pool-share treatment as delta_female_share. No 2016
+# analog exists for these, so run_iv estimates them as pure first differences.
+for (base in c("nonwhite_share", "higher_education_share", "mean_age",
+               "new_candidate_share", "incumbent_candidate_share")) {
+  l20 <- paste0(base, "_2020"); l24 <- paste0(base, "_2024")
+  if (all(c(l20, l24) %in% names(df)))
+    df[[paste0("delta_", base, "_2024_2020")]] <- df[[l24]] - df[[l20]]
+}
 cat(sprintf("Loaded design: %d municipalities\n", nrow(df)))
 
 
@@ -97,10 +110,23 @@ COMPOSITION_OUTCOMES <- c(
   "delta_female_vote_share_2024_2020",
   "delta_female_share_2024_2020",
   "delta_nonwhite_vote_share_2024_2020",
+  "delta_higher_education_vote_share_2024_2020",
   "delta_new_candidate_vote_share_2024_2020",
   "delta_incumbent_candidate_vote_share_2024_2020",
   "delta_winner_is_female_2024_2020",
   "delta_winner_is_new_2024_2020"
+)
+# Candidate-pool demographic composition, "who runs" face (first-difference form).
+# The gender pool share (delta_female_share) already sits in COMPOSITION_OUTCOMES
+# beside its vote-share/winner twins; these five complete the pool face for the
+# other traits so both offices carry the full symmetric demographic panel (Engine
+# 1). Deltas are computed from levels in the load block above.
+CANDIDATE_SUPPLY_OUTCOMES <- c(
+  "delta_nonwhite_share_2024_2020",
+  "delta_higher_education_share_2024_2020",
+  "delta_mean_age_2024_2020",
+  "delta_new_candidate_share_2024_2020",
+  "delta_incumbent_candidate_share_2024_2020"
 )
 # Entry typology outcomes: change in share of each entrant type in the candidate pool
 ENTRY_OUTCOMES <- c(
@@ -121,6 +147,29 @@ CONCENTRATION_OUTCOMES <- c(
   "delta_effective_n_candidates_vote_2024_2020",
   "delta_vote_hhi_candidate_2024_2020",
   "delta_top2_vote_share_2024_2020"
+)
+# Gender incidence of the consolidation (built 2026-08-04). Consolidation moves
+# vote from the runner-up to the winner; these ask WHOSE share moves. The
+# decomposition is UNCONDITIONAL: female_X_vote_share = X_vote_share x 1[X is
+# female], zero (not missing) when the office-seeker is male, so female + male sum
+# back EXACTLY to the totals in CONCENTRATION/PRIMARY (verified 0.0 error, all
+# three years) and N is identical to the layer-3 fits. Deliberately NOT conditional
+# means ("vote share among female runner-ups"): who placed where is an endogenous
+# outcome of the same shock, so conditioning on it selects the sample on the
+# dependent variable. A move in female_runnerup_vote_share therefore mixes an
+# extensive margin (how often a woman reaches the runner-up slot -- read off
+# delta_runnerup_is_female) and an intensive one (how much she gets); the pair is
+# reported together for exactly that reason.
+GENDER_CONSOL_OUTCOMES <- c(
+  "delta_female_winner_vote_share_2024_2020",
+  "delta_male_winner_vote_share_2024_2020",
+  "delta_female_runnerup_vote_share_2024_2020",
+  "delta_male_runnerup_vote_share_2024_2020",
+  "delta_female_top2_vote_share_2024_2020",
+  "delta_female_male_top2_gap_2024_2020",
+  "delta_female_male_winner_gap_2024_2020",
+  "delta_female_male_runnerup_gap_2024_2020",
+  "delta_runnerup_is_female_2024_2020"
 )
 # Pre-trend falsification: the 2016->2020 change in each headline competition /
 # concentration outcome, regressed on the (instrumented) 2020->2024 treatment. A
@@ -146,6 +195,19 @@ VOTER_BEHAVIOR_OUTCOMES <- c(
   "delta_blank_rate_vereador_2024_2020",
   "delta_valid_vote_rate_vereador_2024_2020"
 )
+# Contested x open-seat heterogeneity (main-frame seat split). Two channels, each
+# fit on both seat subsamples (open = term-limited / no incumbent; contested =
+# incumbent eligible): the consolidation channel widens the margin in BOTH, while
+# the disengagement channel (blank/valid) concentrates in CONTESTED seats and the
+# winner crossing 50% is an OPEN-seat effect. All members are already in
+# ALL_OUTCOMES; this vector only flags which fits to retain for the seat table.
+HET_SEAT_CONSOL    <- c("delta_margin_top1_top2_2024_2020",
+                        "delta_winner_vote_share_2024_2020",
+                        "delta_winner_majority_2024_2020")
+HET_SEAT_DISENGAGE <- c("delta_blank_rate_2024_2020",
+                        "delta_null_rate_2024_2020",
+                        "delta_valid_vote_rate_2024_2020")
+HET_SEAT_OUTCOMES  <- c(HET_SEAT_CONSOL, HET_SEAT_DISENGAGE)
 # Elastic turnout margins (disaggregated): under compulsory voting the aggregate
 # turnout null is mechanical; these are where a voter-engagement effect would surface.
 VOTER_DISAGG_OUTCOMES <- c(
@@ -158,9 +220,11 @@ VOTER_DISAGG_OUTCOMES <- c(
   "delta_sex_turnout_gap_2024_2020"
 )
 ALL_OUTCOMES <- c(PRIMARY_OUTCOMES, SECONDARY_OUTCOMES,
-                  COMPOSITION_OUTCOMES, VOTER_BEHAVIOR_OUTCOMES,
+                  COMPOSITION_OUTCOMES, CANDIDATE_SUPPLY_OUTCOMES,
+                  VOTER_BEHAVIOR_OUTCOMES,
                   VOTER_DISAGG_OUTCOMES, ENTRY_OUTCOMES,
-                  CONCENTRATION_OUTCOMES, PRETREND_OUTCOMES)
+                  CONCENTRATION_OUTCOMES, GENDER_CONSOL_OUTCOMES,
+                  PRETREND_OUTCOMES)
 
 # ---- Control philosophy (V3, adopted 2026-06-28) ----
 # BASELINE_CONTROLS are pre-determined and COMMON to every outcome:
@@ -259,7 +323,18 @@ ANCOVA_MAP <- list(
   delta_valid_vote_rate_vereador_2024_2020      = c("valid_vote_rate_vereador_2024", "valid_vote_rate_vereador_2016"),
   delta_effective_n_candidates_vote_2024_2020   = c("effective_n_candidates_vote_2024", "effective_n_candidates_vote_2016"),
   delta_vote_hhi_candidate_2024_2020            = c("vote_hhi_candidate_2024",  "vote_hhi_candidate_2016"),
-  delta_top2_vote_share_2024_2020               = c("top2_vote_share_2024",     "top2_vote_share_2016")
+  delta_top2_vote_share_2024_2020               = c("top2_vote_share_2024",     "top2_vote_share_2016"),
+  # Gender incidence: every member is defined identically in 2016, so each gets a
+  # clean pre-window baseline and stays on the ANCOVA-2016 headline estimator.
+  delta_female_winner_vote_share_2024_2020      = c("female_winner_vote_share_2024",   "female_winner_vote_share_2016"),
+  delta_male_winner_vote_share_2024_2020        = c("male_winner_vote_share_2024",     "male_winner_vote_share_2016"),
+  delta_female_runnerup_vote_share_2024_2020    = c("female_runnerup_vote_share_2024", "female_runnerup_vote_share_2016"),
+  delta_male_runnerup_vote_share_2024_2020      = c("male_runnerup_vote_share_2024",   "male_runnerup_vote_share_2016"),
+  delta_female_top2_vote_share_2024_2020        = c("female_top2_vote_share_2024",     "female_top2_vote_share_2016"),
+  delta_female_male_top2_gap_2024_2020          = c("female_male_top2_gap_2024",       "female_male_top2_gap_2016"),
+  delta_female_male_winner_gap_2024_2020        = c("female_male_winner_gap_2024",     "female_male_winner_gap_2016"),
+  delta_female_male_runnerup_gap_2024_2020      = c("female_male_runnerup_gap_2024",   "female_male_runnerup_gap_2016"),
+  delta_runnerup_is_female_2024_2020            = c("runnerup_is_female_2024",         "runnerup_is_female_2016")
 )
 
 # Resolve the LHS + lag for a given outcome and form.
@@ -433,6 +508,7 @@ tex_base_iv_fits  <- list()   # [outcome]   = feols (baseline ANCOVA-2016 IV)
 tex_fd_iv_fits    <- list()   # [outcome]   = feols (pure first-difference, appendix)
 tex_blank_sub_fits <- list()  # [spec_name] = feols (blank rate, subgroup specs)
 tex_vb_oc_fits     <- list()  # [spec_name][[outcome]] = feols (voter beh., open/contested)
+tex_het_fits       <- list()  # [spec_name][[outcome]] = feols (het. seat table: consol + diseng)
 
 for (vr in VARIANTS) {
   var_name   <- vr$name
@@ -488,8 +564,10 @@ for (vr in VARIANTS) {
       family <- if (y %in% PRIMARY_OUTCOMES)          "primary"
                 else if (y %in% SECONDARY_OUTCOMES)  "secondary"
                 else if (y %in% COMPOSITION_OUTCOMES) "composition"
+                else if (y %in% CANDIDATE_SUPPLY_OUTCOMES) "candidate_supply"
                 else if (y %in% ENTRY_OUTCOMES)       "entry"
                 else if (y %in% CONCENTRATION_OUTCOMES) "concentration"
+                else if (y %in% GENDER_CONSOL_OUTCOMES) "gender_consolidation"
                 else if (y %in% PRETREND_OUTCOMES)    "pretrend"
                 else                                  "voter_behavior"
       # Pre-trend/balance outcomes drop the two non-predetermined controls
@@ -527,6 +605,9 @@ for (vr in VARIANTS) {
         if (spec_name %in% c("open_seat", "contested_seat") &&
             y %in% VOTER_BEHAVIOR_OUTCOMES)
           tex_vb_oc_fits[[spec_name]][[y]] <- iv_fit
+        if (spec_name %in% c("open_seat", "contested_seat") &&
+            y %in% HET_SEAT_OUTCOMES)
+          tex_het_fits[[spec_name]][[y]] <- iv_fit
       }, error = function(e)
         message("  IV error [", spec_name, ", ", y, "]: ", conditionMessage(e)))
     }
@@ -539,6 +620,7 @@ for (vr in VARIANTS) {
         family <- if (y %in% PRIMARY_OUTCOMES)          "primary"
                   else if (y %in% SECONDARY_OUTCOMES)  "secondary"
                   else if (y %in% COMPOSITION_OUTCOMES) "composition"
+                  else if (y %in% CANDIDATE_SUPPLY_OUTCOMES) "candidate_supply"
                   else if (y %in% ENTRY_OUTCOMES)       "entry"
                   else if (y %in% CONCENTRATION_OUTCOMES) "concentration"
                   else if (y %in% PRETREND_OUTCOMES)    "pretrend"
@@ -684,10 +766,17 @@ OUTCOME_LABELS <- c(
   delta_log1p_n_candidates_with_votes_2024_2020     = "$\\Delta$ Log n candidates",
   delta_female_vote_share_2024_2020                 = "$\\Delta$ Female vote share",
   delta_nonwhite_vote_share_2024_2020               = "$\\Delta$ Nonwhite vote share",
+  delta_higher_education_vote_share_2024_2020       = "$\\Delta$ Higher-ed.\\ vote share",
   delta_new_candidate_vote_share_2024_2020          = "$\\Delta$ New-cand.\\ vote share",
   delta_incumbent_candidate_vote_share_2024_2020    = "$\\Delta$ Incumbent vote share",
   delta_winner_is_female_2024_2020                  = "$\\Delta$ Winner is female",
   delta_winner_is_new_2024_2020                     = "$\\Delta$ Winner is new entrant",
+  delta_female_share_2024_2020                      = "$\\Delta$ Female cand.\\ share",
+  delta_nonwhite_share_2024_2020                    = "$\\Delta$ Nonwhite cand.\\ share",
+  delta_higher_education_share_2024_2020            = "$\\Delta$ Higher-ed.\\ cand.\\ share",
+  delta_mean_age_2024_2020                          = "$\\Delta$ Mean cand.\\ age",
+  delta_new_candidate_share_2024_2020               = "$\\Delta$ New-cand.\\ share",
+  delta_incumbent_candidate_share_2024_2020         = "$\\Delta$ Incumbent cand.\\ share",
   delta_turnout_rate_2024_2020                      = "$\\Delta$ Turnout (any ballot)",
   delta_null_rate_2024_2020                         = "$\\Delta$ Null (mayoral)",
   delta_blank_rate_2024_2020                        = "$\\Delta$ Blank (mayoral)",
@@ -701,6 +790,15 @@ OUTCOME_LABELS <- c(
   delta_effective_n_candidates_vote_2024_2020       = "$\\Delta$ Eff.\\ N candidates",
   delta_vote_hhi_candidate_2024_2020                = "$\\Delta$ Vote HHI",
   delta_top2_vote_share_2024_2020                   = "$\\Delta$ Top-2 vote share",
+  delta_female_winner_vote_share_2024_2020          = "$\\Delta$ Female winner share",
+  delta_male_winner_vote_share_2024_2020            = "$\\Delta$ Male winner share",
+  delta_female_runnerup_vote_share_2024_2020        = "$\\Delta$ Female runner-up share",
+  delta_male_runnerup_vote_share_2024_2020          = "$\\Delta$ Male runner-up share",
+  delta_female_top2_vote_share_2024_2020            = "$\\Delta$ Female top-2 share",
+  delta_female_male_top2_gap_2024_2020              = "$\\Delta$ Female$-$male top-2 gap",
+  delta_female_male_winner_gap_2024_2020            = "$\\Delta$ Gap, winner's slot",
+  delta_female_male_runnerup_gap_2024_2020          = "$\\Delta$ Gap, runner-up's slot",
+  delta_runnerup_is_female_2024_2020                = "$\\Delta$ Runner-up is female",
   pretrend_margin_top1_top2_2020_2016               = "Margin (W$-$RU)",
   pretrend_effective_n_candidates_vote_2020_2016    = "Eff.\\ N candidates",
   pretrend_vote_hhi_candidate_2020_2016             = "Vote HHI",
@@ -731,7 +829,16 @@ ANCOVA_LABELS <- c(
   valid_vote_rate_vereador_2024      = "Valid (council)",
   effective_n_candidates_vote_2024   = "Eff.\\ N candidates",
   vote_hhi_candidate_2024            = "Vote HHI",
-  top2_vote_share_2024               = "Top-2 vote share"
+  top2_vote_share_2024               = "Top-2 vote share",
+  female_winner_vote_share_2024      = "Female winner share",
+  male_winner_vote_share_2024        = "Male winner share",
+  female_runnerup_vote_share_2024    = "Female runner-up share",
+  male_runnerup_vote_share_2024      = "Male runner-up share",
+  female_top2_vote_share_2024        = "Female top-2 share",
+  female_male_top2_gap_2024          = "Female$-$male top-2 gap",
+  female_male_winner_gap_2024        = "Gap, winner's slot",
+  female_male_runnerup_gap_2024      = "Gap, runner-up's slot",
+  runnerup_is_female_2024            = "Runner-up is female"
 )
 
 SPEC_LABELS <- c(
@@ -992,6 +1099,39 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
   iv_etable(mods, file.path(TEX_DIR, "executive_iv_concentration.tex"))
 }
 
+# ---- 9b-iii. Gender incidence of the consolidation ----
+# Layer 3 says vote moves from the runner-up to the winner. This splits BOTH sides
+# by the office-seeker's gender to ask whose share moves. Unconditional split (see
+# GENDER_CONSOL_OUTCOMES): the female and male columns sum to the totals in 9b, on
+# the same N, so the two tables are read together.
+#
+# TWO tables on purpose. The first is the DECOMPOSITION (four components). The
+# second carries the DIFFERENTIAL TESTS -- the female-minus-male gap estimated as
+# its own outcome in each slot -- plus the extensive margin (whether a woman
+# reaches the runner-up slot at all). The second table is the one that licenses any
+# claim that the incidence is gendered: reading a gendered effect off the contrast
+# between a starred male component and an unstarred female one is the
+# difference-in-significance fallacy, and the gap p-values are the honest test.
+{
+  outs <- c(
+    "delta_female_winner_vote_share_2024_2020",
+    "delta_male_winner_vote_share_2024_2020",
+    "delta_female_runnerup_vote_share_2024_2020",
+    "delta_male_runnerup_vote_share_2024_2020"
+  )
+  mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
+  iv_etable(mods, file.path(TEX_DIR, "executive_iv_gender_consolidation.tex"))
+
+  outs_gap <- c(
+    "delta_female_male_winner_gap_2024_2020",
+    "delta_female_male_runnerup_gap_2024_2020",
+    "delta_female_top2_vote_share_2024_2020",
+    "delta_runnerup_is_female_2024_2020"
+  )
+  mods_gap <- label_mods(tex_base_iv_fits, outs_gap, OUTCOME_LABELS)
+  iv_etable(mods_gap, file.path(TEX_DIR, "executive_iv_gender_gap.tex"))
+}
+
 # ---- 9c-i. Turnout (office-invariant): one standalone column ----
 # Turnout is one comparecimento per voter, so it is office-invariant and stands
 # on its own (mean rows + 5%-shading come from iv_etable).
@@ -1026,14 +1166,20 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
 
   ballot_cols <- c("delta_blank_rate", "delta_null_rate", "delta_valid_vote_rate")
   # `band` shades the Judicialization coef + SE rows in pale blue (horizontal
-  # band, judicial_bias house style). Only the mayoral panel (where the effect
-  # lands) is banded; the council panel is left plain for contrast.
-  panel_block <- function(title, suffix, band = FALSE) {
+  # band, judicial_bias house style). The mayoral ballot (where the effect lands)
+  # is banded; the council ballot is left plain for contrast. Emitted as two
+  # SEPARATE single-panel tables: the primary election result is the mayoral race,
+  # so the main deck shows only the mayoral ballot and the council ballot moves to
+  # the appendix (agreed with Nara 2026-07-08). `header=FALSE` drops the in-table
+  # panel label since the Beamer frame caption already names the office.
+  panel_block <- function(title, suffix, band = FALSE, header = TRUE) {
     fits <- lapply(ballot_cols, function(b)
       tex_base_iv_fits[[paste0(b, suffix, "_2024_2020")]])
-    rc <- if (band) "\\rowcolor{mylight}" else character(0)
+    rc  <- if (band) "\\rowcolor{mylight}" else character(0)
+    hdr <- if (header)
+      sprintf("\\multicolumn{4}{l}{\\emph{%s}}\\\\[1pt]", title) else character(0)
     c(
-      sprintf("\\multicolumn{4}{l}{\\emph{%s}}\\\\[1pt]", title),
+      hdr,
       rc,
       sprintf("\\quad \\textbf{Judicialization} & %s \\\\",
               paste(vapply(fits, pcell_coef, ""), collapse = " & ")),
@@ -1047,30 +1193,31 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
                     collapse = " & "))
     )
   }
-  n_obs_ballot <- {
-    f <- tex_base_iv_fits[["delta_blank_rate_2024_2020"]]
+  n_obs_for <- function(suffix) {
+    f <- tex_base_iv_fits[[paste0("delta_blank_rate", suffix, "_2024_2020")]]
     if (is.null(f)) "" else formatC(as.integer(nobs(f)), format = "d", big.mark = ",")
   }
-
-  tbl <- c(
-    "% Auto-generated by code/03_estimation/02_iv_main.R",
-    "% Do not edit manually -- rerun the generating script to update",
-    "",
-    "\\begin{tabular}{lccc}",
-    "\\toprule\\toprule",
-    " & \\textbf{Blank vote} & \\textbf{Null vote} & \\textbf{Valid vote} \\\\",
-    "\\midrule",
-    panel_block("Panel A. Mayoral (prefeito) ballot", "", band = TRUE),
-    "\\midrule",
-    panel_block("Panel B. Council (vereador) ballot", "_vereador", band = FALSE),
-    "\\midrule",
-    sprintf("Municipalities ($N$) & \\multicolumn{3}{c}{%s} \\\\", n_obs_ballot),
-    "\\bottomrule\\bottomrule",
-    "\\end{tabular}"
-  )
-  out_path <- file.path(TEX_DIR, "executive_iv_ballot_panel.tex")
-  writeLines(tbl, con = out_path)
-  cat("  Wrote:", out_path, "\n")
+  write_ballot <- function(suffix, band, fname) {
+    tbl <- c(
+      "% Auto-generated by code/03_estimation/02_iv_main.R",
+      "% Do not edit manually -- rerun the generating script to update",
+      "",
+      "\\begin{tabular}{lccc}",
+      "\\toprule\\toprule",
+      " & \\textbf{Blank vote} & \\textbf{Null vote} & \\textbf{Valid vote} \\\\",
+      "\\midrule",
+      panel_block("", suffix, band = band, header = FALSE),
+      "\\midrule",
+      sprintf("Municipalities ($N$) & \\multicolumn{3}{c}{%s} \\\\", n_obs_for(suffix)),
+      "\\bottomrule\\bottomrule",
+      "\\end{tabular}"
+    )
+    p <- file.path(TEX_DIR, fname)
+    writeLines(tbl, con = p)
+    cat("  Wrote:", p, "\n")
+  }
+  write_ballot("",          band = TRUE,  "executive_iv_ballot_mayoral.tex")
+  write_ballot("_vereador", band = FALSE, "executive_iv_ballot_council.tex")
 }
 
 # ---- 9c-bis. Voter Behavior: office x open-seat heterogeneity (hand-built) ----
@@ -1146,6 +1293,81 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
     "\\end{tabular}"
   )
   out_path <- file.path(TEX_DIR, "executive_iv_voter_behavior_office_openseat.tex")
+  writeLines(tbl, con = out_path)
+  cat("  Wrote:", out_path, "\n")
+}
+
+# ---- 9c-iii. Contested x open-seat heterogeneity (main-frame seat split) ----
+# Rows = mayoral outcomes grouped by channel (consolidation / voter
+# disengagement); cols = the two seat subsamples (open = term-limited, no
+# incumbent; contested = incumbent eligible) + the pooled 2024 dep-var mean. Coef
+# with std. stars, gray SE stacked beneath (house style; no "+" on positives).
+# The headline consolidation row (winner's top-two margin) is banded. This is the
+# appendix detail behind heterogeneity_seat_coefplot.pdf.
+{
+  iv_name <- paste0("fit_", endogenous)
+  hg <- function(fit) {
+    if (is.null(fit)) return(NULL)
+    list(coef = unname(coef(fit)[iv_name]),
+         se   = unname(se(fit)[iv_name]),
+         p    = unname(pvalue(fit)[iv_name]))
+  }
+  hstar <- function(p) if (is.null(p) || is.na(p)) "" else
+    if (p < .01) "$^{***}$" else if (p < .05) "$^{**}$" else if (p < .10) "$^{*}$" else ""
+  hcoef <- function(g) if (is.null(g)) "---" else sprintf("$%.3f$%s", g$coef, hstar(g$p))
+  hse   <- function(g) if (is.null(g)) "" else sprintf("\\textcolor{mygray}{(%.3f)}", g$se)
+  hmean <- function(y) { f <- tex_base_iv_fits[[y]]
+    if (is.null(f) || is.null(attr(f, "mean_delta")) || is.na(attr(f, "mean_delta"))) ""
+    else sprintf("%.3f", attr(f, "mean_delta")) }
+
+  het_labels <- c(
+    delta_margin_top1_top2_2024_2020  = "Winner's top-two margin",
+    delta_winner_vote_share_2024_2020 = "Winner vote share",
+    delta_winner_majority_2024_2020   = "Winner majority ($>$50\\%)",
+    delta_blank_rate_2024_2020        = "Blank-vote rate",
+    delta_null_rate_2024_2020         = "Null-vote rate",
+    delta_valid_vote_rate_2024_2020   = "Valid-vote rate")
+
+  het_row <- function(y, band = FALSE) {
+    go  <- hg(tex_het_fits[["open_seat"]][[y]])
+    gc  <- hg(tex_het_fits[["contested_seat"]][[y]])
+    lab <- if (band) sprintf("\\quad \\textbf{%s}", het_labels[[y]]) else
+                     sprintf("\\quad %s", het_labels[[y]])
+    coef_line <- sprintf("%s & %s & %s & %s \\\\", lab, hcoef(go), hcoef(gc), hmean(y))
+    se_line   <- sprintf(" & %s & %s & \\\\", hse(go), hse(gc))
+    rc <- if (band) "\\rowcolor{mylight}" else character(0)
+    c(rc, coef_line, rc, se_line)
+  }
+  n_of <- function(spec) {
+    nf <- Filter(Negate(is.null), tex_het_fits[[spec]])
+    if (length(nf) == 0) "" else
+      formatC(as.integer(nobs(nf[[1]])), format = "d", big.mark = ",")
+  }
+
+  tbl <- c(
+    "% Auto-generated by code/03_estimation/02_iv_main.R",
+    "% Do not edit manually -- rerun the generating script to update",
+    "",
+    "\\begin{tabular}{lccc}",
+    "\\toprule\\toprule",
+    " & \\textbf{Open seat} & \\textbf{Contested} & 2024 Mean \\\\",
+    " & {\\footnotesize (term-limited)} & {\\footnotesize (incumbent)} & \\\\",
+    "\\midrule",
+    "\\multicolumn{4}{l}{\\emph{Consolidation}}\\\\[1pt]",
+    het_row("delta_margin_top1_top2_2024_2020", band = TRUE),
+    het_row("delta_winner_vote_share_2024_2020"),
+    het_row("delta_winner_majority_2024_2020"),
+    "\\addlinespace[2pt]",
+    "\\multicolumn{4}{l}{\\emph{Voter disengagement}}\\\\[1pt]",
+    het_row("delta_blank_rate_2024_2020"),
+    het_row("delta_null_rate_2024_2020"),
+    het_row("delta_valid_vote_rate_2024_2020"),
+    "\\midrule",
+    sprintf("$N$ & %s & %s & \\\\", n_of("open_seat"), n_of("contested_seat")),
+    "\\bottomrule\\bottomrule",
+    "\\end{tabular}"
+  )
+  out_path <- file.path(TEX_DIR, "executive_iv_heterogeneity_seat.tex")
   writeLines(tbl, con = out_path)
   cat("  Wrote:", out_path, "\n")
 }
