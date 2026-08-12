@@ -269,7 +269,11 @@ ROBUSTNESS_CONTROLS <- c(
   "female_vote_share_2020", "nonwhite_vote_share_2020", "higher_education_vote_share_2020",
   "log1p_party_count_2020", "log1p_coalition_count_2020",
   "turnout_rate_2020", "null_rate_2020",
-  "share_first_time_candidates_2020", "share_career_politicians_2020"
+  # share_career_politicians_2020 REMOVED 2026-08-12: identically 0 for all 5,571
+  # municipalities. is_career needs >=3 prior cycles from a window opening in 2012
+  # (04_candidate_history.py:40), unreachable before 2024. It carried no information
+  # and cost 6 observations through complete.cases.
+  "share_first_time_candidates_2020"
 )
 
 # Per-outcome pre-window (2016) lagged dependent variable. Only outcomes with a

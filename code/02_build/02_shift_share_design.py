@@ -48,6 +48,12 @@ LOOKUP_PATH = RAW_DIR / "lista-zonas-municipios-10-07-24.csv"
 
 TARGET_YEARS = [2020, 2024]
 
+# Years loaded ONLY to establish prior-cycle candidate history. 2016 rows are used
+# to build the 2020 "new candidate" / "incumbent" flags and are dropped before any
+# outcome is aggregated, so the estimation panel stays 2020 + 2024. Do NOT fold
+# this into TARGET_YEARS: that constant also drives the lawsuit and vote loaders.
+HISTORY_YEARS = [2016, 2020, 2024]
+
 # ── SIG municipality-level lawsuit source ──────────────────────────────────────
 # The lawsuit panel is now built from the SIG TSE microdata export, which resolves
 # each lawsuit to its MUNICIPALITY of origin (not just the electoral zona). This
@@ -591,7 +597,7 @@ def load_candidates() -> pd.DataFrame:
         "DS_SIT_TOT_TURNO",
     ]
     frames: list[pd.DataFrame] = []
-    for year in TARGET_YEARS:
+    for year in HISTORY_YEARS:
         path = RAW_DIR / f"consulta_cand_{year}" / f"consulta_cand_{year}_BRASIL.csv"
         if not path.exists():
             continue
@@ -663,45 +669,52 @@ def load_candidates() -> pd.DataFrame:
 
 
 def add_candidate_history_flags(candidates: pd.DataFrame) -> pd.DataFrame:
+    """Flag each candidate as new / incumbent relative to the PRIOR cycle.
+
+    Previously both flags were gated on ANO_ELEICAO == 2024, which made the 2020
+    share identically zero and turned delta_new_candidate_share_2024_2020 into a
+    2024 level wearing a delta's name. Each target year is now compared against its
+    own predecessor (2024 vs 2020, 2020 vs 2016), so the difference is a genuine
+    first difference. Diagnosed 2026-08-12.
+    """
     if candidates.empty:
         return candidates
     candidates = candidates.copy()
-    baseline = candidates[candidates["ANO_ELEICAO"] == 2020].copy()
-    baseline_keys = (
-        baseline.loc[baseline["person_key"].ne(""), ["SG_UF", "SG_UE", "office_group", "person_key"]]
-        .drop_duplicates()
-        .assign(ran_in_2020=1)
-    )
-    elected_keys = (
-        baseline.loc[
-            (baseline["person_key"].ne("")) & (baseline["is_elected"] == 1),
-            ["SG_UF", "SG_UE", "office_group", "person_key"],
-        ]
-        .drop_duplicates()
-        .assign(elected_in_2020=1)
-    )
+    key_cols = ["SG_UF", "SG_UE", "office_group", "person_key"]
 
-    candidates = candidates.merge(
-        baseline_keys,
-        on=["SG_UF", "SG_UE", "office_group", "person_key"],
-        how="left",
-    )
-    candidates = candidates.merge(
-        elected_keys,
-        on=["SG_UF", "SG_UE", "office_group", "person_key"],
-        how="left",
-    )
-    candidates["ran_in_2020"] = candidates["ran_in_2020"].fillna(0).astype(int)
-    candidates["elected_in_2020"] = candidates["elected_in_2020"].fillna(0).astype(int)
+    ran_flag = pd.Series(0, index=candidates.index, dtype="int64")
+    elected_flag = pd.Series(0, index=candidates.index, dtype="int64")
+
+    for year, prior in ((2024, 2020), (2020, 2016)):
+        base = candidates[candidates["ANO_ELEICAO"] == prior]
+        if base.empty:
+            print(f"Warning: no {prior} candidate rows; {year} history flags will be 0")
+            continue
+        ran_keys = set(
+            map(tuple, base.loc[base["person_key"].ne(""), key_cols].drop_duplicates().values)
+        )
+        elected_keys = set(
+            map(tuple, base.loc[base["person_key"].ne("") & (base["is_elected"] == 1),
+                                key_cols].drop_duplicates().values)
+        )
+        tgt = candidates["ANO_ELEICAO"] == year
+        tuples = pd.Series(
+            list(map(tuple, candidates.loc[tgt, key_cols].values)),
+            index=candidates.index[tgt],
+        )
+        ran_flag.loc[tgt] = tuples.map(lambda t: int(t in ran_keys)).astype("int64")
+        elected_flag.loc[tgt] = tuples.map(lambda t: int(t in elected_keys)).astype("int64")
+
+    candidates["ran_in_prior_cycle"] = ran_flag
+    candidates["elected_in_prior_cycle"] = elected_flag
+    has_key = candidates["person_key"].ne("")
+    in_target = candidates["ANO_ELEICAO"].isin(TARGET_YEARS)
+
     candidates["is_new_candidate_vs_2020"] = (
-        (candidates["ANO_ELEICAO"] == 2024)
-        & candidates["person_key"].ne("")
-        & (candidates["ran_in_2020"] == 0)
+        in_target & has_key & (candidates["ran_in_prior_cycle"] == 0)
     ).astype(int)
     candidates["is_incumbent_from_2020"] = (
-        (candidates["ANO_ELEICAO"] == 2024)
-        & candidates["person_key"].ne("")
-        & (candidates["elected_in_2020"] == 1)
+        in_target & has_key & (candidates["elected_in_prior_cycle"] == 1)
     ).astype(int)
     candidates["is_reelected_incumbent_2024"] = (
         (candidates["is_incumbent_from_2020"] == 1) & (candidates["is_elected"] == 1)
@@ -974,6 +987,9 @@ def main() -> None:
 
     candidates = load_candidates()
     candidates = add_candidate_history_flags(candidates)
+    # 2016 was loaded only to date the 2020 flags. Drop it before aggregation so the
+    # outcome panel stays 2020 + 2024 and no downstream count silently doubles.
+    candidates = candidates[candidates["ANO_ELEICAO"].isin(TARGET_YEARS)].copy()
     office_outcomes = summarize_office_outcomes(candidates)
     municipality_universe = build_municipality_universe(zone_lookup, office_outcomes)
 
