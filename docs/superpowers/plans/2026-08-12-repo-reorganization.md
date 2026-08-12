@@ -404,11 +404,11 @@ Nine committed assets plus `liml_comparison.csv` are consumed by nothing. Deleti
 - [ ] **Step 1: Record the pre-strip SHA and snapshot the fragments**
 
 ```bash
-git rev-parse --short HEAD > /tmp/pre_strip_sha.txt
-cat /tmp/pre_strip_sha.txt
-mkdir -p /tmp/frag_before
-cp output/tables/tex/*.tex /tmp/frag_before/
-ls /tmp/frag_before | wc -l
+git rev-parse --short HEAD > .superpowers/sdd/2026-08-12-repo-reorganization/pre_strip_sha.txt
+cat .superpowers/sdd/2026-08-12-repo-reorganization/pre_strip_sha.txt
+mkdir -p .superpowers/sdd/2026-08-12-repo-reorganization/frag_before
+cp output/tables/tex/*.tex .superpowers/sdd/2026-08-12-repo-reorganization/frag_before/
+ls .superpowers/sdd/2026-08-12-repo-reorganization/frag_before | wc -l
 ```
 
 `.tex` fragments are deterministic text, so a byte-diff is a valid regression test for them. PDFs are **not** — `ggsave` embeds a creation timestamp, so PDF checksums differ on every run. Figures are verified by page count and deck compilation instead.
@@ -573,7 +573,7 @@ Expected: the first prints nothing. For the second, `BLANK_SUBGROUP_SPECS` and `
 Then replace `<PRE_STRIP_SHA>` in `exploration/README.md` with the SHA recorded in Step 1:
 
 ```bash
-sed -i "s/<PRE_STRIP_SHA>/$(cat /tmp/pre_strip_sha.txt)/" exploration/README.md
+sed -i "s/<PRE_STRIP_SHA>/$(cat .superpowers/sdd/2026-08-12-repo-reorganization/pre_strip_sha.txt)/" exploration/README.md
 grep -n "PRE_STRIP_SHA\|recover it from git history" exploration/README.md
 ```
 
@@ -604,10 +604,10 @@ rm -f output/tables/regressions/liml_comparison.csv
 "C:/Program Files/R/R-4.6.0/bin/Rscript.exe" code/03_estimation/05_pretrend_balance.R
 "C:/Program Files/R/R-4.6.0/bin/Rscript.exe" code/04_analysis/02_descriptive_figures.R
 "C:/Program Files/R/R-4.6.0/bin/Rscript.exe" code/04_analysis/03_result_figures.R
-diff -rq /tmp/frag_before output/tables/tex/
+diff -rq .superpowers/sdd/2026-08-12-repo-reorganization/frag_before output/tables/tex/
 ```
 
-Expected `diff` output: exactly four "Only in /tmp/frag_before" lines, for `nonadversarial_placebo_rf.tex`, `open_seat_blank_rate.tex`, `pretrend_balance_consolidation.tex`, `pretrend_balance_voterbehavior.tex`. **Any "differ" line is a regression** — a strip changed a surviving output. Investigate before continuing; do not commit.
+Expected `diff` output: exactly four "Only in .superpowers/sdd/2026-08-12-repo-reorganization/frag_before" lines, for `nonadversarial_placebo_rf.tex`, `open_seat_blank_rate.tex`, `pretrend_balance_consolidation.tex`, `pretrend_balance_voterbehavior.tex`. **Any "differ" line is a regression** — a strip changed a surviving output. Investigate before continuing; do not commit.
 
 - [ ] **Step 11: Confirm the deleted assets were not recreated**
 
