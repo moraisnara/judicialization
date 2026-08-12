@@ -1,5 +1,11 @@
 # Framing Application Implementation Plan
 
+> **Status: CLOSED 2026-08-12.** Every step shipped in commits `210aaa7`..`771c8cf`
+> on branch `framing-application`. One item remains open and was moved to the
+> reorganization spec's "Flagged for Nara" list: `FRAMING.md` still uses
+> "concentration" for the top-two margin in its D4 header and D5 table column,
+> which the vocabulary lock reserves for *consolidation*.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Apply the locked framing in `FRAMING.md` to both Beamer decks, retire the formulation "the consolidation is the barrier signature", and mark `WRITING_GUIDE.md` §3 resolved.
@@ -99,11 +105,11 @@ This is the linchpin. Every later edit refers back to this frame, and its curren
 **Interfaces:**
 - Produces: the claim "concentration is not diagnostic; the ballot discriminates", which Tasks 2, 3, 4, 5 and 7 all cite. The phrase **"Not diagnostic."** is introduced here in frame 2's two Competition bullets. Note it is *not* reused verbatim downstream: Task 2's measurement-table cell deliberately says `\emph{ambiguous}` instead, because a table cell reads better with a single adjective than with a sentence fragment. Both express the same claim; follow each task's literal mandate.
 
-- [ ] **Step 1: Look at the frame before changing it**
+- [x] **Step 1: Look at the frame before changing it**
 
 Rasterize the current state so you can compare after. Search string: `Two Faces of the Same Power`. Use the helper above, then Read the PNG.
 
-- [ ] **Step 2: Promote the two ambiguity bullets (L72, L85)**
+- [x] **Step 2: Promote the two ambiguity bullets (L72, L85)**
 
 Edit `output/presentation/slides_report.tex`. Replace:
 ```latex
@@ -123,7 +129,7 @@ with:
   \item[\ns{?}] \textbf{Competition:} costs could \emph{concentrate} power --- or felled front-runners could scramble it. \ns{\textbf{Not diagnostic.}}
 ```
 
-- [ ] **Step 3: Rewrite the closing line (L90) to remove the contradiction**
+- [x] **Step 3: Rewrite the closing line (L90) to remove the contradiction**
 
 Replace:
 ```latex
@@ -134,19 +140,19 @@ with:
 {\footnotesize Two competing hypotheses, tested below --- \pos{\textbf{H1 (Leveling)}}: exposure raises \textbf{valid} voting; \negt{\textbf{H2 (Barrier)}}: exposure raises \textbf{blank} and \textbf{null} voting and lowers valid. They disagree on the \textbf{ballot}, and the ballot is what identifies them --- \emph{not} concentration, which either face can produce.}
 ```
 
-- [ ] **Step 4: Compile twice**
+- [x] **Step 4: Compile twice**
 
 Run the compile block from Shared Helper. Expected: `exit=0`.
 
-- [ ] **Step 5: Check for fatal errors**
+- [x] **Step 5: Check for fatal errors**
 
 Run the grep block. Expected: `NO FATAL ERRORS`.
 
-- [ ] **Step 6: Rasterize and look**
+- [x] **Step 6: Rasterize and look**
 
 Search string: `Two Faces of the Same Power`. Expected: `PAGE COUNT: 67`. Read the PNG and confirm both `Not diagnostic.` markers render and the closing footnote fits on one or two lines without touching the frame edge.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -169,7 +175,7 @@ identifying margin."
 **Interfaces:**
 - Consumes: Task 1's "not diagnostic" claim.
 
-- [ ] **Step 1: Unbundle concentration from the barrier definition (L52)**
+- [x] **Step 1: Unbundle concentration from the barrier definition (L52)**
 
 The RQ block currently *defines* barrier as including concentration, which is precisely the conflation D4 removes. Replace:
 ```latex
@@ -180,7 +186,7 @@ with:
 As a race faces more adversarial litigation, does the contest \textcolor{mygreen}{\emph{level}} (voters re-sort) or does a \textcolor{myred}{\emph{barrier}} emerge (voters withdraw from the ballot) --- and does who runs and who wins change? The vote may concentrate under \emph{either}, so it is the \textbf{ballot} that tells them apart. We ask separately by office; \textbf{the answer differs}.
 ```
 
-- [ ] **Step 2: Mark layer 3 ambiguous under Leveling (L405)**
+- [x] **Step 2: Mark layer 3 ambiguous under Leveling (L405)**
 
 The table's columns are: layer | what we measure | Leveller widens | Barrier narrows. Replace:
 ```latex
@@ -191,7 +197,7 @@ with:
 \textbf{3\ \ How open it stays} & Victory margin, effective \# of candidates, incumbency advantage & \emph{ambiguous} & consolidation \\
 ```
 
-- [ ] **Step 3: Name the discriminating layer in the closing line (L410)**
+- [x] **Step 3: Name the discriminating layer in the closing line (L410)**
 
 Replace:
 ```latex
@@ -202,19 +208,19 @@ with:
 {\centering\footnotesize Together these are the two behavioral engines --- \textbf{candidates} and \textbf{voters} --- and the \textbf{result} they produce, the spine of the Results section. Layer 2 is the \textbf{discriminating} layer: layer 3 concentrates under either face, so the ballot assigns one. Next, the equation, then the instrument behind it.\par}
 ```
 
-- [ ] **Step 4: Compile twice**
+- [x] **Step 4: Compile twice**
 
 Run the compile block. Expected: `exit=0`.
 
-- [ ] **Step 5: Check for fatal errors**
+- [x] **Step 5: Check for fatal errors**
 
 Expected: `NO FATAL ERRORS`.
 
-- [ ] **Step 6: Rasterize and look — two frames**
+- [x] **Step 6: Rasterize and look — two frames**
 
 Run the rasterize block twice, with search strings `Level the Field, or Raise the Bar` and `Research question`. Expected: `PAGE COUNT: 67`. Read both PNGs. The measurement table is inside a `\resizebox` — confirm the `\emph{ambiguous}` cell has not made the table wider than the frame, and that the longer closing line has not pushed content off the bottom.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -234,7 +240,7 @@ ambiguous under Leveling."
 **Files:**
 - Modify: `output/presentation/slides_report.tex:118`, `:572`
 
-- [ ] **Step 1: Replace the "barrier configuration" claim (L118)**
+- [x] **Step 1: Replace the "barrier configuration" claim (L118)**
 
 Replace:
 ```latex
@@ -245,7 +251,7 @@ with:
 {\footnotesize These effects are confined to the \emph{mayoral} race. The consolidation is \textbf{general} across seat types; the \textbf{barrier} reading holds where an incumbent is defended --- there, and only there, do voters leave the ballot. The council race exhibits neither face: both the ballot and the composition of the field are flat.}
 ```
 
-- [ ] **Step 2: Retire "the barrier signature" (L572)**
+- [x] **Step 2: Retire "the barrier signature" (L572)**
 
 Replace:
 ```latex
@@ -256,19 +262,19 @@ with:
 \footnotesize The candidate engine is quiet while voters withdraw \emph{where an incumbent is defended}; the consolidation --- general across seats --- is the electorate re-allocating toward the leader, not candidates removed. Concentration alone does not name a face: the \textbf{barrier} reading rests on the ballot, and so holds for \textbf{contested} seats. The council race is null throughout.
 ```
 
-- [ ] **Step 3: Compile twice**
+- [x] **Step 3: Compile twice**
 
 Expected: `exit=0`.
 
-- [ ] **Step 4: Check for fatal errors**
+- [x] **Step 4: Check for fatal errors**
 
 Expected: `NO FATAL ERRORS`.
 
-- [ ] **Step 5: Rasterize and look — two frames**
+- [x] **Step 5: Rasterize and look — two frames**
 
 Search strings: `Question, Design, Answer` and `Two Engines, One Result`. Expected: `PAGE COUNT: 67`. Both replacement strings are longer than what they replace and both frames are dense — the Story frame carries a TikZ diagram above its footnote. Read both PNGs carefully for bottom-edge overflow. If the Story frame is tight, drop "The council race is null throughout." to a new line rather than shortening the D4 clause.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -288,7 +294,7 @@ robust tier for a claim resting on the tentative ballot result."
 
 Under D5 this frame is not heterogeneity garnish — it is how the face gets assigned. Its title also currently collides with frame 2's "Two Faces", which the vocabulary lock forbids.
 
-- [ ] **Step 1: Retitle the frame (L673)**
+- [x] **Step 1: Retitle the frame (L673)**
 
 Replace:
 ```latex
@@ -299,7 +305,7 @@ with:
 \begin{frame}{The Identifying Test --- Which Face, by Seat Type}
 ```
 
-- [ ] **Step 2: Rewrite the setup sentence (L676)**
+- [x] **Step 2: Rewrite the setup sentence (L676)**
 
 Replace:
 ```latex
@@ -310,7 +316,7 @@ with:
 Split the mayoral races by whether the seat is \textbf{open} --- the incumbent is term-limited, so no front-runner defends it ($N=2{,}026$) --- or \textbf{contested}, where the sitting mayor may still seek re-election ($N=3{,}534$). This split is what \emph{assigns} the face: the vote concentrates in both, so only the ballot separates them.
 ```
 
-- [ ] **Step 3: Verify no cross-reference broke**
+- [x] **Step 3: Verify no cross-reference broke**
 
 The frame carries `\hypertarget{src:seathet}{}` and other frames link to it with `\hyperlink{src:seathet}`. You changed only the *title* and body prose, never the target. Confirm:
 ```bash
@@ -318,19 +324,19 @@ grep -n "src:seathet" /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization
 ```
 Expected: the `\hypertarget{src:seathet}{}` definition still present, plus any `\hyperlink` references — all unchanged.
 
-- [ ] **Step 4: Compile twice**
+- [x] **Step 4: Compile twice**
 
 Expected: `exit=0`.
 
-- [ ] **Step 5: Check for fatal errors**
+- [x] **Step 5: Check for fatal errors**
 
 Expected: `NO FATAL ERRORS`.
 
-- [ ] **Step 6: Rasterize and look**
+- [x] **Step 6: Rasterize and look**
 
 Search string: `Which Face, by Seat Type`. Expected: `PAGE COUNT: 67`, and the string found (confirming the retitle landed). Read the PNG — this frame holds a figure plus a long `\takeaway{}`, so it is one of the tightest in the deck.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -350,14 +356,14 @@ Leveling/Barrier dichotomy reserved by the vocabulary lock."
 
 The Romano–Wolf correction is listed among the Robust tier's clean passes. `output/tables/regressions/romano_wolf_stepdown.csv` gives margin `p_rw = 0.0589` and runner-up `p_rw = 0.0712` — a 10% pass, not 5%. Holm (0.0148) and BH (0.0114) do clear at 5%.
 
-- [ ] **Step 1: Confirm the numbers before editing**
+- [x] **Step 1: Confirm the numbers before editing**
 
 ```bash
 head -3 /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization/output/tables/regressions/romano_wolf_stepdown.csv
 ```
 Expected: the margin row shows `p_rw` = `0.0589`, `p_holm` = `0.0147...`, `p_bh` = `0.0113...`. If these differ, stop and report — the estimates have been re-run since this plan was written.
 
-- [ ] **Step 2: Qualify the multiplicity claim (L749)**
+- [x] **Step 2: Qualify the multiplicity claim (L749)**
 
 Replace:
 ```latex
@@ -368,7 +374,7 @@ with:
 the BHJ/AKM exposure-robust SE (CI $\ERMarginCI$ excludes zero), and multiplicity correction at 5\% by Holm and Benjamini--Hochberg (Romano--Wolf, the most conservative of the three, clears at 10\%: $p=.059$) --- the finding that carries statistical weight.
 ```
 
-- [ ] **Step 3: State the claim structure explicitly (L755)**
+- [x] **Step 3: State the claim structure explicitly (L755)**
 
 Replace:
 ```latex
@@ -379,7 +385,7 @@ with:
 \footnotesize The candidate engine is quiet while some voters withdraw, so the consolidation is the electorate re-allocating votes toward the leader, not candidates removed. Note the structure of the claim: the \textbf{consolidation is robust}, while the \textbf{barrier reading is tentative} --- it rests on the ballot, one tier down.
 ```
 
-- [ ] **Step 4: Qualify the Contribution frame (L760)**
+- [x] **Step 4: Qualify the Contribution frame (L760)**
 
 Replace:
 ```latex
@@ -390,19 +396,19 @@ with:
 an expanded judicial arena \textbf{re-concentrates} the vote toward the front-runner without reshaping who runs or who wins --- and, where an incumbent is defended, pushes marginal voters off the ballot, the \negt{barrier} signature.
 ```
 
-- [ ] **Step 5: Compile twice**
+- [x] **Step 5: Compile twice**
 
 Expected: `exit=0`.
 
-- [ ] **Step 6: Check for fatal errors**
+- [x] **Step 6: Check for fatal errors**
 
 Expected: `NO FATAL ERRORS`.
 
-- [ ] **Step 7: Rasterize and look — two frames**
+- [x] **Step 7: Rasterize and look — two frames**
 
 Search strings: `Findings by Confidence` and `Contribution`. Expected: `PAGE COUNT: 67`. The Findings frame is a four-item list that already fills its frame and Step 2 makes the first item materially longer — read that PNG with particular care. If it overflows, shorten the parenthetical to `(Romano--Wolf clears at 10\%: $p=.059$)`.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -461,7 +467,7 @@ pooling across all seats dilutes a seat-conditional effect, which is exactly wha
 
 D2 holds that direct judicial action is outside the estimand by construction. The theory frame currently never mentions it, which leaves the deleted third channel unexplained to anyone who read the extended abstract.
 
-- [ ] **Step 1: Insert the boundary sentence after the frame's opening line (L848)**
+- [x] **Step 1: Insert the boundary sentence after the frame's opening line (L848)**
 
 Replace:
 ```latex
@@ -472,19 +478,19 @@ with:
 The \textbf{Leveling} and \textbf{Barrier} faces of the main text rest on two hypotheses about \emph{why} litigation moves an election. A third channel --- \emph{direct judicial action}, where a ruling removes a candidate and mechanically reallocates the vote --- lies \textbf{outside the estimand}: the adversarial filter drops the candidacy-registration and campaign-finance machinery (RRC/DRAP, \emph{presta\c{c}\~ao de contas}), so it is not what these estimates measure.
 ```
 
-- [ ] **Step 2: Compile twice**
+- [x] **Step 2: Compile twice**
 
 Expected: `exit=0`.
 
-- [ ] **Step 3: Check for fatal errors**
+- [x] **Step 3: Check for fatal errors**
 
 Expected: `NO FATAL ERRORS`. The `\c{c}` and `\~a` escapes are the risk here — a mistyped escape produces a `!` line.
 
-- [ ] **Step 4: Rasterize and look**
+- [x] **Step 4: Rasterize and look**
 
 Search string: `Signal vs Weapon`. Expected: `PAGE COUNT: 67`. Read the PNG and confirm "prestação de contas" renders with correct accents, and that the added sentence has not pushed the two-column block or the mechanism table off the frame. This frame is already dense — if it overflows, move the new sentence to the frame's closing line instead, above the `\beamerreturnbutton`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -512,7 +518,7 @@ pdflatex -interaction=nonstopmode slides_advisor.tex > /dev/null; echo "exit=$?"
 ```
 And the different PDF path and baseline in the rasterize block: `slides_advisor.pdf`, baseline **11** pages.
 
-- [ ] **Step 1: Mark the hypothesis grid's layer-3 row ambiguous (L85)**
+- [x] **Step 1: Mark the hypothesis grid's layer-3 row ambiguous (L85)**
 
 The grid columns are: Layer | What I measure | H1 — Leveller | H2 — Barrier. Replace:
 ```latex
@@ -525,7 +531,7 @@ with:
 \negt{consolidation} \\
 ```
 
-- [ ] **Step 2: Remove the overclaim at L128**
+- [x] **Step 2: Remove the overclaim at L128**
 
 This is the line that commits H1 to predicting closer races and so makes consolidation self-identifying. Replace:
 ```latex
@@ -536,7 +542,7 @@ with:
 The winner's vote share rises, the runner-up's falls, and the top-two margin between them widens --- the race \negt{consolidates}. Either face can concentrate a vote, so the reading comes from Layer 2's ballot. The proportional council race shows none of it.
 ```
 
-- [ ] **Step 3: Re-tier the Layer-3 verdict (L135)**
+- [x] **Step 3: Re-tier the Layer-3 verdict (L135)**
 
 Replace:
 ```latex
@@ -547,7 +553,7 @@ with:
 \takeaway{\textbf{Layer-3 verdict: the consolidation, at full confidence.} A one-SD rise widens the winner's margin by $+\MarginPerSD$~pp ($p=\MarginP$), clearing the AR bootstrap ($p=\ARMarginP$) and the exposure-robust CI ($\ERMarginCI$) --- and it is general across seat types. The front-runner it reinforces is the \textbf{sitting incumbent} (${\approx}5\times$ the runner-up), a demographic near-twin --- which is why representation cannot move. The \negt{barrier} reading of it inherits Layer 2's tentative tier.}
 ```
 
-- [ ] **Step 4: Update the structural header comment (L17)**
+- [x] **Step 4: Update the structural header comment (L17)**
 
 **This line contains a non-ASCII em-dash** (a genuine `—`, unlike the true mojibake on L22). Either way the rule is the same: match on the pure-ASCII substring only, so the non-ASCII byte is never part of `old_string` or `new_string`. Replace:
 ```
@@ -558,28 +564,28 @@ with:
 consolidation at full confidence (the H2 reading of it is tentative), the
 ```
 
-- [ ] **Step 5: Compile twice**
+- [x] **Step 5: Compile twice**
 
 Use the advisor build command above. Expected: `exit=0`.
 
-- [ ] **Step 6: Check for fatal errors**
+- [x] **Step 6: Check for fatal errors**
 
 ```bash
 grep -E "^! " /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization/output/presentation/slides_advisor.log || echo "NO FATAL ERRORS"
 ```
 
-- [ ] **Step 7: Rasterize and look — two frames**
+- [x] **Step 7: Rasterize and look — two frames**
 
 Adapt the rasterize block for `slides_advisor.pdf`. Search strings: `Hypotheses` and `How Open It Stays`. Expected: `PAGE COUNT: 11`. Read both PNGs. The `\takeaway{}` box on the Layer-3 frame is the tightest element in this deck; the replacement is slightly shorter than the original, so it should fit, but confirm visually.
 
-- [ ] **Step 8: Confirm the Layer-2 verdict was not touched**
+- [x] **Step 8: Confirm the Layer-2 verdict was not touched**
 
 ```bash
 grep -c "not to litigation as such" /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization/output/presentation/slides_advisor.tex
 ```
 Expected: `1`.
 
-- [ ] **Step 9: Confirm no encoding damage**
+- [x] **Step 9: Confirm no encoding damage**
 
 Compare the count of non-ASCII bytes before and after. It must be unchanged — the edits were all ASCII-to-ASCII:
 ```bash
@@ -590,7 +596,7 @@ print('non-ascii bytes:', sum(1 for b in d if b > 127))
 ```
 Expected: `79` (measured baseline). A different number means an edit mangled the encoding — revert and redo matching on ASCII-only anchors.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -635,7 +641,7 @@ assertion in Step 3.
   and the `xcolor` package are already spelled `color`. Only `analyse`-stem verbs and
   standalone `colour` change.
 
-- [ ] **Step 1: Record the pre-sweep state**
+- [x] **Step 1: Record the pre-sweep state**
 
 ```bash
 /c/Users/naral/AppData/Local/Programs/Python/Python313/python.exe << 'PYEOF'
@@ -652,7 +658,7 @@ PYEOF
 Expected exactly: `slides_report.tex 29`, `slides_advisor.tex 2`. A different count
 means the file drifted since the plan was written — re-inventory before sweeping.
 
-- [ ] **Step 2: Run the byte-safe sweep**
+- [x] **Step 2: Run the byte-safe sweep**
 
 Case is preserved per-match, so `Favours`→`Favors` and `BEHAVIOURAL`→`BEHAVIORAL`
 need no separate rules:
@@ -694,7 +700,7 @@ PYEOF
 Expected: `slides_report.tex replacements: 29 | BOM preserved: True` and
 `slides_advisor.tex replacements: 2`.
 
-- [ ] **Step 3: Verify completeness, encoding integrity, and no collateral damage**
+- [x] **Step 3: Verify completeness, encoding integrity, and no collateral damage**
 
 ```bash
 /c/Users/naral/AppData/Local/Programs/Python/Python313/python.exe << 'PYEOF'
@@ -724,15 +730,15 @@ revert with `git checkout -- output/presentation/slides_report.tex output/presen
 and rerun Step 2. `characteriztic` appearing means the lookahead was dropped from the
 `characteris` rule.
 
-- [ ] **Step 4: Compile both decks twice each**
+- [x] **Step 4: Compile both decks twice each**
 
 Run both build commands. Expected: `exit=0` for each.
 
-- [ ] **Step 5: Check for fatal errors in both logs**
+- [x] **Step 5: Check for fatal errors in both logs**
 
 Expected: `NO FATAL ERRORS` for both.
 
-- [ ] **Step 6: Assert both page counts**
+- [x] **Step 6: Assert both page counts**
 
 ```bash
 /c/Users/naral/AppData/Local/Programs/Python/Python313/python.exe -c "
@@ -744,7 +750,7 @@ for f,base in [('slides_report.pdf',67),('slides_advisor.pdf',11)]:
 ```
 Expected: both `OK`. Spelling changes are length-neutral or one character shorter, so a page-count change would be surprising and warrants investigation.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -765,7 +771,7 @@ Per the FRAMING.md vocabulary lock. The decks previously mixed British
 
 `WRITING_GUIDE.md` §3 currently instructs the reader to reconcile the framing "before drafting" — an instruction that has now been carried out. Leaving it in place would send Nara to re-decide settled questions.
 
-- [ ] **Step 1: Replace §3's table with a resolved pointer**
+- [x] **Step 1: Replace §3's table with a resolved pointer**
 
 Replace the whole block from the `## 3.` heading through the end of its table (lines 51–61, ending with the `| **Identification honesty** | ... |` row) with:
 ```markdown
@@ -787,14 +793,14 @@ vocabulary lock, the American-spelling rule, the novelty phrasing, and an
 apply-to-the-paper sheet listing exactly what is stale in `extended_abstract.tex`.
 ```
 
-- [ ] **Step 2: Verify §4 still follows and nothing else broke**
+- [x] **Step 2: Verify §4 still follows and nothing else broke**
 
 ```bash
 grep -n "^## " /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization/WRITING_GUIDE.md
 ```
 Expected: sections 0 through 8 all present, in order, with `## 3. Framing — RESOLVED` in place of the old heading.
 
-- [ ] **Step 3: Flip the FRAMING.md application record to done**
+- [x] **Step 3: Flip the FRAMING.md application record to done**
 
 Replace:
 ```markdown
@@ -809,7 +815,7 @@ with:
 11 edits to `slides_report.tex`
 ```
 
-- [ ] **Step 4: Confirm the paper files were never touched**
+- [x] **Step 4: Confirm the paper files were never touched**
 
 This is the plan's hard constraint. Verify across every commit made by this plan:
 ```bash
@@ -818,7 +824,7 @@ git diff --name-only a6b42a1..HEAD | sort
 ```
 Expected: only `FRAMING.md`, `WRITING_GUIDE.md`, `docs/superpowers/plans/...`, and the four `output/presentation/slides_*.tex|pdf` files. **`output/paper/paper.tex` and `output/paper/extended_abstract.tex` must NOT appear.** If either does, stop and report before committing.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
@@ -834,18 +840,18 @@ instead of re-opening settled questions."
 
 ## Done When
 
-- [ ] Both decks compile with no `!` errors and hold their baseline page counts (67 / 11).
-- [ ] Every edited frame has been rasterized and visually confirmed free of overflow.
-- [ ] `grep -rniE "barrier[^ ]* *(signature|story|protects)" output/presentation/*.tex` returns only
+- [x] Both decks compile with no `!` errors and hold their baseline page counts (67 / 11).
+- [x] Every edited frame has been rasterized and visually confirmed free of overflow.
+- [x] `grep -rniE "barrier[^ ]* *(signature|story|protects)" output/presentation/*.tex` returns only
       seat-conditional survivors (report deck L684, L762), and no unconditional face claim.
       A bare `grep -ri "barrier signature"` is NOT sufficient — it cannot see through
       `\negt{barrier}` markup and returned zero while two live sites sat in the file.
-- [ ] The pooled index reads "Overall combined index" in `summary_indices.tex`, and the
+- [x] The pooled index reads "Overall combined index" in `summary_indices.tex`, and the
       multiplicity frame of each deck discloses the 8/12-concentration composition and the
       ballot family's own p = .134.
-- [ ] The Task 8 Step 3 verifier reports `remaining British: 0` and `non-ascii bytes: 79 ... OK` for **both** decks.
-- [ ] `git diff --name-only a6b42a1..HEAD` contains no file under `output/paper/`.
-- [ ] `WRITING_GUIDE.md` §3 points at `FRAMING.md` rather than issuing a reconciliation instruction.
+- [x] The Task 8 Step 3 verifier reports `remaining British: 0` and `non-ascii bytes: 79 ... OK` for **both** decks.
+- [x] `git diff --name-only a6b42a1..HEAD` contains no file under `output/paper/`.
+- [x] `WRITING_GUIDE.md` §3 points at `FRAMING.md` rather than issuing a reconciliation instruction.
 
 Use the Task 8 Step 3 script for the spelling check, **not** a loose `grep -E`. A bare
 `analyse` alternation matches `analyses` — the correct American plural of *analysis* —
