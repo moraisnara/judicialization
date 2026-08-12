@@ -100,6 +100,11 @@ def sources(other_text: str, rel: str) -> bool:
     that is not true, which is worse than failing -- it hides the real one.
     So require a load construct: source() in R, an import or exec(open()) in
     Python.
+
+    Two documented limits, neither live today (all five real source() calls in
+    the repo are single-line literals): a call split across lines, or one that
+    builds the filename from parts, is missed; and a commented-out source()
+    still matches, since the pattern does not exclude # lines.
     """
     name = Path(rel).name
     if re.search(rf"source\s*\([^\n]*{re.escape(name)}", other_text):
