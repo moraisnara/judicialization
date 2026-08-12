@@ -83,10 +83,8 @@ if (exists("rstudioapi") && tryCatch(rstudioapi::isAvailable(), error = function
 PROJECT_ROOT   <- normalizePath(file.path(SCRIPT_DIR, "..", ".."))
 ESTIMATION_DIR <- file.path(PROJECT_ROOT, "data", "estimation")
 REG_DIR        <- file.path(PROJECT_ROOT, "output", "tables", "regressions")
-TEX_DIR        <- file.path(PROJECT_ROOT, "output", "tables", "tex")
 FIG_DIR        <- file.path(PROJECT_ROOT, "output", "figures")
 dir.create(REG_DIR, recursive = TRUE, showWarnings = FALSE)
-dir.create(TEX_DIR, recursive = TRUE, showWarnings = FALSE)
 dir.create(FIG_DIR, recursive = TRUE, showWarnings = FALSE)
 
 # shared palette + theme (matches the deck; blanks title/subtitle/caption)
@@ -247,17 +245,6 @@ verdict <- function(g) {
                 ifelse(s$rf_p[i] < .10, "<-- PRE-TREND", "clean")))
 }
 verdict("consolidation"); verdict("voter_behavior"); verdict("turnout")
-
-# ============================================================
-# 4. HOUSE-STYLE TEX  (horizontal shaded band; matches 02_iv_main / CLAUDE.md)
-#    Columns = outcomes; banded coefficient row (RF on Z, predetermined) + gray
-#    SE beneath; then N and the pre-trend mean. No FE/fit scaffolding.
-# ============================================================
-hb_star <- function(p) {
-  if (is.na(p)) return("")
-  if (p < .01) "$^{***}$" else if (p < .05) "$^{**}$" else if (p < .10) "$^{*}$" else ""
-}
-hb_row <- function(label, cells) paste0(label, " & ", paste(cells, collapse = " & "), " \\\\")
 
 # ============================================================
 # 5. BALANCE COEFPLOT  (standardized beta of Z on each pre-period change)

@@ -74,9 +74,11 @@ cat(sprintf("  Baseline sample: N = %d\n", nrow(samp)))
 
 
 # ============================================================================
-# [A] BINSCATTER — first stage (cubic, appendix diagnostic)
+# [A] FIRST-STAGE RESIDUALS — partial out the controls and the state FE from
+#     both the endogenous variable and the instrument. Emits no figure of its
+#     own; [B] bins these residuals into the linear first-stage plot.
 # ============================================================================
-cat("\n[A] Binscatter (first stage)...\n")
+cat("\n[A] Residualizing the first stage on controls + state FE...\n")
 
 ctrl_formula <- paste(c(ctrls_avail, "SG_UF"), collapse = " + ")
 resid_endog <- residuals(feols(as.formula(paste(ENDOG, "~", ctrl_formula)),

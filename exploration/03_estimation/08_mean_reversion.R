@@ -26,9 +26,9 @@
 #          data/clean/municipality_bartik_components.csv (leave-UF-out shifts)
 #          data/estimation/executive_margin_design.csv (controls, FE, cluster,
 #            full-sample benchmark instrument + endogenous)
-# Outputs: output/tables/regressions/mean_reversion_splitsample.csv (per split)
-#          output/tables/regressions/mean_reversion_splitsample_summary.csv
-#          output/figures/firststage_splitsample.pdf
+# Outputs: exploration/output/tables/regressions/mean_reversion_splitsample.csv (per split)
+#          exploration/output/tables/regressions/mean_reversion_splitsample_summary.csv
+#          exploration/output/figures/firststage_splitsample.pdf
 # ============================================================================
 
 suppressPackageStartupMessages({
