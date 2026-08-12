@@ -29,12 +29,19 @@ output/paper/*
 !output/paper/*.bbl
 !output/presentation/
 output/presentation/*
-!output/presentation/slides_full.tex
-!output/presentation/slides_conference.tex
-!output/presentation/references.bib
+# Deck SOURCES must be tracked. Whitelist by extension, not by filename: the old
+# per-file list still named slides_full.tex / slides_conference.tex long after they
+# were renamed, which silently left the entire report deck untracked.
+!output/presentation/*.tex
 !output/presentation/*.bib
 !output/figures/
 !output/tables/
+
+# ── exploration/ outputs ───────────────────────────────────────────────────────
+# Regenerable byproducts of hand-run exploration scripts. No document consumes
+# them (that is why the scripts live in exploration/, not code/), so — unlike
+# output/ above — nothing here is ever whitelisted back in.
+exploration/output/
 
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
@@ -63,3 +70,6 @@ Rplots.pdf
 
 # Never commit data CSVs (large, regenerable)
 *.csv
+
+# Subagent-driven-development scratch workspace (ledger, briefs, review packages)
+.superpowers/

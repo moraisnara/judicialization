@@ -1,0 +1,248 @@
+﻿% ============================================================
+% Electoral Judicialization â€” Advisor Highlight Deck
+% Nara LÃ­via Morais (FEA-USP)
+% ------------------------------------------------------------
+% PURPOSE: a ~10-minute advisor conversation on the PRELIMINARY results. The
+% advisor knows the project â€” no motivation, no institutional setup. The goal
+% is a REACTION, not a sign-off.
+%
+% This is NOT a replacement for slides_report.tex, which stays the canonical
+% full research report. This deck reuses the SAME .tex fragments and figures,
+% so no number here can drift from the report or the paper.
+%
+% FIVE main frames: (1) question / what we tackle / hypotheses grid, then one
+% frame PER LAYER of that grid, each closing with its H1-leveling/H2-barrier
+% verdict: (2) layer 1 who runs â€” quiet engine, neither hypothesis; (3) layer 2
+% how voters respond â€” withdrawal where the seat is defended, tentative;
+% (4) layer 3 how open it stays â€” consolidation at full confidence (the H2 reading of it is tentative), the
+% headline lands last; (5) the gender incidence of that consolidation â€” an
+% evenly shared squeeze, a male-tilted gain that the differential test cannot
+% yet establish. Backups are results-only (Nara's trim 2026-08-04): incumbent
+% profile, all-outcomes summary, multiplicity, gender full tables, seat-het.
+% Robustness defenses (referee, extensive, pre-trends, tiers) were cut â€” the
+% spoken discussion carries them.
+%
+% Build: pdflatex -interaction=nonstopmode slides_advisor.tex  (twice, for nav)
+% ============================================================
+
+\documentclass[aspectratio=169,10pt]{beamer}
+
+% ---- House theme, colors, commands, and the auto-generated number macros ----
+% Shared with slides_report.tex. Edit colors/commands THERE, not here.
+\input{slides_preamble.tex}
+
+% ---- Title info ----
+\title{When It Gets to Court: The Electoral Costs of Judicialization}
+\subtitle{Preliminary Results}
+\author{Nara Morais}
+\institute{FEA--USP}
+\date{\today}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+\maketitle
+
+
+% ============================================================
+% 1. THE LOGIC â€” what is being tested and how the two readings are told apart
+% ============================================================
+
+\begin{frame}{The Question: Does the Judicial Arena Level the Contest or Barricade It?}
+\hypertarget{src:logic}{}
+\footnotesize
+\textbf{\textcolor{myblue}{Question.}} Does judicialization, the judiciary's \textbf{expanded role}, change who runs, how voters respond, and how open the contest stays?
+\smallskip
+
+\textbf{\textcolor{myblue}{What we tackle.}} A causal estimate: the $2020\!\to\!2024$ change in a municipality's adversarial litigation, instrumented by shift-share exposure to national topic-level diffusion, traced through the three layers below --- for the single-winner \emph{mayoral} race and, as the specificity check, the proportional \emph{council} race.
+\smallskip
+
+\textbf{\textcolor{myblue}{Hypotheses.}} Two readings of the same arena --- \pos{a leveling force} that enforces the rules and widens access, \negt{a barrier} that raises the cost of competing --- disagreeing on \emph{sign} wherever they speak:
+\smallskip
+\renewcommand{\arraystretch}{1.25}
+\begin{center}
+\scriptsize
+\begin{tabular}{@{}L{3.0cm} L{5.2cm} L{2.4cm} L{2.6cm}@{}}
+\toprule\toprule
+\textbf{Layer} & \textbf{What I measure (2020$\to$2024)} &
+\textcolor{mygreen}{\textbf{H1 --- Leveling}} &
+\textcolor{myred}{\textbf{H2 --- Barrier}} \\
+\midrule
+\textbf{1\ \ Who runs} \ns{(candidates)} &
+Field size, entrants, women / non-white / higher-ed shares, incumbency &
+\pos{a broader pool} &
+\negt{fewer, safer names} \\
+\midrule
+\textbf{2\ \ How voters respond} \ns{(voters)} &
+Turnout --- compulsory, so blank / null / valid ballots carry it &
+\pos{they stay engaged} &
+\negt{they withdraw} \\
+\midrule
+\rowcolor{mylight}
+\textbf{3\ \ How open it stays} \ns{(the result)} &
+Top-two margin, winner and runner-up shares, majority, concentration &
+\ns{\emph{ambiguous}} &
+\negt{consolidation} \\
+\bottomrule\bottomrule
+\end{tabular}
+\end{center}
+\smallskip
+\end{frame}
+
+
+% ============================================================
+% 2-4. THE EVIDENCE â€” one frame per layer of the hypothesis grid,
+%      each closing with its H1/H2 verdict; the headline lands last.
+% ============================================================
+
+\begin{frame}{Layer 1 --- Who Runs: the Candidate Engine Is Quiet}
+\hypertarget{src:candidates}{}
+\small
+If either reading operated through the field --- \pos{H1} widening the pool, \negt{H2} thinning it to fewer, safer names --- it would show here. It does not. Across both offices --- and across field size, gender, race, education, entry, and incumbency --- every candidate-supply margin is a null, as is the vote-weighted composition of \emph{winners}. Entry is an anticipation margin: candidacies register at the August deadline, before most suits resolve.
+\smallskip
+\begin{center}
+\includegraphics[width=\linewidth,height=0.42\textheight,keepaspectratio]{../figures/candidate_supply_coefplot.pdf}
+\end{center}
+\smallskip
+\takeaway{\textbf{Layer-1 verdict: neither hypothesis.} No supply margin moves, and neither does who \emph{wins} (female vote share $\FemaleVSPerSDSigned$~pp, n.s.) --- not \pos{H1's broader pool}, not \negt{H2's thinner field}. Whatever the arena does, it does not do it through candidates --- the action must be downstream, in voters and the result.}
+\smallskip
+\end{frame}
+
+
+\begin{frame}{Layer 2 --- How Voters Respond: Withdrawal Where the Seat Is Defended}
+\hypertarget{src:seathet}{}
+\small
+Turnout is \textbf{compulsory}, so withdrawal shows up \emph{inside} the ballot: \textbf{blank} and \textbf{null} votes that elect no one, and a falling \textbf{valid} share. Pooled across all mayoral races it barely moves --- splitting by \textbf{open} seat ($N=\OpenN$) versus \textbf{contested}, where the sitting mayor may run again ($N=\ContN$), shows why.
+\begin{center}
+\includegraphics[width=\linewidth,height=0.41\textheight,keepaspectratio]{../figures/voterbehavior_seat_coefplot.pdf}
+\end{center}
+\takeaway{\textbf{Layer-2 verdict: \negt{H2}, but only where a seat is defended.} Voters do not \pos{stay engaged}: where the sitting mayor may run again, blanks rise ($\ContBlankCoef$, $p=\ContBlankP$) and the valid share falls --- the \negt{withdrawal} signature. Where the seat is \textbf{open}, nothing moves ($p=\OpenBlankP$): the response is to a \emph{defended} seat, not to litigation as such. Tentative tier: clears conventional and exposure-robust inference ($p=\ERBlankPbhj$), not the AR bootstrap ($p=\ARBlankP$).}
+\hfill\hyperlink{bk:seathet}{\beamergotobutton{full table}}
+\end{frame}
+
+
+\begin{frame}{Layer 3 --- How Open It Stays: the Mayoral Race Consolidates}
+\hypertarget{src:spine1}{}
+\small
+The winner's vote share rises, the runner-up's falls, and the top-two margin between them widens --- the race \textbf{consolidates}. Either face can produce that, so the reading comes from Layer 2's ballot. The proportional council race shows none of it.
+\smallskip
+\begin{center}
+\scriptsize
+\resizebox{\linewidth}{!}{\input{../tables/tex/executive_iv_competition.tex}}
+\end{center}
+\smallskip
+\takeaway{\textbf{Layer-3 verdict: the consolidation, at full confidence.} A one-SD rise widens the winner's margin by $+\MarginPerSD$~pp ($p=\MarginP$), clearing the AR bootstrap ($p=\ARMarginP$) and the exposure-robust CI ($\ERMarginCI$) --- and it is general across seat types. The front-runner it reinforces is the \textbf{sitting incumbent} (${\approx}5\times$ the runner-up), a demographic near-twin --- which is why representation cannot move. The \negt{barrier} reading of it inherits Layer 2's tentative tier.}
+\smallskip
+\end{frame}
+
+
+\begin{frame}{Layer 3 by Gender: an Evenly Shared Squeeze, a Male-Tilted Gain}
+\hypertarget{src:gender}{}
+\small
+Layer 3 moves vote from the runner-up's slot to the winner's. Splitting both slots by the candidate's gender asks who pays for that transfer and who collects it. The split is \textbf{unconditional} --- components sum back to the layer-3 totals on the same sample, with no conditioning on who placed where.
+\begin{center}
+\includegraphics[width=\linewidth,height=0.39\textheight,keepaspectratio]{../figures/gender_consolidation_coefplot.pdf}
+\end{center}
+\takeaway{\textbf{Layer-3 incidence: the cost is gender-neutral; the gain may not be.} The runner-up's loss splits evenly (female $\FemRUSharePerSDSigned$~pp, male $\MaleRUSharePerSDSigned$~pp) --- that slot's gap is a \emph{precise} zero ($p=\RUGapP$). The gain lands on \textbf{male} front-runners ($\MaleWinSharePerSDSigned$~pp, $p=\MaleWinShareP$) while the female winner's share does not move ($p=\FemWinShareP$) --- but that slot's gap test is $\WinGapPerSDSigned$~pp, $p=\WinGapP$: \negt{suggestive, not established}. Net, women's share of the top two drifts down $\FemTopTwoPerSDSigned$~pp ($p=\FemTopTwoP$).}
+\hfill\hyperlink{bk:gender}{\beamergotobutton{full table}}
+\end{frame}
+
+
+% ============================================================
+\appendix
+% ============================================================
+
+\begin{frame}{Backup --- Who the Consolidation Favors: the Incumbent, Not a Demographic}
+\hypertarget{bk:favored}{}
+\small
+Profiling the 2024 mayoral field by within-race vote rank, descriptively, before any regression: the winner and the runner-up part on \textbf{political standing}, not demographics. The front-runner is a sitting incumbent roughly five times as often; on gender, race, education, and age the top-two are near-twins.
+\smallskip
+\begin{center}
+\scriptsize
+\resizebox{!}{0.23\textheight}{\input{../tables/tex/candidate_rank_profile.tex}}
+\end{center}
+\smallskip
+\takeaway{Because the top-two are demographically interchangeable, widening the margin between them entrenches \textbf{incumbency} --- a neutral trait --- which is mechanically why the vote-weighted gender / race composition cannot move. \ns{Descriptive shares by vote rank; no causal content.}}
+\smallskip
+\hfill\hyperlink{src:spine1}{\beamerreturnbutton{Back to the consolidation}}
+\end{frame}
+
+
+% The fragment carries its own notes minipage, so it cannot be \resizebox'd as a
+% unit (the minipage escapes the box). Size it with a font step instead.
+\begin{frame}{Backup --- Every Outcome, One Table}
+\hypertarget{bk:summary}{}
+\vspace{-4pt}
+\begin{center}
+\tiny
+\input{../tables/tex/abstract_table.tex}
+\end{center}
+\vspace{-2pt}
+\hfill\hyperlink{src:logic}{\beamerreturnbutton{Back to the question}}
+\end{frame}
+
+
+\begin{frame}{Backup --- Many Outcomes, No Family Cut}
+\hypertarget{bk:mult}{}
+\footnotesize
+Two complementary routes, both of which sidestep having to declare which outcomes ``count''.
+\smallskip
+\begin{columns}[T]
+\begin{column}{0.52\linewidth}
+\scriptsize \textbf{(a) Collapse each theory-declared family to one index} (Anderson 2008 inverse-covariance / Kling--Liebman--Katz). One family $=$ one test $=$ no within-family multiplicity; each 2024 index net of its 2016 baseline, in SD units, oriented so positive $=$ consolidation.
+\smallskip
+\begin{center}
+\scriptsize
+\resizebox{\linewidth}{!}{\input{../tables/tex/summary_indices.tex}}
+\end{center}
+\scriptsize The overall \textbf{combined index clears} ($p<.05$); representation and council-ballot placebo indices are null. It is 8/12 non-ballot outcomes and the ballot family alone is $p=.134$ --- consolidation, not a face.
+\end{column}
+\begin{column}{0.46\linewidth}
+\scriptsize \textbf{(b) Romano--Wolf stepdown} over all \MultFamilyN{} barrier/representation reduced forms --- a \emph{joint} wild-cluster bootstrap ($B=10{,}000$, shared Rademacher weights) controlling the family-wise error rate.
+\smallskip
+\begin{center}
+\scriptsize
+\resizebox{\linewidth}{!}{\input{../tables/tex/romano_wolf_stepdown.tex}}
+\end{center}
+\scriptsize Margin and runner-up survive raw and Holm; fully simultaneous they land borderline --- RW is stricter than normal-approx Holm because the bootstrap captures the \NClusters{}-cluster tails.
+\end{column}
+\end{columns}
+\smallskip
+\hfill\hyperlink{src:spine1}{\beamerreturnbutton{Back to layer 3}}
+\end{frame}
+
+
+
+\begin{frame}{Backup --- Gender Incidence of the Consolidation, Full Tables}
+\hypertarget{bk:gender}{}
+\scriptsize
+\textbf{(a) Decomposition.} Female $+$ male sum to the layer-3 winner and runner-up totals.
+\begin{center}
+\resizebox{\linewidth}{!}{\input{../tables/tex/executive_iv_gender_consolidation.tex}}
+\end{center}
+\smallskip
+\textbf{(b) Differential tests.} The female$-$male gap estimated as its own outcome --- these $p$-values, not the contrast between a starred male component and an unstarred female one, are what licenses a claim that the incidence is gendered.
+\begin{center}
+\resizebox{\linewidth}{!}{\input{../tables/tex/executive_iv_gender_gap.tex}}
+\end{center}
+\hfill\hyperlink{src:gender}{\beamerreturnbutton{Back to the gender split}}
+\end{frame}
+
+
+\begin{frame}{Backup --- Heterogeneity by Seat Type, Full Table}
+\hypertarget{bk:seathet}{}
+\footnotesize
+Mayoral outcomes by whether the seat is open (term-limited incumbent, $N=\OpenN$) or contested (sitting mayor eligible, $N=\ContN$).
+\smallskip
+\begin{center}
+\scriptsize
+\resizebox{!}{0.34\textheight}{\input{../tables/tex/executive_iv_heterogeneity_seat.tex}}
+\end{center}
+\smallskip
+\scriptsize Both subsample margins exceed the pooled $\MarginCoef$ --- normal for 2SLS, since each subsample has its own first stage, not a contradiction.
+\hfill\hyperlink{src:seathet}{\beamerreturnbutton{Back to the seat split}}
+\end{frame}
+
+
+\end{document}

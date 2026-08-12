@@ -64,6 +64,8 @@ CANDIDATE_POOL_OUTCOMES <- c(
   "delta_log1p_total_candidates_2024_2020",
   "delta_female_share_2024_2020",
   "delta_nonwhite_share_2024_2020",
+  "delta_higher_education_share_2024_2020",
+  "delta_mean_age_2024_2020",
   "delta_new_candidate_share_2024_2020",
   "delta_incumbent_candidate_share_2024_2020",
   "delta_effective_party_count_candidates_2024_2020",
@@ -311,6 +313,8 @@ LEG_OUTCOME_LABELS <- c(
   delta_log1p_total_candidates_2024_2020          = "$\\Delta$ Log total candidates",
   delta_female_share_2024_2020                    = "$\\Delta$ Female share",
   delta_nonwhite_share_2024_2020                  = "$\\Delta$ Nonwhite share",
+  delta_higher_education_share_2024_2020          = "$\\Delta$ Higher-ed.~share",
+  delta_mean_age_2024_2020                        = "$\\Delta$ Mean age",
   delta_new_candidate_share_2024_2020             = "$\\Delta$ New candidate share",
   delta_incumbent_candidate_share_2024_2020       = "$\\Delta$ Incumbent share",
   delta_effective_party_count_candidates_2024_2020 = "$\\Delta$ Eff.~party count",
@@ -360,7 +364,7 @@ etab_leg <- list(
   digits       = 3,
   digits.stats = 1,
   fixef_sizes  = FALSE,
-  notes        = "SE clustered by electoral zone. Baseline spec (state FE, 7 controls).",
+  notes        = "SE clustered by state (UF). Baseline spec (state FE, 5 controls).",
   style.tex    = style.tex(arraystretch = 1.2)
 )
 

@@ -354,6 +354,14 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
         })
     )
 
+    # Runner-up (rank 2) gender, for the top-two GENDER DECOMPOSITION below.
+    runnerup_chars = (
+        candidate_rank[candidate_rank["vote_rank"] == 2]
+        [["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE", "is_female"]]
+        .drop_duplicates(subset=["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE"])
+        .rename(columns={"is_female": "runnerup_is_female"})
+    )
+
     top_two = (
         candidate_rank[candidate_rank["vote_rank"] <= 2]
         .pivot_table(
@@ -382,6 +390,55 @@ def build_vote_outcomes(candidate_votes: pd.DataFrame, candidate_meta: pd.DataFr
         on=["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE"],
         how="left",
     )
+    top_two = top_two.merge(
+        runnerup_chars,
+        on=["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE"],
+        how="left",
+    )
+
+    # ---- GENDER DECOMPOSITION OF THE TOP TWO -------------------------------
+    # Splits the consolidation outcomes into the part accruing to female vs male
+    # front-runners, so "the winner gains, the runner-up loses" can be asked as
+    # "WHOSE vote share moves?".
+    #
+    # UNCONDITIONAL by construction: a race whose runner-up is male contributes
+    # 0 -- not a missing value -- to female_runnerup_vote_share. So the female
+    # and male parts sum back to the totals already used in the main results
+    # (female_ + male_ == winner_vote_share / runnerup_vote_share), N is
+    # identical to the layer-3 regressions, and nothing conditions on the
+    # ENDOGENOUS question of which gender placed where. Conditioning instead on
+    # "races where a woman was runner-up" would select on an outcome and is not
+    # a causal object -- do not swap these for conditional means.
+    #
+    # is_female is 0/1 at source (blank DS_GENERO reads as male), so the fillna
+    # below only fires where the rank row is absent entirely -- an uncontested
+    # race with no runner-up -- where the vote share is 0 regardless. This
+    # matches the fillna(0) convention already used for margin/top2 above.
+    _w  = top_two["winner_vote_share"].fillna(0)
+    _r  = top_two["runnerup_vote_share"].fillna(0)
+    _wf = top_two["winner_is_female"].fillna(0)
+    _rf = top_two["runnerup_is_female"].fillna(0)
+    top_two["female_winner_vote_share"]   = _w * _wf
+    top_two["male_winner_vote_share"]     = _w * (1 - _wf)
+    top_two["female_runnerup_vote_share"] = _r * _rf
+    top_two["male_runnerup_vote_share"]   = _r * (1 - _rf)
+    # Votes to female candidates within the top-two bloc, as a share of all
+    # valid votes (female_winner + female_runnerup).
+    top_two["female_top2_vote_share"] = _w * _wf + _r * _rf
+    # Gender gap in the top two: female minus male top-two vote share. Negative
+    # everywhere on average; the question is whether the shock widens it.
+    top_two["female_male_top2_gap"] = (
+        top_two["female_top2_vote_share"]
+        - (_w * (1 - _wf) + _r * (1 - _rf))
+    )
+    # Slot-specific gender gaps. These carry the DIFFERENTIAL test the frame needs:
+    # the consolidation moves vote from the runner-up slot to the winner slot, and
+    # the question is whether that transfer is gender-neutral. Regressing the female
+    # and male columns separately and comparing their significance is the classic
+    # "difference in significance is not significance of the difference" error, so
+    # each gap is estimated as its OWN outcome and its p-value is the real test.
+    top_two["female_male_winner_gap"]   = _w * _wf - _w * (1 - _wf)
+    top_two["female_male_runnerup_gap"] = _r * _rf - _r * (1 - _rf)
 
     municipal_outcomes = (
         panel.groupby(["office_group", "ANO_ELEICAO", "SG_UF", "SG_UE", "NM_UE"], as_index=False)
@@ -531,6 +588,16 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
         # Winner identity
         "winner_is_female": "delta_winner_is_female_2024_2020",
         "winner_is_new": "delta_winner_is_new_2024_2020",
+        # Gender decomposition of the top two
+        "runnerup_is_female": "delta_runnerup_is_female_2024_2020",
+        "female_winner_vote_share": "delta_female_winner_vote_share_2024_2020",
+        "male_winner_vote_share": "delta_male_winner_vote_share_2024_2020",
+        "female_runnerup_vote_share": "delta_female_runnerup_vote_share_2024_2020",
+        "male_runnerup_vote_share": "delta_male_runnerup_vote_share_2024_2020",
+        "female_top2_vote_share": "delta_female_top2_vote_share_2024_2020",
+        "female_male_top2_gap": "delta_female_male_top2_gap_2024_2020",
+        "female_male_winner_gap": "delta_female_male_winner_gap_2024_2020",
+        "female_male_runnerup_gap": "delta_female_male_runnerup_gap_2024_2020",
         # Electorate size
         "total_valid_votes": "delta_total_valid_votes_2024_2020",
     }
@@ -553,6 +620,14 @@ def build_wide_design(base_path: Path, office_group: str, vote_outcomes: pd.Data
         "vote_hhi_party", "effective_n_parties_vote",
         "female_vote_share", "nonwhite_vote_share", "higher_education_vote_share",
         "winner_is_female", "total_valid_votes",
+        # Gender decomposition of the top two — all defined identically in 2016
+        # (gender and vote rank are observed every cycle), so each carries a
+        # clean 2016 baseline for the ANCOVA and a pre-trend placebo.
+        "runnerup_is_female",
+        "female_winner_vote_share", "male_winner_vote_share",
+        "female_runnerup_vote_share", "male_runnerup_vote_share",
+        "female_top2_vote_share", "female_male_top2_gap",
+        "female_male_winner_gap", "female_male_runnerup_gap",
         # Year-relative renewal/incumbency now have a valid 2016 (vs 2012) baseline.
         "new_candidate_vote_share", "incumbent_candidate_vote_share", "winner_is_new",
         # Career categories well-defined in 2016 (2012 is an available prior cycle).

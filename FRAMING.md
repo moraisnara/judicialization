@@ -270,9 +270,9 @@ Nara drafts the paper. This is what the locked framing requires of it.
 
 ## Application record
 
-**Status: pending — this section is updated once the edits land.**
+**Status: applied 2026-08-11** on branch `framing-application`.
 
-Scope agreed 2026-08-11: 11 edits to `slides_report.tex`
+Planned scope was 11 edits to `slides_report.tex`
 (RQ block; Two Faces frame incl. its internal contradiction at L90; the
 What-We're-Measuring row 3; This Paper's closing line; Story-in-One-Frame;
 the seat-heterogeneity retitle and promotion; Findings-by-Confidence;
@@ -280,6 +280,41 @@ Contribution; `app:theory` boundary sentence; the Romano–Wolf qualifier at
 L749) and 4 to `slides_advisor.tex`
 (hypothesis-grid row 3; the Layer-3 claim at L128; the Layer-3 verdict tier;
 the structural header comment), plus the American-spelling sweep.
+
+**Three things were added while applying it:**
+
+1. **Four more D4 sites in `slides_report.tex`** that the planned enumeration missed:
+   the headline consolidation frame, the rank-profile takeaway, the winner-identity
+   null, and the council placebo. Each named the Barrier face off a concentration
+   outcome or off a descriptive. They were missed because a plain search for
+   `barrier signature` cannot match `a \negt{barrier} signature` — any search over
+   these decks has to tolerate intervening LaTeX markup.
+
+2. **The pooled summary index was renamed and disclosed.** It was called the "overall
+   barrier index", but 8 of its 12 outcomes are concentration, which under D4 cannot
+   identify a face; the one family that can — the ballot — does not clear on its own
+   ($p=.134$), and the pooled $p=.039$ is inherited from closeness ($p=.009$). Both
+   decks had been citing it as robustness for the Barrier reading. Decision taken
+   2026-08-11: **rename + disclose, no re-estimation.** The row is now "Overall
+   combined index", and the multiplicity frame of each deck states both its
+   composition and the ballot family's own p-value. Every estimate is unchanged.
+   This does not conflict with the seat split (blank $+0.005$, $p=.04$ in contested
+   seats): pooling across all seats dilutes a seat-conditional effect, which is what
+   D5 predicts.
+
+3. **Two lines were reworded** where the concentration vocabulary was carrying a
+   consolidation claim — precisely the collision the vocabulary lock exists to
+   prevent. In `slides_advisor.tex`, "Either face can concentrate a vote" →
+   "Either face can produce that". In the index-disclosure sentence of *both* decks,
+   "It is 8/12 concentration outcomes" → "It is 8/12 **non-ballot** outcomes": four
+   of those eight are the closeness family, i.e. the top-two margin, which the lock
+   reserves for *consolidation*. "Non-ballot" is also what D4 actually means.
+
+   Worth the author's attention: **`FRAMING.md` carries the same looseness in its own
+   locked prose** — D4's header reads "The discriminator is the ballot, not
+   concentration" (L103), and the D5 table files the margin metric under a column
+   headed "Concentration" (L129–132). Left unedited: the memo is locked, and this is a
+   framing call rather than an implementation defect.
 
 `slides_advisor.tex`'s **Layer-2 verdict was already correct** under D5 ("the
 response is to a *defended* seat, not to litigation as such") and was left alone.

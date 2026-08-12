@@ -208,8 +208,13 @@ r_female_vs   = get_iv('baseline', 'delta_female_vote_share_2024_2020')
 r_female_win  = get_iv('baseline', 'delta_winner_is_female_2024_2020')
 r_female_cand = get_iv('baseline', 'delta_female_share_2024_2020')
 
+# IV — candidate-pool mean age (years scale; reported in the Engine 1 prose since
+# it is off the share axis of the candidate-supply coefplot).
+r_age_cand    = get_iv('baseline', 'delta_mean_age_2024_2020')
+
 # Legislative
 r_leg_cand = get_leg('baseline', 'delta_log1p_total_candidates_2024_2020')
+r_leg_age  = get_leg('baseline', 'delta_mean_age_2024_2020')
 
 # Exposure-robust
 er_blank = get_er('delta_blank_rate_2024_2020')
@@ -350,6 +355,16 @@ M['FemaleCandSE']   = se_par(r_female_cand['se'])
 M['FemaleCandP']    = pval(r_female_cand['p'])
 M['FemaleCandTF']   = tick_cross(r_female_cand['reject_tF_5pct'])
 
+# Candidate-pool mean age (years). Signed 2-dp for prose; council pool trends
+# marginally younger (a lone tF-significant wrinkle that does not survive the
+# multiple-testing correction), the mayoral pool is flat.
+_sgn2 = lambda v: (f'+{v:.2f}' if v >= 0 else f'{v:.2f}')
+M['MayorAgeYr']    = _sgn2(r_age_cand['coef'])
+M['MayorAgeP']     = pval(r_age_cand['p'])
+M['CouncilAgeYr']  = _sgn2(r_leg_age['coef'])
+M['CouncilAgeP']   = pval(r_leg_age['p'])
+M['CouncilAgeTF']  = tick_cross(r_leg_age['reject_tF_5pct'])
+
 # --- Open seat heterogeneity ---
 M['OpenBlankCoef'] = coef(r_blank_open['coef'])
 M['OpenBlankSE']   = se_par(r_blank_open['se'])
@@ -467,6 +482,38 @@ M['EffNPerSD']       = f'{abs(r_effn["coef"] * TREAT_SD):.3f}'
 for tag, r in (('CandExec', r_cand), ('LegCand', r_leg_cand)):
     M[f'{tag}PerSDPct']       = f1(abs((math.exp(r['coef'] * TREAT_SD) - 1) * 100))
     M[f'{tag}PerSDPctSigned'] = per_sd_pct_signed(r['coef'])
+
+# --- Gender incidence of the consolidation ---
+# Unconditional decomposition of the layer-3 result: female + male components sum
+# to the winner/runner-up totals above, on the same sample. The *Gap tags are the
+# female-minus-male difference estimated as its own outcome -- those p-values, not
+# the contrast between a starred male component and an unstarred female one, are
+# what licenses any claim that the incidence is gendered. All are share-scale, so
+# the per-SD macros are in percentage points. Built for the advisor deck's layer-3
+# gender frame; see GENDER_CONSOL_OUTCOMES in 03_estimation/02_iv_main.R.
+#
+# The four slot components carry an explicit *Share suffix. Without it, \FemWinCoef
+# (the female winner's VOTE SHARE) sits one character from the deck's long-standing
+# \FemaleWinCoef (the probability the WINNER IS FEMALE) -- two different outcomes,
+# both about women and winning, differing by a letter. That is exactly the silent
+# swap the no-hardcoding rule exists to prevent, so the names are kept far apart.
+_GENDER_ROWS = {
+    'FemWinShare':  'delta_female_winner_vote_share_2024_2020',
+    'MaleWinShare': 'delta_male_winner_vote_share_2024_2020',
+    'FemRUShare':   'delta_female_runnerup_vote_share_2024_2020',
+    'MaleRUShare':  'delta_male_runnerup_vote_share_2024_2020',
+    'WinGap':    'delta_female_male_winner_gap_2024_2020',
+    'RUGap':     'delta_female_male_runnerup_gap_2024_2020',
+    'FemTopTwo': 'delta_female_top2_vote_share_2024_2020',
+    'RUIsFem':   'delta_runnerup_is_female_2024_2020',
+}
+for _tag, _oc in _GENDER_ROWS.items():
+    _r = get_iv('baseline', _oc)
+    M[f'{_tag}Coef']         = coef(_r['coef'])
+    M[f'{_tag}SE']           = se_par(_r['se'])
+    M[f'{_tag}P']            = pval(_r['p'])
+    M[f'{_tag}PerSD']        = per_sd_pp(_r['coef'])
+    M[f'{_tag}PerSDSigned']  = per_sd_pp_signed(_r['coef'])
 
 # --- Dependent-variable means (over estimation sample) ---
 def m3(x):

@@ -32,7 +32,7 @@ SCRIPT_DIR <- if (length(file_arg) > 0) {
 } else getwd()
 ROOT        <- normalizePath(file.path(SCRIPT_DIR, "..", ".."))
 DESIGN_PATH <- file.path(ROOT, "data", "estimation", "executive_margin_design.csv")
-OUT_DIR     <- file.path(ROOT, "output", "tables", "regressions")
+OUT_DIR     <- file.path(ROOT, "exploration", "output", "tables", "regressions")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 
 # ── shared load ───────────────────────────────────────────────────────────────

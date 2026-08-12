@@ -41,9 +41,9 @@ ROOT    <- "c:/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization"
 PANEL   <- file.path(ROOT, "data/clean/municipality_competition_subject_panel.csv")
 COMP    <- file.path(ROOT, "data/clean/municipality_bartik_components.csv")
 DESIGN  <- file.path(ROOT, "data/estimation/executive_margin_design.csv")
-OUT_CSV <- file.path(ROOT, "output/tables/regressions/mean_reversion_splitsample.csv")
-OUT_SUM <- file.path(ROOT, "output/tables/regressions/mean_reversion_splitsample_summary.csv")
-OUT_FIG <- file.path(ROOT, "output/figures/firststage_splitsample.pdf")
+OUT_CSV <- file.path(ROOT, "exploration/output/tables/regressions/mean_reversion_splitsample.csv")
+OUT_SUM <- file.path(ROOT, "exploration/output/tables/regressions/mean_reversion_splitsample_summary.csv")
+OUT_FIG <- file.path(ROOT, "exploration/output/figures/firststage_splitsample.pdf")
 
 source(file.path(ROOT, "code/utils/figure_style.R"))  # theme_report(), PAL
 

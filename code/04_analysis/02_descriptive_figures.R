@@ -3,9 +3,7 @@
 # PURPOSE: figures that DESCRIBE the data universe and the instrument (not the
 # causal results — those live in 03_result_figures.R). Four blocks:
 #
-#   [A] Litigation timing        -> litigation_timing_count.pdf
-#                                   litigation_timing_rate.pdf
-#                                   litigation_timing_share.pdf
+#   [A] Litigation timing        -> litigation_timing_shape.pdf
 #   [B] Data-universe map        -> sample_map.pdf
 #   [C] Bartik IV histogram      -> instrument_histogram.pdf
 #   [D] Bartik IV choropleth     -> instrument_map.pdf
@@ -119,36 +117,6 @@ timing_base <- function(p) {
     theme_report() +
     theme(legend.position = c(0.16, 0.85))
 }
-
-# (1) weekly adversarial count
-p_count <- timing_base(
-  ggplot(agg, aes(week, adv, color = year, fill = year)) +
-    geom_area(position = "identity", alpha = 0.10, color = NA) +
-    geom_line(linewidth = 0.8)
-) + labs(x = "Days relative to first-round election",
-         y = "Adversarial filings (weekly)")
-ggsave(file.path(FIG_DIR, "litigation_timing_count.pdf"), p_count, width = 6.6, height = 4.0)
-cat("  Saved litigation_timing_count.pdf\n")
-
-# (2) weekly adversarial filings per 1,000 candidates (cross-year comparable)
-p_rate <- timing_base(
-  ggplot(agg, aes(week, per1000, color = year, fill = year)) +
-    geom_area(position = "identity", alpha = 0.10, color = NA) +
-    geom_line(linewidth = 0.8)
-) + labs(x = "Days relative to first-round election",
-         y = "Adversarial filings per 1,000 candidates (weekly)")
-ggsave(file.path(FIG_DIR, "litigation_timing_rate.pdf"), p_rate, width = 6.6, height = 4.0)
-cat("  Saved litigation_timing_rate.pdf\n")
-
-# (3) adversarial share of all originário filings (does the mix tilt?) — robust
-p_share <- timing_base(
-  ggplot(agg, aes(week, share, color = year)) +
-    geom_line(linewidth = 0.8)
-) + scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
-  labs(x = "Days relative to first-round election",
-       y = "Adversarial share of all electoral filings")
-ggsave(file.path(FIG_DIR, "litigation_timing_share.pdf"), p_share, width = 6.6, height = 4.0)
-cat("  Saved litigation_timing_share.pdf\n")
 
 # (4) within-cycle shape — each year's adversarial filings as a % of its OWN
 # windowed total (coverage-robust: no cross-year level comparison, only shape).

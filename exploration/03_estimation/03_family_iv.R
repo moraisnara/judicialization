@@ -31,7 +31,7 @@ if (exists("rstudioapi") && tryCatch(rstudioapi::isAvailable(), error = function
 }
 PROJECT_ROOT   <- normalizePath(file.path(SCRIPT_DIR, "..", ".."))
 ESTIMATION_DIR <- file.path(PROJECT_ROOT, "data", "estimation")
-ESTIMATES_DIR  <- file.path(PROJECT_ROOT, "output", "tables", "regressions")
+ESTIMATES_DIR  <- file.path(PROJECT_ROOT, "exploration", "output", "tables", "regressions")
 dir.create(ESTIMATES_DIR, recursive = TRUE, showWarnings = FALSE)
 
 

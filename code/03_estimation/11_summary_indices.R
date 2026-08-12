@@ -102,8 +102,12 @@ FAMILIES <- list(
     delta_valid_vote_rate_vereador_2024_2020 = -1
   )
 )
-# The overall BARRIER index pools the three executive barrier families (not
-# representation, which is a null, nor the council placebo).
+# The overall pooled index combines the three executive families (not
+# representation, which is a null, nor the council placebo). It is DISPLAYED as
+# "Overall combined index", never "barrier": 8 of its 12 outcomes are concentration,
+# which under FRAMING D4 cannot identify a face -- only the ballot family can, and
+# that family alone does not clear (p = .134). The BARRIER_* identifiers are kept
+# as-is deliberately, to avoid churning the rest of this file for a label change.
 BARRIER_FAMILIES <- c("closeness", "concentration", "disengagement")
 
 FAMILY_LABEL <- c(
@@ -112,7 +116,7 @@ FAMILY_LABEL <- c(
   disengagement   = "Voter disengagement",
   representation  = "Descriptive representation",
   council_placebo = "Council ballot (placebo)",
-  barrier_overall = "Overall barrier index"
+  barrier_overall = "Overall combined index"
 )
 
 # ANCOVA-2016 map (mirrors 02_iv_main.R): delta-outcome -> c(2024 level, 2016 lag).
