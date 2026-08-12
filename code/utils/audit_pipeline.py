@@ -29,7 +29,7 @@ INFRASTRUCTURE = {
     "utils/audit_pipeline.py",
 }
 
-WRITE = r"(to_csv|write_csv|fwrite|write\.csv|savefig|ggsave|write_parquet|writeLines|write_text)"
+WRITE = r"(to_csv|write_csv|fwrite|write\.csv|savefig|ggsave|write_parquet|writeLines|write_text|urlretrieve|extractall)"
 READ = r"(read_csv|fread|read\.csv|read_parquet|read_excel)"
 
 
