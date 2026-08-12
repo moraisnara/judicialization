@@ -79,7 +79,10 @@ def main() -> None:
     run_r("code/04_analysis/05_validation.R")               # FD-vs-ANCOVA + ANCOVA validation
     run_r("code/04_analysis/07_exposure_robust_se.R")       # genuine AKM/BHJ exposure-robust SE (replaces fake py [C])
     run_py("code/04_analysis/08_lawsuit_composition_sp.py")  # SP 2016->2024 class composition (pre-sample baseline, appendix)
-    run_py("code/04_analysis/06_abstract_macros.py")        # deck macros (reads overview_* + regressions)
+    run_r("code/04_analysis/09_summary_statistics.R")       # estimation-sample summary statistics table
+    run_py("code/04_analysis/10_candidate_rank_profile.py")  # winner vs runner-up vs field profile (2024 mayoral)
+    run_py("code/04_analysis/11_lawsuit_topic_selection.py")  # which adversarial topics the instrument selects on
+    run_py("code/04_analysis/06_abstract_macros.py")        # deck macros (reads overview_* + regressions) -- LAST
 
     print("\nPipeline complete.")
 
