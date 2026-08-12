@@ -24,7 +24,6 @@
 #
 # All regression output in R/fixest (project standing rule). Outputs:
 #   output/tables/regressions/nonadversarial_placebo.csv      (tidy, for macros)
-#   output/tables/tex/nonadversarial_placebo_rf.tex           (placebo reduced form)
 #   output/tables/tex/nonadversarial_robustness.tex           (main vs conditioned)
 
 suppressPackageStartupMessages({
@@ -259,23 +258,6 @@ mean_row <- function(mods)
 label_mods <- function(store, keys, labels) {
   mods <- Filter(Negate(is.null), store[keys])
   setNames(mods, labels[names(mods)])
-}
-
-# ---- 5a. Placebo reduced form (cols = outcomes): the key generic-shares null ----
-# OLS of each electoral outcome on the placebo (non-adversarial) Bartik. A null
-# reduced form is the BHJ generic-shares evidence: exposure to mandatory/admin
-# filing growth does NOT predict electoral change. (Discriminant-validity aside:
-# the placebo's own first stage on non-adversarial growth is F ~ 0.3 -- the
-# leave-state-out shift that powers the REAL instrument, F ~ 28, has no purchase
-# on mandatory filings -- reported in nonadversarial_placebo.csv, not here, since
-# this table is about outcomes, not relevance.)
-{
-  mods <- label_mods(plac_rf_fits, FOCUS_OUTCOMES, OUTCOME_LABELS)
-  out <- do.call(etable, c(list(
-    mods, keep = "Placebo Bartik", fitstat = ~ n + r2
-  ), etab_base))
-  write_frag(out, file.path(TEX_DIR, "nonadversarial_placebo_rf.tex"),
-             "code/03_estimation/04_placebo_nonadversarial.R")
 }
 
 # ---- 5b. Main vs intensity-conditioned vs placebo-conditioned -------------------

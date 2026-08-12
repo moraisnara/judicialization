@@ -32,4 +32,4 @@ The LIML-vs-2SLS comparison was removed from `code/03_estimation/02_iv_main.R`
 rather than archived: with `K=1` the estimator is 2SLS ≡ LIML by construction, so
 the check confirmed a mechanical identity, and no document ever cited it. If a
 referee asks, recover it from git history — it was removed in the commit that
-follows `<PRE_STRIP_SHA>`.
+follows `da0191b`.

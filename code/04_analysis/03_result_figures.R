@@ -1,9 +1,8 @@
 # 03_result_figures.R — causal-result figures for the deck
 # ===========================================================================
 # PURPOSE: figures that report the ESTIMATION RESULTS (the instrument's data
-# universe is described in 02_descriptive_figures.R). Eight blocks:
+# universe is described in 02_descriptive_figures.R). Seven blocks:
 #
-#   [A] First stage, binscatter (cubic)     -> firststage_binscatter.pdf
 #   [B] First stage, linear (AMV style)     -> firststage_linear.pdf
 #   [C] Voter disengagement by seat type    -> voterbehavior_seat_coefplot.pdf
 #   [D] Null-family coefficient plots       -> representation_coefplot.pdf
@@ -19,13 +18,12 @@
 # theme_report() blanks title/subtitle/caption. Do not re-add ad-hoc hex or plot
 # titles here.
 #
-# Requires: fixest, binsreg, ggplot2, dplyr, scales, data.table
+# Requires: fixest, ggplot2, dplyr, scales, data.table
 
 suppressPackageStartupMessages({
   user_lib <- "C:/Users/naral/R/win-library/4.6"
   if (dir.exists(user_lib)) .libPaths(c(user_lib, .libPaths()))
   library(fixest)
-  library(binsreg)
   library(ggplot2)
   library(dplyr)
   library(scales)
@@ -86,26 +84,6 @@ resid_endog <- residuals(feols(as.formula(paste(ENDOG, "~", ctrl_formula)),
 resid_instr <- residuals(feols(as.formula(paste(INSTR, "~", ctrl_formula)),
                                data = samp, warn = FALSE, notes = FALSE))
 bs_df <- data.frame(x = resid_instr, y = resid_endog)
-
-set.seed(42)
-bs <- binsreg(y = bs_df$y, x = bs_df$x, nbins = 30,
-              line = c(3, 3), ci = c(3, 3), cb = NULL,
-              plotxrange = quantile(bs_df$x, c(0.01, 0.99)))
-bin_df  <- bs$data.plot$`Group Full Sample`$data.dots
-line_df <- bs$data.plot$`Group Full Sample`$data.line
-
-p_bin <- ggplot() +
-  geom_ribbon(data = bs$data.plot$`Group Full Sample`$data.ci,
-              aes(x = x, ymin = ci.l, ymax = ci.r), fill = COL_BLUE, alpha = 0.15) +
-  geom_line(data = line_df, aes(x = x, y = fit), color = COL_BLUE, linewidth = 0.9) +
-  geom_point(data = bin_df, aes(x = x, y = fit), color = COL_BLUE, size = 2.2) +
-  geom_hline(yintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
-  geom_vline(xintercept = 0, color = "grey60", linetype = "dashed", linewidth = 0.4) +
-  labs(x = "Bartik IV (residualised on 7 controls + state FE)",
-       y = expression(Delta*log(1 + lawsuits) ~ " (residualised)")) +
-  theme_report()
-ggsave(file.path(FIG_DIR, "firststage_binscatter.pdf"), p_bin, width = 7, height = 4.5)
-cat("  Saved firststage_binscatter.pdf\n")
 
 
 # ============================================================================

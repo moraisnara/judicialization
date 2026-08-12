@@ -494,19 +494,16 @@ cat(sprintf("Running %d variants x %d specifications x %d outcomes\n\n",
 
 fs_rows   <- list()
 iv_rows   <- list()
-liml_rows <- list()
 
 # Model objects stored for etable() LaTeX generation (Section 9)
 # Headline first-stage table: baseline + extended controls, then the two seat-type
 # subsamples that carry the voter-disengagement result. single_zone / broader_treatment
 # are robustness slices reported elsewhere, not in the headline first-stage table.
 FS_TEX_SPECS       <- c("baseline", "extended_controls", "open_seat", "contested_seat")
-BLANK_SUBGROUP_SPECS <- c("baseline", "open_seat", "contested_seat")
 
 tex_fs_fits       <- list()   # [spec_name] = feols (first stage)
 tex_base_iv_fits  <- list()   # [outcome]   = feols (baseline ANCOVA-2016 IV)
 tex_fd_iv_fits    <- list()   # [outcome]   = feols (pure first-difference, appendix)
-tex_blank_sub_fits <- list()  # [spec_name] = feols (blank rate, subgroup specs)
 tex_vb_oc_fits     <- list()  # [spec_name][[outcome]] = feols (voter beh., open/contested)
 tex_het_fits       <- list()  # [spec_name][[outcome]] = feols (het. seat table: consol + diseng)
 
@@ -600,8 +597,6 @@ for (vr in VARIANTS) {
           tex_base_iv_fits[[y]] <- iv_fit
         if (spec_name == "fd")
           tex_fd_iv_fits[[y]] <- iv_fit
-        if (y == "delta_blank_rate_2024_2020" && spec_name %in% BLANK_SUBGROUP_SPECS)
-          tex_blank_sub_fits[[spec_name]] <- iv_fit
         if (spec_name %in% c("open_seat", "contested_seat") &&
             y %in% VOTER_BEHAVIOR_OUTCOMES)
           tex_vb_oc_fits[[spec_name]][[y]] <- iv_fit
@@ -612,38 +607,6 @@ for (vr in VARIANTS) {
         message("  IV error [", spec_name, ", ", y, "]: ", conditionMessage(e)))
     }
 
-    # LIML for baseline spec (K=1 instrument — no eigenvalue issue)
-    if (spec_name == "baseline") {
-      for (y in ALL_OUTCOMES) {
-        if (!(y %in% names(samp))) next
-        if (sum(!is.na(samp[[y]])) < 20L) next
-        family <- if (y %in% PRIMARY_OUTCOMES)          "primary"
-                  else if (y %in% SECONDARY_OUTCOMES)  "secondary"
-                  else if (y %in% COMPOSITION_OUTCOMES) "composition"
-                  else if (y %in% CANDIDATE_SUPPLY_OUTCOMES) "candidate_supply"
-                  else if (y %in% ENTRY_OUTCOMES)       "entry"
-                  else if (y %in% CONCENTRATION_OUTCOMES) "concentration"
-                  else if (y %in% PRETREND_OUTCOMES)    "pretrend"
-                  else                                  "voter_behavior"
-        tryCatch({
-          controls_y <- if (y %in% PRETREND_OUTCOMES)
-                          intersect(controls, PREDET_CONTROLS) else controls
-          r_l        <- resolve_lhs(y, form, samp)
-          ctrls_l    <- avail(c(controls_y, r_l$lag), samp)
-          ctrl_rhs_l <- if (length(ctrls_l) > 0) paste(ctrls_l, collapse = " + ") else "1"
-          fml_l      <- as.formula(sprintf(
-            "%s ~ %s | %s | %s ~ %s", r_l$lhs, ctrl_rhs_l, fe_col, endogenous, instrument
-          ))
-          liml_fit <- feols(fml_l, data = samp, cluster = ~cluster_id,
-                            estimator = "liml", warn = FALSE, notes = FALSE)
-          liml_rows[[length(liml_rows) + 1]] <- extract_iv_row(
-            liml_fit, var_name, spec_name, family, y, n_obs, n_cl, endogenous,
-            estimator = "liml"
-          )
-        }, error = function(e)
-          message("  LIML error [", y, "]: ", conditionMessage(e)))
-      }
-    }
   }
 }
 
@@ -707,48 +670,6 @@ for (vn in sapply(VARIANTS, `[[`, "name")) {
 fwrite(iv_results,  file.path(ESTIMATES_DIR, "executive_margin_iv_fixest.csv"))
 fwrite(first_stage, file.path(ESTIMATES_DIR, "executive_margin_first_stage_fixest.csv"))
 cat("  (Re-saved with tF correction columns)\n")
-
-
-# ============================================================
-# 8. LIML vs 2SLS COMPARISON  (baseline spec only)
-# ============================================================
-# With K=1 instrument, LIML is numerically identical to 2SLS (no eigenvalue issue).
-# A large LIML–2SLS divergence would signal many-instrument or weak-instrument bias.
-
-if (length(liml_rows) > 0) {
-  liml_results <- do.call(rbind, liml_rows)
-
-  # Add tF correction
-  liml_results$first_stage_F_lookup <- fs_F_map[
-    paste(liml_results$variant, liml_results$spec, sep = ":::")
-  ]
-  liml_results$tF_cv          <- sapply(liml_results$first_stage_F_lookup, get_tF_cv)
-  liml_results$ci95_low_tF    <- liml_results$coef - liml_results$tF_cv * liml_results$se
-  liml_results$ci95_high_tF   <- liml_results$coef + liml_results$tF_cv * liml_results$se
-  liml_results$reject_tF_5pct <- abs(liml_results$t) > liml_results$tF_cv
-
-  # Side-by-side comparison for primary/secondary outcomes
-  iv_base  <- iv_results[iv_results$spec == "baseline" &
-                         iv_results$family %in% c("primary", "secondary"),
-                         c("outcome", "coef", "se", "p", "ivf")]
-  names(iv_base)[2:5] <- paste0(names(iv_base)[2:5], "_2sls")
-
-  liml_base <- liml_results[liml_results$family %in% c("primary", "secondary"),
-                             c("outcome", "coef", "se", "p")]
-  names(liml_base)[2:4] <- paste0(names(liml_base)[2:4], "_liml")
-  liml_base$p_liml <- liml_base$p_liml  # already renamed
-
-  comparison <- merge(iv_base, liml_base, on = "outcome", all = TRUE)
-
-  fwrite(comparison,    file.path(ESTIMATES_DIR, "liml_comparison.csv"))
-  cat("\nLIML results saved:\n")
-  cat("  ", file.path(ESTIMATES_DIR, "liml_comparison.csv"), "\n")
-
-  max_div <- max(abs(comparison$coef_2sls - comparison$coef_liml), na.rm = TRUE)
-  cat(sprintf("  Max |2SLS - LIML| across primary/secondary outcomes: %.4f\n", max_div))
-} else {
-  cat("\nNo LIML results collected.\n")
-}
 
 
 # ============================================================
@@ -1395,17 +1316,6 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
   )
   mods <- label_mods(tex_base_iv_fits, outs, OUTCOME_LABELS)
   iv_etable(mods, file.path(TEX_DIR, "entrant_typology.tex"))
-}
-
-# ---- 9f. Blank Rate — open-seat heterogeneity (cols = subgroup specs) ----
-{
-  sub_labels <- c(
-    baseline      = "All municipalities",
-    open_seat     = "Open seat",
-    contested_seat = "Contested seat"
-  )
-  mods <- label_mods(tex_blank_sub_fits, BLANK_SUBGROUP_SPECS, sub_labels)
-  iv_etable(mods, file.path(TEX_DIR, "open_seat_blank_rate.tex"))
 }
 
 # ---- 9g. Appendix — pure first-difference bracket (cols = headline outcomes) ----
