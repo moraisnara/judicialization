@@ -419,6 +419,41 @@ reading of it is tentative (FRAMING D4)."
 
 ---
 
+### Task 5b: Retire face-assignment from non-ballot outcomes (added during execution)
+
+**Full brief:** `.superpowers/sdd/2026-08-11-framing-application/task-5b-brief.md`
+
+Added after Task 5, when a read-only D4/D5 audit found four D4-violating sites in
+`slides_report.tex` that this plan's hand-enumeration of 11 edit sites had missed: the
+headline consolidation frame, the rank-profile takeaway, the winner-identity null, and the
+council placebo. Each named the Barrier face off a concentration outcome or a descriptive.
+
+Root cause of the miss, which generalizes: a plain two-word search for `barrier signature`
+cannot match `a \negt{barrier} signature`, because LaTeX markup sits between the words. **Any
+grep over these decks must tolerate intervening markup** (`barrier[^ ]* *signature`) or search
+the rendered PDF text instead.
+
+### Task 5c: Rename the pooled index and disclose what it pools (added during execution)
+
+**Full brief:** `.superpowers/sdd/2026-08-11-framing-application/task-5c-brief.md`
+
+Added after the author ruled on a research-integrity question surfaced during Task 5. The
+summary-index table's pooled row was called "Overall barrier index", but 8 of its 12 outcomes
+are concentration, which under D4 cannot identify a face; the one family that can — the ballot
+(voter disengagement) — does not clear on its own (p = .134), and the pooled p = .039 is
+inherited from closeness (p = .009). Both decks cited it as robustness for the barrier reading.
+
+**Author's decision: rename + disclose.** Relabel to "Overall combined index" in
+`code/03_estimation/11_summary_indices.R`, regenerate `output/tables/tex/summary_indices.tex`,
+and add one disclosure sentence to the multiplicity frame of each deck. **No re-estimation** —
+every number must come back byte-identical, and a moved digit is a BLOCKED reproducibility
+defect, not a new result.
+
+This does not contradict the seat-split finding (blank +0.005, p = .04 in contested seats):
+pooling across all seats dilutes a seat-conditional effect, which is exactly what D5 predicts.
+
+---
+
 ### Task 6: State the estimand boundary in app:theory (R10)
 
 **Files:**
@@ -801,7 +836,13 @@ instead of re-opening settled questions."
 
 - [ ] Both decks compile with no `!` errors and hold their baseline page counts (67 / 11).
 - [ ] Every edited frame has been rasterized and visually confirmed free of overflow.
-- [ ] `grep -ri "barrier signature" output/presentation/` returns nothing.
+- [ ] `grep -rniE "barrier[^ ]* *(signature|story|protects)" output/presentation/*.tex` returns only
+      seat-conditional survivors (report deck L684, L762), and no unconditional face claim.
+      A bare `grep -ri "barrier signature"` is NOT sufficient — it cannot see through
+      `\negt{barrier}` markup and returned zero while two live sites sat in the file.
+- [ ] The pooled index reads "Overall combined index" in `summary_indices.tex`, and the
+      multiplicity frame of each deck discloses the 8/12-concentration composition and the
+      ballot family's own p = .134.
 - [ ] The Task 8 Step 3 verifier reports `remaining British: 0` and `non-ascii bytes: 79 ... OK` for **both** decks.
 - [ ] `git diff --name-only a6b42a1..HEAD` contains no file under `output/paper/`.
 - [ ] `WRITING_GUIDE.md` §3 points at `FRAMING.md` rather than issuing a reconciliation instruction.
