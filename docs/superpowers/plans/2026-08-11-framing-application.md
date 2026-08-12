@@ -32,8 +32,12 @@
   1. Delete a redundant manual `\vspace`/`\smallskip` and let the natural spacing apply
   2. `\itemsep` down to `1pt` (the deck's established floor)
   3. `\\[2pt]` → `\\[1pt]`
-  4. `\vspace{0pt}`, then `-2pt`, then `-4pt`
-  **`-4pt` is the floor** — it is the most negative value used anywhere else in the deck. Going past it requires reporting the overflow as a BLOCKED finding instead, because at that point the frame is genuinely over capacity and the author must decide what to cut. Whichever rung you use, **verify both edges**: the bottom margin against the footline *and* the top junction against whatever sits above. Report both measured gaps in points.
+  4. `\vspace{0pt}`, then `-2pt`, then `-4pt` — **`-4pt` is the floor for spacing**, the most negative value used anywhere else in the deck
+  5. **Only if the frame contains a figure** (`tikzpicture` / `includegraphics`): compress the *figure geometry*, never the prose. Preferred lever is wrapping the picture in `\scalebox{0.97}{...}` (the deck already resizes tables the same way); node coordinates and `minimum height` are acceptable alternatives. **Bounded: no more than a 5% reduction**, and the figure's text, labels, and colors must be untouched. Re-measure after — scaling changes both edges.
+
+  **Past rung 5 the frame is genuinely over capacity**: report it as a BLOCKED finding, because the only levers left cut content and that is the author's decision, not the implementer's. Whichever rung you use, **verify both edges**: the bottom margin against the footline *and* the top junction against whatever sits above. Report both measured gaps in points.
+
+  *Rationale for rung 5 (added after Task 3):* the original floor assumed the only lever past spacing was cutting prose. That is false on a frame carrying a figure — shrinking a diagram a few percent is invisible to a reader and changes no content, so it is a layout call, not an authorial one.
 
 ---
 
