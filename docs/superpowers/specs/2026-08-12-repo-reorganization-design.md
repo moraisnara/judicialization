@@ -105,7 +105,7 @@ output of that script byte-identical. Verified by re-running the pipeline stage 
 
 ## Orphan CSVs under `output/tables/`
 
-Thirteen CSVs under `output/tables/{regressions,descriptives}/` are read by no script and
+Seventeen CSVs under `output/tables/{regressions,descriptives}/` are read by no script and
 cited by no document. **They are not treated like the orphan figures above**, for two reasons:
 
 - **`csv = source of truth`** (standing convention, 2026-07-02): the CSV is the saved numeric
@@ -119,7 +119,7 @@ So the reference test used for figures ("no document names it") over-fires on CS
 here is **does the result it records appear anywhere** — as a figure, a fragment, a macro, or
 a prose claim in the deck.
 
-**A — travel with a departing script (4).** No separate decision; they move to
+**A — travel with a departing script (6).** No separate decision; they move to
 `exploration/output/` with their producer.
 
 | CSV | Producer (moving) |
@@ -127,9 +127,11 @@ a prose claim in the deck.
 | `regressions/ancova_validation.csv` | `04_analysis/05_validation.R` |
 | `regressions/fd_vs_ancova_comparison.csv` | `04_analysis/05_validation.R` |
 | `regressions/family_iv_results.csv` | `03_estimation/03_family_iv.R` |
+| `regressions/mean_reversion_splitsample.csv` | `03_estimation/08_mean_reversion.R` |
+| `regressions/mean_reversion_splitsample_summary.csv` | `03_estimation/08_mean_reversion.R` |
 | `descriptives/lawsuit_topic_selection_worksheet.csv` | `04_analysis/11_lawsuit_topic_selection.py` |
 
-**B — record CSVs; keep (7).** The producing script also emits a consumed asset covering the
+**B — record CSVs; keep (9).** The producing script also emits a consumed asset covering the
 same result, so the CSV is that result's source of truth. No action.
 
 | CSV | The result it records, and where it appears |
@@ -139,6 +141,8 @@ same result, so the CSV is that result's source of truth. No action.
 | `regressions/mechanism_finance_fixest.csv` | Behind the mechanism fragment |
 | `regressions/exposure_robust_akm.csv` | AKM variant of `exposure_robust_se.csv`, which the macro hub reads |
 | `regressions/legislative_first_stage_fixest.csv` | The legislative first stage the deck reports |
+| `regressions/extensive_margin_decomposition.csv` | Behind `extensive_margin_macros.tex` (`app:extensive`) |
+| `regressions/zero_exposure_robustness.csv` | Zero-exposure check from the same script |
 | `descriptives/candidate_pool_descriptives.csv` | Candidate-pool descriptives |
 | `descriptives/litigation_family_shares.csv` | Within-adversarial family composition |
 
@@ -176,10 +180,16 @@ because depth 2 is preserved.
 - documents referencing assets absent from disk (build breakers),
 - unreferenced CSVs under `output/tables/`, listed **separately** and never as deletion
   candidates — under `csv = source of truth` an unreferenced CSV is a question ("is this
-  result shown anywhere?"), not a defect. Detection needs a ±4-line context window around
-  each filename mention and separate read/write verb sets: R's
-  `OUT <- file.path(REG, "x.csv"); fwrite(res, OUT)` splits the verb from the name across
-  lines, and a same-line regex misreads writers as readers.
+  result shown anywhere?"), not a defect.
+
+**Detection must resolve path constants, not scan nearby lines.** Scripts bind a path to a
+variable and use the verb far away — `OUT_CSV <- file.path(ROOT, ".../x.csv")` in a constant
+block at the top, `fwrite(res, OUT_CSV)` two hundred lines down. Two weaker heuristics were
+tried and both undercounted: a same-line regex misread writers as readers, and a ±4-line
+context window scored constant-block declarations as "mentioned, verb unknown" and silently
+treated them as read — hiding four of the seventeen orphans (both `mean_reversion_*` and
+both `09_extensive_margin.R` outputs). The auditor must find the variable a path literal is
+assigned to, then look for read/write verbs applied to *that variable* anywhere in the file.
 
 It is a report, not a gate — it prints findings and exits 0. Rationale: the classification
 will drift as scripts are added, and the alternative is redoing this analysis by hand.
@@ -246,8 +256,8 @@ The reorg is step 3. Steps 1–2 clear the ground so it lands as a reviewable di
   regenerates them.
 - `code/utils/audit_pipeline.py` reports zero archive candidates, zero orphan outputs, the
   two verification gates under "infrastructure", one known build breaker (the
-  `extended_abstract.tex` figure, flagged above), and the unreferenced-CSV list down to the
-  seven record CSVs plus `gps_balance_tests.csv`.
+  `extended_abstract.tex` figure, flagged above), and the unreferenced-CSV list down to ten —
+  the nine record CSVs plus `gps_balance_tests.csv`.
 - `run_all.py` completes without referencing a moved script.
 - Both decks compile at their baseline page counts (67 / 11).
 - `git status` is clean and `main` is pushed.
