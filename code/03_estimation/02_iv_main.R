@@ -359,7 +359,17 @@ resolve_lhs <- function(outcome, form, data) {
 # 3. HELPER FUNCTIONS
 # ============================================================
 
-avail <- function(controls, data) controls[controls %in% names(data)]
+# Drops controls the design does not carry. This MUST be loud: a silently dropped
+# control turns a robustness spec into a copy of the headline with no visible
+# symptom (broader_treatment reproduced baseline to the last digit for exactly this
+# reason). Warn rather than stop -- some variants legitimately lack a control.
+avail <- function(controls, data) {
+  missing <- setdiff(controls, names(data))
+  if (length(missing) > 0)
+    warning("avail(): controls absent from the design and DROPPED: ",
+            paste(missing, collapse = ", "), call. = FALSE, immediate. = TRUE)
+  controls[controls %in% names(data)]
+}
 
 build_sample <- function(data, controls, outcomes, fe_col, instrument, endogenous,
                          single_zone = FALSE, aptos_filter = NULL) {
@@ -476,6 +486,14 @@ specs <- list(
   list("open_seat",         BASELINE_CONTROLS,                                  "SG_UF", FALSE, "open_seat",    "ancova2016"),
   list("contested_seat",    BASELINE_CONTROLS,                                  "SG_UF", FALSE, "no_open_seat", "ancova2016"),
   list("broader_treatment", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"), "SG_UF", FALSE, NULL,           "ancova2016"),
+  # Conditions on the 2020 LEVEL of the endogenous variable itself. Z is a function
+  # of the 2020 base (baseline_share_2020 x shock), and Z = 0 for 20.7% of
+  # municipalities -- exactly those with no recorded 2020 adversarial filing. This
+  # spec asks whether the reduced form survives holding that base fixed. It is a
+  # diagnostic, not a preferred spec: log1p_competition_lawsuits_2020 is a 2020
+  # LEVEL and so carries the Lord's-paradox caveat that bars ANCOVA_2020_LEVELS
+  # from the headline. Report it beside the headline, do not replace it.
+  list("base_conditioned",  c(BASELINE_CONTROLS, "log1p_competition_lawsuits_2020"), "SG_UF", FALSE, NULL,       "ancova2016"),
   # Robustness bracket: pure first difference (delta outcome, no own-lag). The FD
   # form pins the 2016->2024 persistence to 1; reported alongside the headline so
   # the over-differencing is visible (see exploration/04_analysis/05_validation.R).

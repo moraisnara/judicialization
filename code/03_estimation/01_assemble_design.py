@@ -197,12 +197,17 @@ def build_no_rrc_variant(
     wide["delta_log1p_lawsuits_no_rrc_2024_2020"] = (
         np.log1p(wide["lawsuits_no_rrc_2024"]) - np.log1p(wide["lawsuits_no_rrc_2020"])
     )
+    # The 2020 log level is computed inline above to build the delta, then thrown
+    # away. 02_iv_main.R's broader_treatment spec asks for it by name; without it
+    # avail() dropped the control and the spec silently reproduced the baseline.
+    wide["log1p_lawsuits_no_rrc_2020"] = np.log1p(wide["lawsuits_no_rrc_2020"])
     out = design.merge(bartik_alt, on=["SG_UF", "SG_UE"], how="left")
     out = out.merge(wide, on=["SG_UF", "SG_UE"], how="left")
     for col in [
         "bartik_iv_no_rrc", "baseline_lawsuits_no_rrc_2020",
         "baseline_subjects_no_rrc_2020", "lawsuits_no_rrc_2020",
         "lawsuits_no_rrc_2024", "delta_log1p_lawsuits_no_rrc_2024_2020",
+        "log1p_lawsuits_no_rrc_2020",
     ]:
         out[col] = out[col].fillna(0)
     return out
