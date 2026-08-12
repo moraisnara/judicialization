@@ -37,6 +37,12 @@ output/presentation/*
 !output/figures/
 !output/tables/
 
+# ── exploration/ outputs ───────────────────────────────────────────────────────
+# Regenerable byproducts of hand-run exploration scripts. No document consumes
+# them (that is why the scripts live in exploration/, not code/), so — unlike
+# output/ above — nothing here is ever whitelisted back in.
+exploration/output/
+
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.pyc
