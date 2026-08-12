@@ -1,0 +1,160 @@
+% Estimating-equations note: AMV template -> judicialization design.
+% Standalone; single pdflatex pass (no \ref, no bibliography).
+\documentclass[10pt]{article}
+
+\usepackage[hmargin=0.9in, vmargin=0.75in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}   % scalable Type1; without it microtype expansion fails on tt
+\usepackage{microtype}
+\usepackage{enumitem}
+\setlist[itemize]{topsep=1.5pt, itemsep=0pt, parsep=0pt, leftmargin=1.2em}
+
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{8pt}{3pt}
+\titlespacing*{\subsection}{0pt}{5pt}{1pt}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.6em}{}
+
+\setlength{\parskip}{1.5pt}
+\setlength{\abovedisplayskip}{3pt}
+\setlength{\belowdisplayskip}{3pt}
+\setlength{\abovedisplayshortskip}{2pt}
+\setlength{\belowdisplayshortskip}{2pt}
+
+% Typewriter, with a legal line break after every underscore -- long TSE variable
+% names otherwise overflow the margin (they cannot be hyphenated).
+% Size is deliberately inherited, never fixed, so code always matches its prose.
+\newcommand{\code}[1]{{\ttfamily\def\_{\char`\_\allowbreak}#1}}
+
+\title{\vspace{-2.2em}\large\bfseries Estimating equations: the Ash--Morelli--Vannoni
+template and the judicialization design}
+\author{}
+\date{\vspace{-2.5em}\small \today\vspace{-1em}}
+
+\begin{document}
+\maketitle
+
+\section{The template: Ash, Morelli \& Vannoni}
+
+The design follows the shift-share instrumental-variables architecture of Ash, Morelli
+\& Vannoni, \emph{More Laws, More Growth? Evidence from U.S.\ States}. Their data are at the
+state ($s$) $\times$ biennium ($t$) level, $W_{st}$ the number of legal provisions
+enacted, $\Delta \log Y_{st}$ the log change in real per-capita GDP. The structural
+equation --- hence the second stage --- is
+%
+\begin{equation}
+\Delta \log Y_{st} \;=\; \alpha_s + \alpha_t + \alpha_s \cdot t
+  \;+\; \rho \log W_{st} \;+\; X_{st}'\beta \;+\; \varepsilon_{st},
+\end{equation}
+%
+where $\alpha_s$ are state fixed effects, $\alpha_t$ biennium fixed effects, and
+$\alpha_s \cdot t$ state-specific linear trends. The instrument for $\log W_{st}$ is the
+topic-share-weighted sum of leave-one-out national legislative flows,
+%
+\begin{equation}
+Z_{st} \;=\; \sum_{k=1}^{K}
+  \underbrace{\frac{W^{k}_{s0}}{W_{s0}}}_{\text{shares}} \;\cdot\;
+  \underbrace{\frac{1}{49}\sum_{r \neq s} \Delta \log W^{k}_{rt}}_{\text{shifts}} ,
+\end{equation}
+%
+where shares are pre-treatment topic shares averaged over 1955--1964 (period $0$), and
+shifts are the leave-one-out \emph{average} log change in legislation on topic $k$ across
+the other 49 states. $Z_{st}$ is standardized to mean zero, variance one. First stage and
+reduced form:
+%
+\begin{align}
+\log W_{st} &\;=\; \alpha_s + \alpha_t + \alpha_s \cdot t
+  \;+\; \psi Z_{st} \;+\; X_{st}'\beta \;+\; \eta_{st}, \\[-1pt]
+\Delta \log Y_{st} &\;=\; \alpha_s + \alpha_t + \alpha_s \cdot t
+  \;+\; \gamma Z_{st} \;+\; X_{st}'\beta \;+\; \varepsilon_{st}.
+\end{align}
+
+\section{What this paper estimates}
+
+The unit is the municipality $m$, the window the 2020 $\to$ 2024 municipal cycle, the
+race mayoral. With $Z_m$ the shift-share instrument, $\Delta W_m$ the change in
+judicialization, $X_m$ predetermined controls and $\alpha_{uf(m)}$ a state (UF) fixed
+effect, the \textbf{first stage} is
+%
+\begin{equation}
+\Delta W_m \;=\; \psi Z_m \;+\; X_m'\gamma \;+\; \alpha_{uf(m)} \;+\; \eta_m ,
+\end{equation}
+%
+and the \textbf{second stage}, written in the AMV form of (1), takes the outcome in
+differences:
+%
+\begin{equation}
+\Delta Y_{m} \;=\; \beta\, \Delta W_m \;+\; X_m'\gamma \;+\; \alpha_{uf(m)}
+  \;+\; \varepsilon_m ,
+\end{equation}
+%
+with $\Delta W_m$ instrumented by $Z_m$. This is the analogue of AMV's $\Delta \log
+Y_{st}$; our outcomes are vote shares and rates, so they enter in levels rather than
+logs. 
+
+
+\smallskip
+\noindent\textbf{Which baseline?} $\Delta Y_m = Y_{m,2024} - Y_{m,b}$ admits two
+readings. With $b = 2020$ the difference is \emph{treatment-window aligned}: the outcome
+moves over exactly the window in which $\Delta W_m$ is measured. But 2020 is also the
+year the exposure shares are drawn from, and it is a covid cycle, so the base is not
+clean. With $b = 2016$ the baseline is a \emph{clean pre-window}: 2016 predates the 2020
+shares entirely and cannot be contaminated by the instrument, at the cost of an outcome
+window (2016--2024) wider than the treatment window.
+
+
+\smallskip
+\noindent $X_m$ is a block of predetermined, largely \textbf{Census-based} controls (see
+\S3). Standard errors are clustered at the \textbf{state} level ($G = 26$): the
+leave-own-state-out shift is constant within a state, and first-instance litigation is
+correlated within state through the TRE. 
+\section{Variable construction}
+
+\subsection*{Instrument $Z_m$ }
+
+\begin{equation*}
+Z_m \;=\; \sum_{k} s_{m,k,2020} \cdot g_k^{(-uf)} ,
+\qquad
+g_k^{(-uf)} = \log\!\big(1 + N^{-uf}_{k,2024}\big) - \log\!\big(1 + N^{-uf}_{k,2020}\big) .
+\end{equation*}
+
+\begin{itemize}
+\item \textbf{Shares} $s_{m,k,2020}$: municipality $m$'s 2020 count of lawsuits on
+subject $k$, divided by \emph{its own} total 2020 adversarial caseload. Shares sum to one
+within municipality, so $Z_m$ is a weighted \emph{average} of shocks, not a scaled
+exposure level.
+\item \textbf{Shifts} $g_k^{(-uf)}$: log growth of the leave-own-state-out aggregate
+count of filings on subject $k$, pooled over the other 25 states. National and own-UF
+grids are subtracted wide, so a (UF, subject, year) cell with no own cases receives
+$\text{national} - 0$, never $0$.
+\item \textbf{Topic level} $k$: the leaf TSE subject code \code{CD\_ASSUNTO\_PRINCIPAL},
+no roll-up. \textbf{Universe}: first-instance cases only, filed \emph{before} the
+first-round election day (15 Nov 2020; 6 Oct 2024), municipality of origin resolved from
+the SIG export.
+\item \textbf{Mandatory-filing exclusion}: administrative and procedural classes and
+subjects --- candidate registration (RRC), party lists (DRAP), campaign-finance accounts,
+enforcement codes: roughly 48.5\% of all filings --- are dropped first. What remains is
+the \emph{adversarial} universe.
+\end{itemize}
+
+\subsection*{Endogenous variable $\Delta W_m$}
+
+\begin{equation*}
+\Delta W_m \;=\; \log\!\big(1 + L_{m,2024}\big) - \log\!\big(1 + L_{m,2020}\big) ,
+\end{equation*}
+
+\noindent where $L_{m,t}$ counts adversarial, first-instance, pre-election lawsuits
+originating in municipality $m$ in cycle $t$, summed over all retained subjects --- the
+quantity labelled ``Judicialization'' in every table.
+
+
+\subsection*{Controls $X_m$}
+
+All predetermined, and the core block is \textbf{2010 Census structure} --- population,
+urbanisation, income per capita, schooling.
+
+
+\end{document}

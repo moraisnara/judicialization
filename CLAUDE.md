@@ -52,7 +52,7 @@ domain vocabulary for figures **and** tables: `instrument`, `litigation`, `sampl
 subsample prefixes for regression tables. Canonical figure names:
 `instrument_histogram`, `instrument_map`, `sample_map`, `firststage_binscatter`,
 `firststage_linear`, `representation_coefplot`, `entrant_coefplot`, `turnout_coefplot`,
-`voterbehavior_forest`, `pretrend_coefplot`, `litigation_timing_{count,rate,share}`.
+`voterbehavior_seat_coefplot`, `pretrend_coefplot`, `litigation_timing_{count,rate,share}`.
 
 **Figures carry no baked-in titles/footnotes/captions** — those live on the Beamer
 frame. Producing scripts source `code/utils/figure_style.R`, whose `theme_report()`
