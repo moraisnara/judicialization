@@ -119,14 +119,12 @@ vote-shares are silently `NaN` — no error is raised.
 | 01 | `01_assemble_design.py` | `data/estimation/executive_margin_design.csv` |
 | 01b | `01b_assemble_legislative_design.py` | `data/estimation/legislative_design.csv` |
 | 01c | `01c_patch_family_ivs.py` | patches `executive_margin_design.csv` **in place** |
-| 02 | `02_iv_main.R` | headline executive 2SLS + 14 `.tex` fragments + `executive_margin_{iv,first_stage}_fixest.csv`, `liml_comparison.csv` |
+| 02 | `02_iv_main.R` | headline executive 2SLS + 14 `.tex` fragments + `executive_margin_{iv,first_stage}_fixest.csv` |
 | 02b | `02b_iv_legislative.R` | council 2SLS + 3 `.tex` fragments + `legislative_{iv,first_stage}_fixest.csv` |
-| 03 | `03_family_iv.R` | `family_iv_results.csv` |
 | 04 | `04_placebo_nonadversarial.R` | `nonadversarial_placebo.csv`, `nonadversarial_robustness.tex` |
 | 05 | `05_pretrend_balance.R` | `pretrend_balance.csv`, `pretrend_coefplot.pdf` |
 | 06 | `06_wild_bootstrap_ar.R` | `wild_bootstrap_ar.csv` — the headline AR-WCR inference |
 | 07 | `07_multiplicity.R` | `multiplicity_adjusted.csv` |
-| 08 | `08_mean_reversion.R` | `mean_reversion_splitsample{,_summary}.csv` |
 | 09 | `09_extensive_margin.R` | `extensive_margin{,_decomposition}.{tex,csv}`, `zero_exposure_robustness.csv` |
 | 10 | `10_mechanism_finance.R` | `mechanism_finance_fixest.csv`, `mechanism_finance_seat.tex` |
 | 11 | `11_summary_indices.R` | `summary_indices*.{tex,csv}`, `romano_wolf_stepdown.{tex,csv}` |
@@ -138,6 +136,9 @@ standalone against a design that already carries family IVs — re-run `01` firs
 `01b` reads the design **before** `01c` patches it; that is intentional (the legislative
 estimation uses only `bartik_iv_2020_2024`, never the family IVs).
 
+Exploration scripts for this stage live in `exploration/03_estimation/` — see
+`exploration/README.md`.
+
 ### Stage 04 — analysis, figures, macros
 
 | # | Script | Writes |
@@ -146,12 +147,10 @@ estimation uses only `bartik_iv_2020_2024`, never the family IVs).
 | 02 | `02_descriptive_figures.R` | `litigation_timing_*.pdf`, `sample_map.pdf`, `instrument_{histogram,map}.pdf` |
 | 03 | `03_result_figures.R` | all 10 result figures (first stage + coefplots) |
 | 04 | `04_iv_diagnostics.py` | `rotemberg_weights.csv`, `gps_balance_tests.csv` |
-| 05 | `05_validation.R` | `fd_vs_ancova_comparison.csv`, `ancova_validation.csv` |
 | 07 | `07_exposure_robust_se.R` | `exposure_robust_{se,akm}.csv` — needs `rotemberg_weights.csv` from 04 |
 | 08 | `08_lawsuit_composition_sp.py` | `lawsuit_composition_sp.{csv,tex}` |
 | 09 | `09_summary_statistics.R` | `sample_summary_statistics.tex` |
 | 10 | `10_candidate_rank_profile.py` | `candidate_rank_profile.{csv,tex}` |
-| 11 | `11_lawsuit_topic_selection.py` | `lawsuit_topic_selection_worksheet.csv` |
 | ⚠ 06 | `06_abstract_macros.py` | `abstract_macros.tex`, `abstract_table.tex` — **runs last** |
 
 ⚠ **06 runs last, not sixth.** It reads 14 upstream CSVs (both estimation vintages, the
@@ -159,6 +158,9 @@ descriptives, AR-WCR, exposure-robust SEs, Rotemberg) and emits every number the
 display. It also **degrades silently**: missing inputs are caught by `try/except
 FileNotFoundError`, so a partial pipeline produces a macros file with stale or absent
 numbers rather than an error. Always run it at the end of a complete pass.
+
+Exploration scripts for this stage live in `exploration/04_analysis/` — see
+`exploration/README.md`.
 
 ---
 
@@ -263,7 +265,7 @@ produced anywhere in the pipeline.
 | `detalhe_votacao_munzona_YYYY/` | turnout, blank, null by zone (2020/2024) |
 | `lista-zonas-municipios-10-07-24.csv` | official TSE zone → municipality lookup |
 | `bd_municipio_tse_ibge.csv`, `bd_diretorio_municipio.csv` | TSE ↔ IBGE crosswalks |
-| `tpu_eleitoral_tree.json` | TPU subject-code tree (feeds `11_lawsuit_topic_selection.py`) |
+| `tpu_eleitoral_tree.json` | TPU subject-code tree (feeds `exploration/04_analysis/11_lawsuit_topic_selection.py`) |
 
 ### `data/clean/`
 
@@ -318,15 +320,10 @@ palette, which mirrors the deck colours. Never hard-code a hex colour in a figur
 | `heterogeneity_seat_coefplot.pdf`, `gender_consolidation_coefplot.pdf` | `03_result_figures.R` | report + advisor |
 | `voterbehavior_seat_coefplot.pdf` | `03_result_figures.R` | advisor |
 | `pretrend_coefplot.pdf` | `05_pretrend_balance.R` | report |
-| `litigation_timing_{count,rate,share}.pdf` | `02_descriptive_figures.R` | **nothing** |
-| `firststage_binscatter.pdf` | `03_result_figures.R` | **nothing** |
-| `firststage_splitsample.pdf` | `08_mean_reversion.R` | **nothing** |
 
 ### `output/tables/tex/`
 
-35 of the 39 fragments are `\input` by a deck. The four that are not —
-`pretrend_balance_consolidation.tex`, `pretrend_balance_voterbehavior.tex`,
-`nonadversarial_placebo_rf.tex`, `open_seat_blank_rate.tex` — are produced but unreferenced.
+All 35 fragments are `\input` by a deck.
 
 The four `*_macros.tex` files (`abstract`, `extensive_margin`, `treatment_definition`,
 `reclassification_robustness`) are `\input` from `slides_preamble.tex`, not from a frame.
@@ -377,9 +374,11 @@ pass. None block a run; all affect reproducibility or completeness.
 2. **`legislative_vote_shift_share_design.csv` is built and never used.** The council
    branch estimates candidate-pool and elected-composition outcomes only; legislative
    *vote* outcomes exist in `data/clean/` but no design assembles them.
-3. **`gps_balance_tests.csv` is produced and consumed by nothing** — neither a deck
-   fragment nor a macro reads it. Its F-stats and p-values are also computed in Python,
-   which the regressions-in-R rule would bar if they ever reached a slide.
+3. **The share-balance defense shows no numbers.** `gps_balance_tests.csv` holds the
+   share-covariate balance test, but the deck asserts that defense in prose
+   (`slides_report.tex:989`) without citing a figure from it — and the test is
+   computed in Python, which the R-only rule bars for anything reaching a slide.
+   Port to R and cite, or drop the claim.
 4. **`data/clean/zona_eleitoral_lookup.csv` is referenced by no script.** It is a
    leftover of the pre-SIG zone-level design. Note that **no script writes it either**,
    so deleting it is not undoable by re-running the pipeline.
@@ -387,21 +386,26 @@ pass. None block a run; all affect reproducibility or completeness.
    `data/clean/`**, which otherwise holds only generated files. It belongs with the raw
    or manual inputs. `shift_share_subject_manual_assignments.csv` is read from the same
    folder if present (guarded by `.exists()`) and is currently absent.
-6. **`04_analysis/07_exposure_robust_se.R` and `05_validation.R` are estimation, not
-   analysis** — they produce headline inference and estimator comparisons. They sit in
-   stage 04 only because 07 needs the Rotemberg weights that `04_iv_diagnostics.py`
-   writes.
+6. **Stage-04 estimation-flavored scripts.** Resolved 2026-08-12. `05_validation.R` fed
+   no document — `fd_vs_ancova_comparison.csv` and `ancova_validation.csv` were read by
+   nothing — and moved to `exploration/04_analysis/` under the three-test rule in
+   `CLAUDE.md`. `07_exposure_robust_se.R` stays in `code/04_analysis/`: `06_abstract_macros.py`
+   reads `exposure_robust_se.csv`, so its stage-04 slot is dependency order, not
+   miscategorization — it needs the Rotemberg weights that `04_iv_diagnostics.py` writes.
 7. **`06_abstract_macros.py` still holds slot 06 but runs last**, so stage-04 numbering
    does not fully encode run order. Renumbering it to 12 would touch the generated `.tex`
    headers and the deck comments that name it; deferred as a deliberate exception,
    flagged with ⚠ in the stage-04 table above.
-8. **Orphan outputs.** `firststage_binscatter.pdf`, `litigation_timing_{count,rate,share}.pdf`
-   and 4 `.tex` fragments are produced by scripts but read by no deck. Two of them are
-   listed among the canonical figure names in `CLAUDE.md`, so this is a naming/wiring
-   mismatch to resolve, not an obvious deletion.
+8. **Orphan outputs.** Resolved 2026-08-12. `code/utils/audit_pipeline.py` reports
+   orphan outputs on demand; the reorganization deleted the nine that existed and
+   stripped the blocks that regenerated them.
 9. **`SPECIFICATION.md` documents a different design** (the `tse-shift-share` first-difference
    redesign) from the one this pipeline builds. Read it as a proposal, not as documentation
    of the committed code.
+10. **`output/tables/` is the declared source of truth but is entirely untracked.**
+    `*.csv` is gitignored repo-wide, so a clean checkout has no saved regression
+    records — they exist only on the machine that ran the pipeline. Consistent with
+    "data never leaves this repo", but currently a side effect rather than a decision.
 
 **Closed by the 2026-08-06 pass:** the deck sources are no longer git-ignored
 (`.gitignore` now whitelists `output/presentation/*.tex` by extension rather than by a
