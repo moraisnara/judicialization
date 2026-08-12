@@ -90,6 +90,29 @@ def raw_dir_vars(text: str) -> set[str]:
         text, re.M)}
 
 
+def sources(other_text: str, rel: str) -> bool:
+    """True if `other_text` actually loads the script `rel`, not merely names it.
+
+    A bare `name in other_text` mention is not a dependency: scripts here refer
+    to each other in docstrings ("re-run 01_lawsuits.py to refresh the cache")
+    and in FileNotFoundError messages telling a human which step to run. Those
+    read as sourcing to a substring match and let a script pass for a reason
+    that is not true, which is worse than failing -- it hides the real one.
+    So require a load construct: source() in R, an import or exec(open()) in
+    Python.
+    """
+    name = Path(rel).name
+    if re.search(rf"source\s*\([^\n]*{re.escape(name)}", other_text):
+        return True
+    if name.endswith(".py"):
+        stem = re.escape(name[:-3])
+        if re.search(rf"^\s*(?:from|import)\s+[\w.]*\b{stem}\b", other_text, re.M):
+            return True
+        if re.search(rf"exec\s*\([^\n]*{re.escape(name)}", other_text):
+            return True
+    return False
+
+
 def writes_raw_lane(text: str) -> bool:
     """True if the script writes anywhere under a data/raw path constant.
 
@@ -165,7 +188,7 @@ def main() -> None:
                         passes[rel] = "transitive"
                         changed = True
                         break
-                    if Path(rel).name in other_text:
+                    if sources(other_text, rel):
                         passes[rel] = f"sourced by {other}"
                         changed = True
                         break
