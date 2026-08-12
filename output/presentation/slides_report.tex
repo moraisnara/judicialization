@@ -716,7 +716,7 @@ Consolidation clears the weak-IV-robust AR bootstrap and the BHJ/AKM exposure-ro
 \hyperlink{app:exposure}{\beamergotobutton{weak-IV}}\, \hyperlink{app:fd}{\beamergotobutton{FD}} \\
 \midrule
 Is it multiple testing? &
-Survives a Romano--Wolf correction and loads onto a barrier/closeness index, with no favourable family cut; pre-trend placebos are clean throughout. &
+Survives a Romano--Wolf correction and loads onto a combined consolidation index, with no favourable family cut; pre-trend placebos are clean throughout. &
 \tick &
 \hyperlink{app:multiplicity}{\beamergotobutton{mult.}}\, \hyperlink{app:pretrend}{\beamergotobutton{pre-trend}} \\
 \bottomrule\bottomrule
@@ -1158,29 +1158,29 @@ The instrument predicts the \emph{compressed} treatments strongly (log1p, IHS, o
 \hypertarget{app:multiplicity}{}
 \footnotesize
 The barrier reading rests on a family of correlated outcomes, so a fair reader asks: does it survive multiple-testing correction? We answer \emph{without} having to declare which outcomes ``count'' --- two complementary routes that both sidestep that arbitrary choice.
-\smallskip
+\vspace{-2pt}
 
 \begin{columns}[T]
 \begin{column}{0.52\linewidth}
-\scriptsize \textbf{(a) Collapse each theory-declared family to one index} (Anderson 2008 inverse-covariance / Kling--Liebman--Katz standardized average). One family $=$ one test $=$ no within-family multiplicity. Each 2024 index is taken net of its own 2016 baseline; effects are in standard-deviation units, oriented so positive $=$ consolidation/barrier.
-\smallskip
+\scriptsize \textbf{(a) Collapse each theory-declared family to one index} (Anderson 2008 inverse-covariance / Kling--Liebman--Katz standardized average). One family $=$ one test $=$ no within-family multiplicity. Each 2024 index is taken net of its own 2016 baseline; effects are in standard-deviation units, oriented so positive $=$ consolidation.
+\vspace{-4pt}
 \begin{center}
 \scriptsize
-\resizebox{\linewidth}{!}{\input{../tables/tex/summary_indices.tex}}
+\scalebox{0.95}{\resizebox{\linewidth}{!}{\input{../tables/tex/summary_indices.tex}}}
 \end{center}
-\scriptsize The \textbf{overall barrier index clears} ($p<.05$) and closeness clears on its own; the representation and council-ballot placebo indices are null. The pattern holds with \emph{no} confirmatory-family choice.
+\scriptsize The \textbf{overall combined index clears} ($p<.05$) and closeness clears on its own; the representation and council-ballot placebo indices are null. It is 8/12 concentration outcomes, though, and the ballot family alone is $p=.134$ pooled across seats --- consolidation, not a face. The pattern holds with \emph{no} confirmatory-family choice.
 \end{column}
 \begin{column}{0.46\linewidth}
 \scriptsize \textbf{(b) Romano--Wolf stepdown} over all 18 barrier/representation reduced forms --- a \emph{joint} wild-cluster bootstrap ($B=10{,}000$, shared Rademacher weights) controlling the family-wise error rate.
-\smallskip
+\vspace{-4pt}
 \begin{center}
 \scriptsize
-\resizebox{\linewidth}{!}{\input{../tables/tex/romano_wolf_stepdown.tex}}
+\scalebox{0.95}{\resizebox{\linewidth}{!}{\input{../tables/tex/romano_wolf_stepdown.tex}}}
 \end{center}
 \scriptsize Margin and runner-up survive raw and Holm; at the fully simultaneous family-wise \emph{plus} few-cluster level they land borderline ($p_{\text{RW}}\!\approx\!.06$) --- honest, not damning: RW is stricter than normal-approx Holm because the bootstrap captures the \ARNClusters{}-cluster tails the index averages over.
 \end{column}
 \end{columns}
-\smallskip
+\vspace{-2pt}
 \footnotesize \textbf{Read.} The \emph{finding is the pattern}, not a single star: the index --- which needs no family cut --- clears; the most-corrected single coefficient is borderline, which is what \ARNClusters{} clusters buy. \ns{The family is fixed at these 18 and was not re-opened afterwards: the gender decomposition \hyperlink{src:gender}{\beamergotobutton{gender}} is an exploratory split of an outcome already inside it, reported at raw $p$ and never counted as a new confirmatory test.} \hfill\hyperlink{src:spine1}{\beamerreturnbutton{Back to the margin}}
 \end{frame}
 
