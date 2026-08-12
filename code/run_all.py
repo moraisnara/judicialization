@@ -55,8 +55,7 @@ def main() -> None:
 
     print("\n=== 03 Estimation ===")
     run_py("code/03_estimation/01_assemble_design.py")
-    run_py("code/03_estimation/01b_assemble_legislative_design.py")
-    run_py("code/03_estimation/01c_patch_family_ivs.py")         # add family IVs before R estimation
+    run_py("code/03_estimation/01b_assemble_legislative_design.py")  # legislative twin of 01, reads the executive design
     run_r("code/03_estimation/02_iv_main.R")
     run_r("code/03_estimation/02b_iv_legislative.R")
     run_r("code/03_estimation/04_placebo_nonadversarial.R")      # placebo shift-share + intensity control

@@ -12,9 +12,12 @@ Names must be self-explanatory: reading a script or output filename should tell 
   give it a real slot. **One exception:** a letter suffix marks a *parallel twin* of
   the same-numbered main step — `b` = the legislative counterpart of the executive
   main, `c` = a patch/augment that must run right after it. So `01_assemble_design`
-  (executive) / `01b_assemble_legislative_design` / `01c_patch_family_ivs`, and
-  `02_iv_main` / `02b_iv_legislative`, are the *only* sanctioned suffixes. A suffix
-  used for anything other than a twin/patch of the same step is still forbidden.
+  (executive) / `01b_assemble_legislative_design`, and `02_iv_main` /
+  `02b_iv_legislative`, are the *only* sanctioned suffixes. The `c` form is
+  `exploration/03_estimation/01c_patch_family_ivs.py` — it patches the same design
+  `01` writes, so it keeps the `01c` name, but it moved out of `code/` with its only
+  consumer (`03_family_iv.R`). A suffix used for anything other than a twin/patch of
+  the same step is still forbidden.
 - Name scripts by **purpose**, not by file format. "figures" is not a purpose —
   split by what they show (`02_descriptive_figures.R` vs `03_result_figures.R`).
   **Glue** closely-related small scripts into one file with a `main()` dispatching
