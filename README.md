@@ -239,7 +239,7 @@ judicialization/
 │   └── paper/        — paper, extended abstract, estimating-equations note
 ├── code/
 │   ├── 01_download/  ├── 02_build/  ├── 03_estimation/  ├── 04_analysis/
-│   ├── utils/        — figure_style.R, tf_critical_values.R, latex_tables.R
+│   ├── utils/        — figure_style.R, tf_critical_values.R
 │   └── run_all.py
 └── logs/             — verification inventory from 02_build/00
 ```
