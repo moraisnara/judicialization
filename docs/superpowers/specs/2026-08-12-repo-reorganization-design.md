@@ -103,6 +103,64 @@ blocks**, so a core script emits only paper assets.
 Each strip must remove only the block that writes the named asset, leaving every consumed
 output of that script byte-identical. Verified by re-running the pipeline stage and diffing.
 
+## Orphan CSVs under `output/tables/`
+
+Thirteen CSVs under `output/tables/{regressions,descriptives}/` are read by no script and
+cited by no document. **They are not treated like the orphan figures above**, for two reasons:
+
+- **`csv = source of truth`** (standing convention, 2026-07-02): the CSV is the saved numeric
+  record of a regression that was actually run; the `.tex` is only its deck rendering. A CSV
+  that no document `\input`s can still be the record behind a figure the deck *does* show.
+- **Every CSV here is gitignored** (`*.csv` is the last rule in `.gitignore`, overriding the
+  earlier `!output/tables/` whitelist). Nothing under `output/tables/` is tracked, so deleting
+  one changes no committed content. This is local hygiene, not a repo change.
+
+So the reference test used for figures ("no document names it") over-fires on CSVs. The test
+here is **does the result it records appear anywhere** — as a figure, a fragment, a macro, or
+a prose claim in the deck.
+
+**A — travel with a departing script (4).** No separate decision; they move to
+`exploration/output/` with their producer.
+
+| CSV | Producer (moving) |
+|---|---|
+| `regressions/ancova_validation.csv` | `04_analysis/05_validation.R` |
+| `regressions/fd_vs_ancova_comparison.csv` | `04_analysis/05_validation.R` |
+| `regressions/family_iv_results.csv` | `03_estimation/03_family_iv.R` |
+| `descriptives/lawsuit_topic_selection_worksheet.csv` | `04_analysis/11_lawsuit_topic_selection.py` |
+
+**B — record CSVs; keep (7).** The producing script also emits a consumed asset covering the
+same result, so the CSV is that result's source of truth. No action.
+
+| CSV | The result it records, and where it appears |
+|---|---|
+| `regressions/pretrend_balance.csv` | Numbers behind `pretrend_coefplot.pdf` (`src:pretrend`) |
+| `regressions/summary_indices_fixest.csv` | Behind `summary_indices.tex` (`app:multiplicity`) |
+| `regressions/mechanism_finance_fixest.csv` | Behind the mechanism fragment |
+| `regressions/exposure_robust_akm.csv` | AKM variant of `exposure_robust_se.csv`, which the macro hub reads |
+| `regressions/legislative_first_stage_fixest.csv` | The legislative first stage the deck reports |
+| `descriptives/candidate_pool_descriptives.csv` | Candidate-pool descriptives |
+| `descriptives/litigation_family_shares.csv` | Within-adversarial family composition |
+
+**C — genuine dead end; delete + strip (1).**
+
+| CSV | Producer (stays) | Why |
+|---|---|---|
+| `regressions/liml_comparison.csv` | `03_estimation/02_iv_main.R` | Zero mentions of LIML in *any* document. With `K=1` the estimator is 2SLS ≡ LIML by construction, so the check confirms a mechanical identity. Delete the file, strip the emit block, and remove its row from the CLAUDE.md "Output tables" quick reference |
+
+**D — flagged, not resolved here (1).** `descriptives/gps_balance_tests.csv`
+(`04_analysis/04_iv_diagnostics.py`) is **not** a delete candidate and **not** a clean record.
+It holds the share-covariate balance test — a different test from the R pre-trend balance in
+category B — and the deck asserts that defense in prose (`slides_report.tex:989`, "we defend
+the design on the exogeneity of the shares — balance, pre-trend, and a placebo shifter")
+without citing a number from it. Two live problems, both pre-existing (README wrinkle #3):
+the deck's balance claim shows no figures, and the test is computed in Python, which the
+"regressions in R only" rule bars for anything reaching a slide. Resolving it means porting
+the test to R and wiring it to the macro hub, or dropping the claim — a scope decision for
+Nara, out of scope for this reorg.
+
+Net effect on the reorg: one file deleted, one emit block stripped, one CLAUDE.md row removed.
+
 ## Output routing for archived scripts
 
 Moved scripts currently write into `output/`. Repoint each to `exploration/output/` so
@@ -115,7 +173,13 @@ because depth 2 is preserved.
 
 - scripts failing all three tests (archive candidates),
 - committed outputs referenced by no document (deletion candidates),
-- documents referencing assets absent from disk (build breakers).
+- documents referencing assets absent from disk (build breakers),
+- unreferenced CSVs under `output/tables/`, listed **separately** and never as deletion
+  candidates — under `csv = source of truth` an unreferenced CSV is a question ("is this
+  result shown anywhere?"), not a defect. Detection needs a ±4-line context window around
+  each filename mention and separate read/write verb sets: R's
+  `OUT <- file.path(REG, "x.csv"); fwrite(res, OUT)` splits the verb from the name across
+  lines, and a same-line regex misreads writers as readers.
 
 It is a report, not a gate — it prints findings and exits 0. Rationale: the classification
 will drift as scripts are added, and the alternative is redoing this analysis by hand.
@@ -158,6 +222,13 @@ The reorg is step 3. Steps 1–2 clear the ground so it lands as a reviewable di
   deriving it from `SCRIPT_DIR`. Pre-existing portability defect, untouched here.
 - `data/clean/zona_eleitoral_lookup.csv` is read by no script and written by no script, so
   deleting it is not undoable by re-running the pipeline. Left alone.
+- **The share-balance defense shows no numbers.** See category D above: the deck claims share
+  exogeneity is defended on "balance", but the only balance table (`gps_balance_tests.csv`) is
+  cited nowhere and is computed in Python. Port to R and cite, or drop the claim.
+- **`output/tables/` is the declared source of truth but is entirely untracked.** `*.csv` is
+  gitignored repo-wide, so a clean checkout has no saved regression records at all — they
+  exist only on this machine, recoverable only by re-running the pipeline. Consistent with
+  "data never leaves this repo", but worth a deliberate decision rather than a side effect.
 
 ## Risks
 
@@ -171,10 +242,12 @@ The reorg is step 3. Steps 1–2 clear the ground so it lands as a reviewable di
 
 - `code/` contains only scripts passing one of the three tests; the four named scripts and
   `SPECIFICATION.md` are under `exploration/` with a README explaining each.
-- The nine orphan assets are gone and no surviving script regenerates them.
+- The nine orphan assets and `liml_comparison.csv` are gone, and no surviving script
+  regenerates them.
 - `code/utils/audit_pipeline.py` reports zero archive candidates, zero orphan outputs, the
-  two verification gates under "infrastructure", and one known build breaker (the
-  `extended_abstract.tex` figure, flagged above).
+  two verification gates under "infrastructure", one known build breaker (the
+  `extended_abstract.tex` figure, flagged above), and the unreferenced-CSV list down to the
+  seven record CSVs plus `gps_balance_tests.csv`.
 - `run_all.py` completes without referencing a moved script.
 - Both decks compile at their baseline page counts (67 / 11).
 - `git status` is clean and `main` is pushed.
