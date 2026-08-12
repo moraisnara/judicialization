@@ -50,7 +50,13 @@ def documents() -> str:
 
 
 def aliases(text: str, name: str) -> set[str]:
-    """Variables assigned a path containing `name`."""
+    """Variables assigned a path containing `name`.
+
+    Binding is file-wide and reassignment-blind: once a variable is matched to
+    `name` anywhere in the file, it is treated as an alias for `name` across
+    the whole text, even where it is later reassigned to something unrelated.
+    Every caller (roles(), writes_raw_lane()) inherits this.
+    """
     return {m.group(1) for m in
             re.finditer(rf"^\s*([A-Za-z_][\w.]*)\s*(?:<-|=)\s*[^\n]*{re.escape(name)}", text, re.M)}
 
@@ -92,6 +98,14 @@ def writes_raw_lane(text: str) -> bool:
     unrelated variable like `out_path` elsewhere in the same file. Scoped
     narrowly to this one check rather than tightening roles() itself, since
     roles() is shared by tests 1-3 and its behavior there is already validated.
+
+    Inherits aliases()'s file-wide, reassignment-blind binding (see its
+    docstring): a script that reads from data/raw/ into a variable and then
+    reuses that same name for an unrelated write elsewhere in the file would
+    pass here as a raw-lane producer. Latent today -- no script in the repo
+    reuses a name that way -- but a real failure mode, which is why every
+    raw-lane pass is named in the auditor's report output rather than folded
+    silently into the pass count.
     """
     for root in raw_dir_vars(text):
         names = [root] + sorted(aliases(text, root))
@@ -165,6 +179,7 @@ def main() -> None:
                     break
 
     candidates = [r for r in scripts if r not in passes and r not in INFRASTRUCTURE]
+    raw_lane_producers = sorted(r for r, why in passes.items() if why == "raw-lane")
 
     # --- unreferenced CSVs: a question, never a deletion candidate ----------------
     unref_csv = []
@@ -197,6 +212,8 @@ def main() -> None:
     print(f"Audited {len(scripts)} scripts under code/ against {len(assets)} committed assets.")
     section("ARCHIVE CANDIDATES (fail all three tests)", candidates,
             "move to exploration/<stage>/ -- see docs/superpowers/specs/2026-08-12-repo-reorganization-design.md")
+    section("RAW-LANE PRODUCERS (directory-level edge, not filename-verified)", raw_lane_producers,
+            "passed via writes_raw_lane(), not a filename-level test -- see its docstring for the reassignment gap")
     section("ORPHAN OUTPUTS (no document references them)", [a.name for a in orphan_assets],
             "delete the file AND strip the block that emits it")
     section("BUILD BREAKERS (document references a missing asset)", breakers)
