@@ -139,15 +139,6 @@ def main() -> None:
     for rel, text in scripts.items():
         if rel in INFRASTRUCTURE:
             continue
-        # Download scripts extract whole folders into data/raw/ with names built
-        # at runtime (e.g. f"consulta_cand_{year}"), so there is no output
-        # filename literal for tests 1-3 to match against. The raw lane is
-        # consumed by the build stage by construction, so this directory-level
-        # edge stands in for the missing filename: writing anywhere under a
-        # data/raw path constant is enough to pass.
-        if writes_raw_lane(text):
-            passes[rel] = "raw-lane"
-            continue
         if any(referenced(Path(n).stem, blob) for n in emitters.get(rel, ())):
             passes[rel] = "direct"
             continue
@@ -158,25 +149,44 @@ def main() -> None:
     # --- test 3: transitive data dependency, and sourced helpers -----------------
     # A helper under utils/ emits nothing, so it fails tests 1-3 by construction.
     # It earns its place by being source()d/imported by a script that passes.
-    changed = True
-    while changed:
-        changed = False
-        for rel, text in scripts.items():
-            if rel in INFRASTRUCTURE or rel in passes:
-                continue
-            written = {Path(m).name for m in re.findall(r"[\w./-]+\.(?:csv|parquet)", text)
-                       if roles(text, Path(m).name)[0]}
-            for other, other_text in scripts.items():
-                if other not in passes:
+    def spread_transitive() -> None:
+        changed = True
+        while changed:
+            changed = False
+            for rel, text in scripts.items():
+                if rel in INFRASTRUCTURE or rel in passes:
                     continue
-                if any(roles(other_text, w)[1] for w in written):
-                    passes[rel] = "transitive"
-                    changed = True
-                    break
-                if Path(rel).name in other_text:
-                    passes[rel] = f"sourced by {other}"
-                    changed = True
-                    break
+                written = {Path(m).name for m in re.findall(r"[\w./-]+\.(?:csv|parquet)", text)
+                           if roles(text, Path(m).name)[0]}
+                for other, other_text in scripts.items():
+                    if other not in passes:
+                        continue
+                    if any(roles(other_text, w)[1] for w in written):
+                        passes[rel] = "transitive"
+                        changed = True
+                        break
+                    if Path(rel).name in other_text:
+                        passes[rel] = f"sourced by {other}"
+                        changed = True
+                        break
+
+    spread_transitive()
+
+    # --- last resort: the data/raw directory-level edge ---------------------------
+    # Download scripts extract whole folders into data/raw/ with names built at
+    # runtime (e.g. f"consulta_cand_{year}"), so there is no output filename
+    # literal for tests 1-3 to match against. The raw lane is consumed by the
+    # build stage by construction, so this directory-level edge stands in for the
+    # missing filename. It runs LAST, after every filename-level test has had its
+    # chance: a script that can pass on a real filename match should be recorded
+    # that way, so the RAW-LANE section names only scripts that genuinely depend
+    # on the heuristic.
+    for rel, text in scripts.items():
+        if rel in INFRASTRUCTURE or rel in passes:
+            continue
+        if writes_raw_lane(text):
+            passes[rel] = "raw-lane"
+    spread_transitive()   # a raw-lane passer may unlock transitives behind it
 
     candidates = [r for r in scripts if r not in passes and r not in INFRASTRUCTURE]
     raw_lane_producers = sorted(r for r, why in passes.items() if why == "raw-lane")
