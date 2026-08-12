@@ -115,7 +115,7 @@ The results fall into four findings, tracing the race from who runs to what it p
 \end{itemize}
 \smallskip
 \rule{\linewidth}{0.4pt}\\[3pt]
-{\footnotesize These effects are confined to the \emph{mayoral} race --- the barrier configuration --- and are sharpest in contested seats. The council race exhibits neither face: both the ballot and the composition of the field are flat.}
+{\footnotesize These effects are confined to the \emph{mayoral} race. The consolidation is \textbf{general} across seat types; the \textbf{barrier} reading holds where an incumbent is defended --- there, and only there, do voters leave the ballot. The council race exhibits neither face: both the ballot and the composition of the field are flat.}
 \end{frame}
 
 
@@ -539,7 +539,7 @@ The instrument is \textbf{share-identified}: with only $K_{\text{eff}}=\KeffRote
 \begin{frame}{The Story in One Frame --- Two Engines, One Result}
 \small
 An election is produced by two behaviours: \textbf{candidates} decide whether to run and how to campaign; \textbf{voters} decide whether to turn out and how to mark the ballot. We isolate the contest's \textbf{judicial dimension} --- adversarial decisions and the presence / noise of litigation --- and ask how each engine responds and what they jointly produce.
-\vspace{-2pt}
+\vspace{-4pt}
 \begin{center}
 \begin{tikzpicture}[
   font=\scriptsize,
@@ -551,16 +551,16 @@ An election is produced by two behaviours: \textbf{candidates} decide whether to
   \node[exp] (exp) at (0,2.25)
     {\textbf{The contest's judicial dimension}\\[1pt]adversarial decisions $+$ the presence / noise of litigation \;(exposure measured by the instrument)};
   \node[eng, fill=mygray!8] (cand) at (-2.9,0.4)
-    {\textcolor{myblue}{\textbf{Candidates}}\\[1pt]\ns{who runs \& how they campaign}\\[4pt]
-     \colorbox{mygray!30}{\textbf{\,null\,}}\\[3pt]
+    {\textcolor{myblue}{\textbf{Candidates}}\\[1pt]\ns{who runs \& how they campaign}\\[1pt]
+     \colorbox{mygray!30}{\textbf{\,null\,}}\\[1pt]
      {field \& funding unmoved}};
   \node[eng, fill=myred!6] (vot) at (2.9,0.4)
-    {\textcolor{myblue}{\textbf{Voters}}\\[1pt]\ns{turnout \& the ballot}\\[4pt]
-     \colorbox{myred!20}{\textcolor{myred}{\textbf{\,withdraw\,}}}\\[3pt]
+    {\textcolor{myblue}{\textbf{Voters}}\\[1pt]\ns{turnout \& the ballot}\\[1pt]
+     \colorbox{myred!20}{\textcolor{myred}{\textbf{\,withdraw\,}}}\\[1pt]
      {blanks \& nulls rise, valid falls}};
   \node[res, fill=myred!6] (res) at (0,-1.55)
-    {\textcolor{myblue}{\textbf{The election result}} \;\ns{concentration \& who is elected}\\[4pt]
-     \colorbox{myred!20}{\textcolor{myred}{\textbf{\,consolidates\,}}}\;\colorbox{mygray!30}{\textbf{\,who wins: null\,}}\\[3pt]
+    {\textcolor{myblue}{\textbf{The election result}} \;\ns{concentration \& who is elected}\\[1pt]
+     \colorbox{myred!20}{\textcolor{myred}{\textbf{\,consolidates\,}}}\;\colorbox{mygray!30}{\textbf{\,who wins: null\,}}\\[1pt]
      {top-two margin widens ($\MarginCoef$); winner's identity unchanged}};
   \draw[flow] (exp) -- (cand);
   \draw[flow] (exp) -- (vot);
@@ -568,8 +568,8 @@ An election is produced by two behaviours: \textbf{candidates} decide whether to
   \draw[flow] (vot) -- (res);
 \end{tikzpicture}
 \end{center}
-\smallskip
-\footnotesize The candidate engine is quiet while voters withdraw \emph{where an incumbent is defended}; the consolidation --- general across seats --- is the electorate re-allocating toward the leader, not candidates removed, the barrier signature. The council race is null throughout.
+\vspace{-4pt}
+\footnotesize The candidate engine is quiet while voters withdraw \emph{where an incumbent is defended}; the consolidation --- general across seats --- is the electorate re-allocating toward the leader, not candidates removed. Concentration alone does not name a face: the \textbf{barrier} reading rests on the ballot, and so holds for \textbf{contested} seats. The council race is null throughout.
 \end{frame}
 
 
