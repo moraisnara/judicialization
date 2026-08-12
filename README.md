@@ -67,7 +67,7 @@ If you only want the consolidation estimate and its first stage (not the full de
 02_build/01_lawsuit_panel.py → 02_shift_share_design.py → 04_candidate_history.py
   → 03_vote_outcomes.py → 05_turnout_ballot_outcomes.py → 06_turnout_profile_panel.py
   → 07_turnout_profile_outcomes.py → 08_electoral_controls_2016.py → 09_municipal_covariates.py
-03_estimation/01_assemble_design.py → 01c_patch_family_ivs.py → 02_iv_main.R
+03_estimation/01_assemble_design.py → 02_iv_main.R
 ```
 
 Result lands in `output/tables/regressions/executive_margin_iv_fixest.csv` and
@@ -118,7 +118,6 @@ vote-shares are silently `NaN` — no error is raised.
 |---|---|---|
 | 01 | `01_assemble_design.py` | `data/estimation/executive_margin_design.csv` |
 | 01b | `01b_assemble_legislative_design.py` | `data/estimation/legislative_design.csv` |
-| 01c | `01c_patch_family_ivs.py` | patches `executive_margin_design.csv` **in place** |
 | 02 | `02_iv_main.R` | headline executive 2SLS + 14 `.tex` fragments + `executive_margin_{iv,first_stage}_fixest.csv` |
 | 02b | `02b_iv_legislative.R` | council 2SLS + 3 `.tex` fragments + `legislative_{iv,first_stage}_fixest.csv` |
 | 04 | `04_placebo_nonadversarial.R` | `nonadversarial_placebo.csv`, `nonadversarial_robustness.tex` |
@@ -131,10 +130,11 @@ vote-shares are silently `NaN` — no error is raised.
 | 12 | `12_treatment_definition.R` | `treatment_definition{,_macros}.tex`, `treatment_definition.csv` |
 | 13 | `13_reclassification_robustness.R` | `reclassification_robustness{,_macros}.tex` + `.csv` |
 
-`01c` rewrites `executive_margin_design.csv` in place, so it is not idempotent-safe to run
-standalone against a design that already carries family IVs — re-run `01` first.
-`01b` reads the design **before** `01c` patches it; that is intentional (the legislative
-estimation uses only `bartik_iv_2020_2024`, never the family IVs).
+The family-IV patch `01c_patch_family_ivs.py` moved to `exploration/03_estimation/` with
+its only consumer, `03_family_iv.R`: nothing under `code/` reads the columns it adds. It
+still rewrites `executive_margin_design.csv` in place, so run `01` before it if the design
+already carries family IVs. The legislative branch is unaffected — it uses only
+`bartik_iv_2020_2024`, never the family IVs.
 
 Exploration scripts for this stage live in `exploration/03_estimation/` — see
 `exploration/README.md`.
@@ -144,8 +144,8 @@ Exploration scripts for this stage live in `exploration/03_estimation/` — see
 | # | Script | Writes |
 |---|---|---|
 | 01 | `01_descriptives.py` | overview + composition + timing + BHJ shift CSVs, `litigation_composition.tex` |
-| 02 | `02_descriptive_figures.R` | `litigation_timing_*.pdf`, `sample_map.pdf`, `instrument_{histogram,map}.pdf` |
-| 03 | `03_result_figures.R` | all 10 result figures (first stage + coefplots) |
+| 02 | `02_descriptive_figures.R` | `litigation_timing_shape.pdf`, `sample_map.pdf`, `instrument_{histogram,map}.pdf` |
+| 03 | `03_result_figures.R` | all 9 result figures (first stage + coefplots) |
 | 04 | `04_iv_diagnostics.py` | `rotemberg_weights.csv`, `gps_balance_tests.csv` |
 | 07 | `07_exposure_robust_se.R` | `exposure_robust_{se,akm}.csv` — needs `rotemberg_weights.csv` from 04 |
 | 08 | `08_lawsuit_composition_sp.py` | `lawsuit_composition_sp.{csv,tex}` |
@@ -172,7 +172,7 @@ pip install pandas numpy scipy
 
 # R 4.6.0 — C:\Program Files\R\R-4.6.0\bin\Rscript.exe
 install.packages(c("fixest", "data.table", "dplyr", "readr", "ggplot2", "scales",
-                   "binsreg", "sf", "geobr", "censobr", "basedosdados"))
+                   "sf", "geobr", "censobr", "basedosdados"))
 ```
 
 `run_all.py` invokes R as bare `Rscript`, so R's `bin` directory must be on `PATH`
@@ -297,7 +297,7 @@ produced anywhere in the pipeline.
 
 | File | Produced by | Contents |
 |---|---|---|
-| `executive_margin_design.csv` | `01_assemble_design.py` + `01c_patch_family_ivs.py` | one row per municipality; instrument, treatment, all executive outcomes, controls, family IVs, topic shares, cluster ID. Estimation N = 5,560. |
+| `executive_margin_design.csv` | `01_assemble_design.py` | one row per municipality (5,571 rows, 345 cols); instrument, treatment, all executive outcomes, controls, cluster ID. Estimation N = 5,560. Family IVs and topic shares are **not** in the committed vintage — `exploration/03_estimation/01c_patch_family_ivs.py` patches them in for the family lane, and nothing in `code/` reads them. |
 | `legislative_design.csv` | `01b_assemble_legislative_design.py` | same instrument and controls; vereador candidate-pool, elected-composition and party-competition outcomes. |
 
 ---
@@ -357,7 +357,9 @@ fragment or macro reports it. Producers are listed in the stage-03 and stage-04 
 | `references.bib`, `extended_abstract.bib` | bibliography |
 
 `WRITING_GUIDE.md` (Evans 7-element intro structure + proposal guide) sits at the repo
-root with `CLAUDE.md` and `SPECIFICATION.md` — it is a working guide, not an output.
+root with `CLAUDE.md` — it is a working guide, not an output. The redesign spec is not at
+the root: it lives at `exploration/SPECIFICATION_tse_shift_share.md`, with the lane it
+specifies.
 
 ---
 
@@ -399,13 +401,28 @@ pass. None block a run; all affect reproducibility or completeness.
 8. **Orphan outputs.** Resolved 2026-08-12. `code/utils/audit_pipeline.py` reports
    orphan outputs on demand; the reorganization deleted the nine that existed and
    stripped the blocks that regenerated them.
-9. **`SPECIFICATION.md` documents a different design** (the `tse-shift-share` first-difference
-   redesign) from the one this pipeline builds. Read it as a proposal, not as documentation
-   of the committed code.
+9. **The spec on disk documents a different design** than the pipeline builds. Resolved
+   2026-08-12. The `tse-shift-share` first-difference redesign spec moved off the repo
+   root to `exploration/SPECIFICATION_tse_shift_share.md`, where its filename and its
+   lane both say it is a proposal rather than documentation of the committed
+   propaganda-Bartik/ANCOVA design. `exploration/README.md` records why.
 10. **`output/tables/` is the declared source of truth but is entirely untracked.**
     `*.csv` is gitignored repo-wide, so a clean checkout has no saved regression
     records — they exist only on the machine that ran the pipeline. Consistent with
     "data never leaves this repo", but currently a side effect rather than a decision.
+11. **`output/paper/extended_abstract.tex` cannot compile.** Found 2026-08-12. It
+    `\includegraphics`es `../figures/forest_voter_behavior.pdf`, which is not on disk —
+    the voter-behavior forest plot was replaced by `voterbehavior_seat_coefplot.pdf`.
+    This is the one standing BUILD BREAKER `code/utils/audit_pipeline.py` reports. Nara
+    writes the paper, so the fix is hers: point the include at the surviving figure or
+    drop it.
+12. **`run_all.py` cannot complete from a fresh state.** Found 2026-08-12. It calls
+    `01_download/00_verify_raw_data.py` *before* the download scripts that produce what
+    that gate verifies, so on a clean clone the very first step fails. Reproduced on this
+    machine: it stops on `decisoes_{2020,2024}.zip` and `recursos_{2020,2024}.zip`, which
+    are absent from `data/raw/`. Reordering changes pipeline semantics (the gate is also a
+    guard against a stale or partial `data/raw/`) and cannot be tested without a full
+    re-download, so it is recorded rather than fixed.
 
 **Closed by the 2026-08-06 pass:** the deck sources are no longer git-ignored
 (`.gitignore` now whitelists `output/presentation/*.tex` by extension rather than by a
