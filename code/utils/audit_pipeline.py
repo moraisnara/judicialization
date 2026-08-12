@@ -7,7 +7,18 @@ A script stays in code/ if ANY of three tests passes:
 
 Test 2 is not bookkeeping. Four scripts pass ONLY test 2 (wild bootstrap AR,
 multiplicity, IV diagnostics, exposure-robust SE); an \\input-only rule would
-archive the paper's headline inference.
+archive the paper's headline inference. It requires the script to WRITE the CSV
+the hub reads: merely naming (reading) a hub CSV passes for a reason that is not
+true and hides the real one -- the same failure mode already fixed in sources().
+
+Documented limit -- writes through a user-defined wrapper. roles() pairs a write
+verb with a filename literal in the same expression, so a write that happens
+inside a helper which receives the path as a parameter is invisible: the literal
+sits at the call site, the verb inside the helper body. The WRITE `write[\\w.]*`
+alternative covers the common case, where the wrapper is itself *named*
+`write_...` (e.g. write_tex() in 03_estimation/10_mechanism_finance.R, whose
+inner writeLines() never sees the filename). A wrapper named `emit_fragment`
+would still be missed, and would have to be renamed or added to WRITE by hand.
 
 Report only -- always exits 0. Run: python code/utils/audit_pipeline.py
 """
@@ -29,7 +40,21 @@ INFRASTRUCTURE = {
     "utils/audit_pipeline.py",
 }
 
-WRITE = r"(to_csv|write_csv|fwrite|write\.csv|savefig|ggsave|write_parquet|writeLines|write_text|urlretrieve|extractall)"
+# One `write[\w.]+` alternative subsumes write_csv / write.csv / write_parquet /
+# writeLines / write_text / write_tex and any future write_* wrapper (see the
+# module docstring's wrapper limit). The trailing `+` (not `*`) requires a
+# suffix, which excludes the bare file-object method `f.write(...)`: roles()
+# matches an alias as an unanchored substring, so scoring `f.write` as a path
+# write let two-letter aliases (`ar` for the wild-bootstrap table, `er` for the
+# exposure-robust one) hit inside the LaTeX string literals the hub writes, and
+# flipped three of the hub's reads into writes. No script here calls a bare
+# `write(`; the one real open-then-write is caught by the open() alternative.
+# That open() is MODE-AWARE on purpose: a bare `open` would score every read-open
+# as a write, so it only fires when the argument list also carries a "w"/"a"
+# mode string. The zero-width lookahead leaves the "(" unconsumed, so both
+# roles() compositions still line the verb up with the path.
+WRITE = (r"(write[\w.]+|to_csv|fwrite|savefig|ggsave|urlretrieve|extractall"
+         r"|open(?=\s*\([^)\n]*[\"'][wa][bt+]*[\"']))")
 READ = r"(read_csv|fread|read\.csv|read_parquet|read_excel)"
 
 
@@ -170,8 +195,12 @@ def main() -> None:
         if any(referenced(Path(n).stem, blob) for n in emitters.get(rel, ())):
             passes[rel] = "direct"
             continue
+        # Test 2 requires the script to WRITE the CSV the hub reads. Every
+        # estimation script names executive_margin_design.csv (it reads it), and
+        # the hub names it too, so a mention-only test passed a dozen scripts for
+        # a reason that was not theirs.
         csvs = {Path(c).name for c in re.findall(r"[\w./-]+\.csv", text)}
-        if any(c in macro_src for c in csvs):
+        if any(c in macro_src and roles(text, c)[0] for c in csvs):
             passes[rel] = "macro"
 
     # --- test 3: transitive data dependency, and sourced helpers -----------------
