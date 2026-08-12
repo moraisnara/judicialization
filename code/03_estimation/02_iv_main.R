@@ -295,9 +295,9 @@ LAG16_MAP <- c(
 # assumption is empirically rejected and over-differences the signal. ANCOVA-2016
 # uses a CLEAN pre-treatment baseline (2016 levels predate the 2020 instrument
 # shares), and a pre-trend falsification + non-adversarial placebo both pass
-# (code/04_analysis/05_validation.R). The first-difference (FD) estimates
+# (exploration/04_analysis/05_validation.R). The first-difference (FD) estimates
 # are retained as a labelled robustness column (spec "fd"). See
-# code/04_analysis/05_validation.R for the full FD-vs-ANCOVA comparison.
+# exploration/04_analysis/05_validation.R for the full FD-vs-ANCOVA comparison.
 #
 # ANCOVA_MAP: delta-outcome key -> c(<2024 level LHS>, <2016 lag>). Only outcomes
 # with BOTH a 2016 and a 2024 level appear; the rest stay first-difference.
@@ -478,7 +478,7 @@ specs <- list(
   list("broader_treatment", c(BASELINE_CONTROLS, "log1p_lawsuits_no_rrc_2020"), "SG_UF", FALSE, NULL,           "ancova2016"),
   # Robustness bracket: pure first difference (delta outcome, no own-lag). The FD
   # form pins the 2016->2024 persistence to 1; reported alongside the headline so
-  # the over-differencing is visible (see 05_validation.R).
+  # the over-differencing is visible (see exploration/04_analysis/05_validation.R).
   list("fd",                BASELINE_CONTROLS,                                  "SG_UF", FALSE, NULL,           "fd"),
   # Legacy V1 stance check: delta outcome + 2020 competition levels as controls.
   list("ancova_2020lvl",    c(BASELINE_CONTROLS, ANCOVA_2020_LEVELS),           "SG_UF", FALSE, NULL,           "fd")
@@ -1413,7 +1413,7 @@ iv_keep_raw <- paste0("^fit_", endogenous, "$")
 # the SAME outcomes under a pure first difference (delta_Y ~ D), which pins the
 # 2016->2024 persistence to one. Municipal margins barely persist, so FD
 # over-differences and the consolidation/disengagement coefficients attenuate
-# toward zero -- the contrast is the point (see 05_validation.R). All-FD here,
+# toward zero -- the contrast is the point (see exploration/04_analysis/05_validation.R). All-FD here,
 # so the dep-var means are delta means and no 2016-baseline row is added.
 {
   outs <- c(

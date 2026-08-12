@@ -59,12 +59,10 @@ def main() -> None:
     run_py("code/03_estimation/01c_patch_family_ivs.py")         # add family IVs before R estimation
     run_r("code/03_estimation/02_iv_main.R")
     run_r("code/03_estimation/02b_iv_legislative.R")
-    run_r("code/03_estimation/03_family_iv.R")
     run_r("code/03_estimation/04_placebo_nonadversarial.R")      # placebo shift-share + intensity control
     run_r("code/03_estimation/05_pretrend_balance.R")            # instrument pre-trend falsification
     run_r("code/03_estimation/06_wild_bootstrap_ar.R")           # AR wild-cluster bootstrap inference
     run_r("code/03_estimation/07_multiplicity.R")                # FWER/FDR correction (needs main IV CSV)
-    run_r("code/03_estimation/08_mean_reversion.R")              # split-sample first-stage falsification (audit #10)
     run_r("code/03_estimation/09_extensive_margin.R")            # extensive-vs-intensive margin decomposition (audit #10 companion)
     run_r("code/03_estimation/10_mechanism_finance.R")           # resource-drain mechanism: campaign spend by vote rank x seat type
     run_r("code/03_estimation/11_summary_indices.R")             # summary indices (Anderson/KLK) + Romano-Wolf stepdown (decision-free multiplicity)
@@ -72,16 +70,17 @@ def main() -> None:
     run_r("code/03_estimation/13_reclassification_robustness.R")  # shifter reclassification robustness: family-level + drop-propaganda Bartik
 
     print("\n=== 04 Analysis ===")
+    # Exploration scripts (family IV, mean reversion, FD-vs-ANCOVA validation,
+    # topic selection) live in exploration/ and are run by hand, not here.
+    # See exploration/README.md.
     run_py("code/04_analysis/01_descriptives.py")           # candidate pool + overview + shift descriptives
     run_r("code/04_analysis/02_descriptive_figures.R")      # data-universe map, litigation timing, Bartik distribution
     run_r("code/04_analysis/03_result_figures.R")           # first stage, coefplots, forest
     run_py("code/04_analysis/04_iv_diagnostics.py")         # Rotemberg weights + GPS balance tests
-    run_r("code/04_analysis/05_validation.R")               # FD-vs-ANCOVA + ANCOVA validation
     run_r("code/04_analysis/07_exposure_robust_se.R")       # genuine AKM/BHJ exposure-robust SE (replaces fake py [C])
     run_py("code/04_analysis/08_lawsuit_composition_sp.py")  # SP 2016->2024 class composition (pre-sample baseline, appendix)
     run_r("code/04_analysis/09_summary_statistics.R")       # estimation-sample summary statistics table
     run_py("code/04_analysis/10_candidate_rank_profile.py")  # winner vs runner-up vs field profile (2024 mayoral)
-    run_py("code/04_analysis/11_lawsuit_topic_selection.py")  # which adversarial topics the instrument selects on
     run_py("code/04_analysis/06_abstract_macros.py")        # deck macros (reads overview_* + regressions) -- LAST
 
     print("\nPipeline complete.")
