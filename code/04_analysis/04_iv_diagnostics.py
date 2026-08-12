@@ -42,11 +42,24 @@ REG_DIR.mkdir(parents=True, exist_ok=True)
 ENDOGENOUS = "delta_log1p_competition_lawsuits_2024_2020"
 INSTRUMENT = "bartik_iv_2020_2024"
 FE_COL     = "state"
+# Mirrors BASELINE_CONTROLS in code/03_estimation/02_iv_main.R exactly. The old
+# set here was the V1 stance (2020 competition LEVELS, no higher_educ_share_2010),
+# which 02_iv_main.R:264 labels legacy and rejects on Lord's-paradox grounds. Every
+# alpha_k and balance p reported out of this script was therefore computed for a
+# specification the paper does not estimate. Diagnosed 2026-08-12.
 BASELINE_CONTROLS = [
-    "log_pop_2010", "urban_share_2010", "log_income_pc_2010",
+    "log_pop_2010", "urban_share_2010", "log_income_pc_2010", "higher_educ_share_2010",
+    "log1p_total_valid_votes_2020",
     "margin_2016",
-    "log1p_total_valid_votes_2020", "margin_top1_top2_2020",
-    "log1p_total_candidates_2020",
+]
+
+# Strictly PRE-DETERMINED (2010 Census) subset, mirroring PREDET_CONTROLS in
+# 02_iv_main.R:257. Used ONLY to residualize the pre-trend outcomes: a 2016->2020
+# change must never be residualized on either of its own endpoints. With margin_2016
+# in the matrix, delta_margin_2020_2016 is a linear combination of included
+# regressors and beta is machine zero for every topic (max|beta| = 7e-16).
+PREDET_CONTROLS = [
+    "log_pop_2010", "urban_share_2010", "log_income_pc_2010", "higher_educ_share_2010",
 ]
 
 
@@ -278,11 +291,19 @@ def gps_balance_tests() -> None:
     ctrl_mat   = samp[BASELINE_CONTROLS].astype(float).values
     W = np.hstack([fe_dummies, ctrl_mat])
 
+    # W contains margin_2016, an endpoint of delta_margin_2020_2016. The pre-trend
+    # balance test must partial out the PRE-DETERMINED set only, or it is identically
+    # zero by construction. Both the outcome and the share are residualized on the
+    # SAME matrix (Frisch-Waugh); residualizing the share on FE alone, as this script
+    # previously did, does not deliver the conditional coefficient it reports.
+    predet_mat = samp[PREDET_CONTROLS].astype(float).values
+    W_pre = np.hstack([fe_dummies, predet_mat])
+
     pretrend_resid = {}
     for col in pretrend_cols:
         y_raw = samp[col].astype(float).values
-        coef, _, _, _ = np.linalg.lstsq(W, y_raw, rcond=None)
-        pretrend_resid[col] = y_raw - W @ coef
+        coef, _, _, _ = np.linalg.lstsq(W_pre, y_raw, rcond=None)
+        pretrend_resid[col] = y_raw - W_pre @ coef
 
     topic_meta = (comp[["main_subject_code", "main_subject_name"]]
                   .drop_duplicates("main_subject_code")
@@ -296,8 +317,8 @@ def gps_balance_tests() -> None:
     for k in all_topics:
         s_raw = share_df[k].values.astype(float)
         coef_cov, resid_cov, r2_cov, f_cov, p_cov = ols_stats(s_raw, W)
-        coef_fe_s, _, _, _ = np.linalg.lstsq(fe_dummies, s_raw, rcond=None)
-        s_tilde = s_raw - fe_dummies @ coef_fe_s
+        coef_pre_s, _, _, _ = np.linalg.lstsq(W_pre, s_raw, rcond=None)
+        s_tilde = s_raw - W_pre @ coef_pre_s
         row: dict = {
             "topic_code": k, "topic_name": topic_meta.get(k, ""),
             "topic_family": family_meta.get(k, ""), "alpha": alpha_map.get(k, np.nan),
