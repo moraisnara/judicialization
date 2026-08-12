@@ -29,9 +29,10 @@ output/paper/*
 !output/paper/*.bbl
 !output/presentation/
 output/presentation/*
-!output/presentation/slides_full.tex
-!output/presentation/slides_conference.tex
-!output/presentation/references.bib
+# Deck SOURCES must be tracked. Whitelist by extension, not by filename: the old
+# per-file list still named slides_full.tex / slides_conference.tex long after they
+# were renamed, which silently left the entire report deck untracked.
+!output/presentation/*.tex
 !output/presentation/*.bib
 !output/figures/
 !output/tables/
@@ -63,3 +64,6 @@ Rplots.pdf
 
 # Never commit data CSVs (large, regenerable)
 *.csv
+
+# Subagent-driven-development scratch workspace (ledger, briefs, review packages)
+.superpowers/

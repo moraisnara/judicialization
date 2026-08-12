@@ -28,6 +28,12 @@
   - pdflatex: `/c/Users/naral/AppData/Roaming/TinyTeX/bin/windows/pdflatex` (on PATH)
   - python: `/c/Users/naral/AppData/Local/Programs/Python/Python313/python.exe`
 - **Commits:** no `Co-Authored-By: Claude` line, ever.
+- **When mandated prose overflows a frame — the layout ladder.** Discovered in execution: this plan's replacement prose is systematically *longer* than the text it replaces, and several frames were already at capacity. Never reword mandated text to fit. Instead climb this ladder and **stop at the first rung that clears the overflow**, so fixes stay consistent across frames:
+  1. Delete a redundant manual `\vspace`/`\smallskip` and let the natural spacing apply
+  2. `\itemsep` down to `1pt` (the deck's established floor)
+  3. `\\[2pt]` → `\\[1pt]`
+  4. `\vspace{0pt}`, then `-2pt`, then `-4pt`
+  **`-4pt` is the floor** — it is the most negative value used anywhere else in the deck. Going past it requires reporting the overflow as a BLOCKED finding instead, because at that point the frame is genuinely over capacity and the author must decide what to cut. Whichever rung you use, **verify both edges**: the bottom margin against the footline *and* the top junction against whatever sits above. Report both measured gaps in points.
 
 ---
 
@@ -87,7 +93,7 @@ This is the linchpin. Every later edit refers back to this frame, and its curren
 - Modify: `output/presentation/slides_report.tex:72`, `:85`, `:90`
 
 **Interfaces:**
-- Produces: the claim "concentration is not diagnostic; the ballot discriminates", which Tasks 2, 3, 4, 5 and 7 all cite. The phrase **"Not diagnostic."** introduced here is reused verbatim in Task 2's table cell.
+- Produces: the claim "concentration is not diagnostic; the ballot discriminates", which Tasks 2, 3, 4, 5 and 7 all cite. The phrase **"Not diagnostic."** is introduced here in frame 2's two Competition bullets. Note it is *not* reused verbatim downstream: Task 2's measurement-table cell deliberately says `\emph{ambiguous}` instead, because a table cell reads better with a single adjective than with a sentence fragment. Both express the same claim; follow each task's literal mandate.
 
 - [ ] **Step 1: Look at the frame before changing it**
 
@@ -140,7 +146,7 @@ Search string: `Two Faces of the Same Power`. Expected: `PAGE COUNT: 67`. Read t
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_report.tex output/presentation/slides_report.pdf && \
+git add output/presentation/slides_report.tex && \
 git commit -m "deck: the ballot discriminates, not concentration (FRAMING D4)
 
 Frame 2 contradicted itself: L90 committed H1 to dispersing the vote while
@@ -208,7 +214,7 @@ Run the rasterize block twice, with search strings `Level the Field, or Raise th
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_report.tex output/presentation/slides_report.pdf && \
+git add output/presentation/slides_report.tex && \
 git commit -m "deck: unbundle concentration from the barrier definition (FRAMING D4)
 
 The research question defined barrier as 'voters withdraw, the vote
@@ -262,7 +268,7 @@ Search strings: `Question, Design, Answer` and `Two Engines, One Result`. Expect
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_report.tex output/presentation/slides_report.pdf && \
+git add output/presentation/slides_report.tex && \
 git commit -m "deck: consolidation general, barrier reading seat-conditional (FRAMING D5)
 
 Retires 'the consolidation is the barrier signature', which borrowed the
@@ -324,7 +330,7 @@ Search string: `Which Face, by Seat Type`. Expected: `PAGE COUNT: 67`, and the s
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_report.tex output/presentation/slides_report.pdf && \
+git add output/presentation/slides_report.tex && \
 git commit -m "deck: seat split is the identifying test, not heterogeneity (FRAMING D5)
 
 Also retitles away from 'Two Faces by Seat Type', which collided with the
@@ -396,7 +402,7 @@ Search strings: `Findings by Confidence` and `Contribution`. Expected: `PAGE COU
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_report.tex output/presentation/slides_report.pdf && \
+git add output/presentation/slides_report.tex && \
 git commit -m "deck: qualify Romano-Wolf as a 10% pass; state the claim structure
 
 romano_wolf_stepdown.csv gives margin p_rw=.059, so listing it among the
@@ -443,7 +449,7 @@ Search string: `Signal vs Weapon`. Expected: `PAGE COUNT: 67`. Read the PNG and 
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_report.tex output/presentation/slides_report.pdf && \
+git add output/presentation/slides_report.tex && \
 git commit -m "deck: state the estimand boundary in app:theory (FRAMING D2)
 
 Direct judicial action is out by construction, not rejected on evidence.
@@ -549,7 +555,7 @@ Expected: `79` (measured baseline). A different number means an edit mangled the
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_advisor.tex output/presentation/slides_advisor.pdf && \
+git add output/presentation/slides_advisor.tex && \
 git commit -m "advisor deck: consolidation is the finding, the face comes from the ballot
 
 L128 committed H1 to predicting closer races, which made consolidation
@@ -619,7 +625,7 @@ SUBS = [(r"favour", "favor"), (r"behaviour", "behavior"), (r"colour", "color"),
         (r"normalis", "normaliz"), (r"demobilis", "demobiliz"),
         (r"urbanis", "urbaniz"), (r"organis", "organiz"),
         (r"modelling", "modeling"), (r"defence", "defense"),
-        (r"analys(?=e|ed\b|es\b|ing\b)", "analyz"),
+        (r"analyse\b", "analyze"),
         (r"characteris(?=e\b|ed\b|es\b|ing\b)", "characteriz")]
 
 def keep_case(src, repl):
@@ -703,7 +709,7 @@ Expected: both `OK`. Spelling changes are length-neutral or one character shorte
 
 ```bash
 cd /c/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization && \
-git add output/presentation/slides_report.tex output/presentation/slides_advisor.tex output/presentation/slides_report.pdf output/presentation/slides_advisor.pdf && \
+git add output/presentation/slides_report.tex output/presentation/slides_advisor.tex && \
 git commit -m "deck: American spelling throughout both decks
 
 Per the FRAMING.md vocabulary lock. The decks previously mixed British
