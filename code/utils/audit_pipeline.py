@@ -77,6 +77,32 @@ def referenced(stem: str, blob: str) -> bool:
     return re.search(rf"(?<![\w-]){re.escape(stem)}(?![\w-])", blob) is not None
 
 
+def raw_dir_vars(text: str) -> set[str]:
+    """Variables bound to a path literal under data/raw, e.g. RAW_DIR = ROOT/"data"/"raw"."""
+    return {m.group(1) for m in re.finditer(
+        r'^\s*([A-Za-z_][\w.]*)\s*(?:<-|=)\s*[^\n]*["\']data["\'][^\n]*["\']raw["\']',
+        text, re.M)}
+
+
+def writes_raw_lane(text: str) -> bool:
+    """True if the script writes anywhere under a data/raw path constant.
+
+    Word-boundary anchored, unlike roles()'s unanchored substring match: a
+    generic alias such as `path` would otherwise false-match inside an
+    unrelated variable like `out_path` elsewhere in the same file. Scoped
+    narrowly to this one check rather than tightening roles() itself, since
+    roles() is shared by tests 1-3 and its behavior there is already validated.
+    """
+    for root in raw_dir_vars(text):
+        names = [root] + sorted(aliases(text, root))
+        alt = "|".join(rf"\b{re.escape(n)}\b" for n in names)
+        if re.search(rf"{WRITE}\s*\([^)]*({alt})", text, re.S):
+            return True
+        if re.search(rf"({alt})[^\n]*{WRITE}", text):
+            return True
+    return False
+
+
 def main() -> None:
     scripts = script_files()
     blob = documents()
@@ -98,6 +124,15 @@ def main() -> None:
     passes: dict[str, str] = {}
     for rel, text in scripts.items():
         if rel in INFRASTRUCTURE:
+            continue
+        # Download scripts extract whole folders into data/raw/ with names built
+        # at runtime (e.g. f"consulta_cand_{year}"), so there is no output
+        # filename literal for tests 1-3 to match against. The raw lane is
+        # consumed by the build stage by construction, so this directory-level
+        # edge stands in for the missing filename: writing anywhere under a
+        # data/raw path constant is enough to pass.
+        if writes_raw_lane(text):
+            passes[rel] = "raw-lane"
             continue
         if any(referenced(Path(n).stem, blob) for n in emitters.get(rel, ())):
             passes[rel] = "direct"
