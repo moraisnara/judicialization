@@ -181,10 +181,6 @@ rfcoef <- function(fit, instr) {
 # 4. RUN: per outcome, four estimates + diagnostics
 # ============================================================
 rows <- list()
-# Model stores for etable
-main_fits      <- list()   # main IV
-intens_fits    <- list()   # + intensity control
-plac_ctrl_fits <- list()   # + placebo control
 
 for (y in FOCUS_OUTCOMES) {
   if (!(y %in% names(df))) { cat("  skip (absent):", y, "\n"); next }
@@ -195,10 +191,6 @@ for (y in FOCUS_OUTCOMES) {
   f_intens <- iv_fit(samp, y, extra_ctrls = INTENSITY_CTRL)
   f_pctrl  <- iv_fit(samp, y, extra_ctrls = PLACEBO_IV)
   f_prf    <- rf_fit(samp, y, PLACEBO_IV)
-
-  main_fits[[y]]      <- f_main
-  intens_fits[[y]]    <- f_intens
-  plac_ctrl_fits[[y]] <- f_pctrl
 
   Fmain   <- fs_F(samp, ENDOGENOUS, INSTRUMENT)
   Fintens <- fs_F(samp, ENDOGENOUS, INSTRUMENT, extra_ctrls = INTENSITY_CTRL)

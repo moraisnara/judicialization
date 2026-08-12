@@ -14,7 +14,7 @@ true and hides the real one -- the same failure mode already fixed in sources().
 Documented limit -- writes through a user-defined wrapper. roles() pairs a write
 verb with a filename literal in the same expression, so a write that happens
 inside a helper which receives the path as a parameter is invisible: the literal
-sits at the call site, the verb inside the helper body. The WRITE `write[\\w.]*`
+sits at the call site, the verb inside the helper body. The WRITE `write[\\w.]+`
 alternative covers the common case, where the wrapper is itself *named*
 `write_...` (e.g. write_tex() in 03_estimation/10_mechanism_finance.R, whose
 inner writeLines() never sees the filename). A wrapper named `emit_fragment`

@@ -74,7 +74,7 @@ def main() -> None:
     # See exploration/README.md.
     run_py("code/04_analysis/01_descriptives.py")           # candidate pool + overview + shift descriptives
     run_r("code/04_analysis/02_descriptive_figures.R")      # data-universe map, litigation timing, Bartik distribution
-    run_r("code/04_analysis/03_result_figures.R")           # first stage, coefplots, forest
+    run_r("code/04_analysis/03_result_figures.R")           # first stage + the result coefplots
     run_py("code/04_analysis/04_iv_diagnostics.py")         # Rotemberg weights + GPS balance tests
     run_r("code/04_analysis/07_exposure_robust_se.R")       # genuine AKM/BHJ exposure-robust SE (replaces fake py [C])
     run_py("code/04_analysis/08_lawsuit_composition_sp.py")  # SP 2016->2024 class composition (pre-sample baseline, appendix)
