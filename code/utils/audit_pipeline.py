@@ -67,11 +67,22 @@ def script_files() -> dict[str, str]:
     return out
 
 
+def doc_files() -> list[Path]:
+    """Every document that can consume an asset.
+
+    MUST recurse. The decks were refactored into a frame library
+    (output/presentation/frames/*.tex, one file per frame) with the drivers
+    reduced to \\input lists, so a top-level-only glob sees no
+    \\includegraphics at all and reports every figure as an orphan.
+    """
+    docs = list((ROOT / "output/presentation").rglob("*.tex"))
+    docs += list((ROOT / "output/paper").rglob("*.tex"))
+    return docs
+
+
 def documents() -> str:
     """Concatenated text of every document that can consume an asset."""
-    docs = list((ROOT / "output/presentation").glob("*.tex"))
-    docs += list((ROOT / "output/paper").glob("*.tex"))
-    return "\n".join(d.read_text(encoding="utf-8", errors="replace") for d in docs)
+    return "\n".join(d.read_text(encoding="utf-8", errors="replace") for d in doc_files())
 
 
 def aliases(text: str, name: str) -> set[str]:
@@ -260,14 +271,19 @@ def main() -> None:
     # --- documents pointing at assets that are not on disk ------------------------
     on_disk = {a.stem for a in assets}
     breakers = []
-    for d in list((ROOT / "output/presentation").glob("*.tex")) + list((ROOT / "output/paper").glob("*.tex")):
+    for d in doc_files():
         txt = d.read_text(encoding="utf-8", errors="replace")
         for m in re.finditer(r"\\(?:input|includegraphics)\s*(?:\[[^\]]*\])?\{([^}]+)\}", txt):
-            stem = Path(m.group(1).strip()).stem
-            if stem in on_disk or stem == "slides_preamble":
+            target = m.group(1).strip()
+            if Path(target).stem in on_disk or Path(target).stem == "slides_preamble":
                 continue
-            if not (ROOT / "output/presentation" / f"{stem}.tex").exists():
-                breakers.append(f"{d.name} -> {m.group(1)}")
+            # \input paths are relative to the including file's own directory, so
+            # frames/src_x.tex inside a driver resolves under output/presentation/.
+            # Resolving the STEM alone missed every subdirectory and reported the
+            # whole frame library as missing.
+            cand = (d.parent / target, d.parent / f"{target}.tex")
+            if not any(c.exists() for c in cand):
+                breakers.append(f"{d.name} -> {target}")
 
     def section(title: str, rows: list[str], note: str = "") -> None:
         print(f"\n=== {title}: {len(rows)} ===")
