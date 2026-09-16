@@ -1,5 +1,18 @@
 # CLAUDE.md — judicialization repo
 
+## Companion documents
+
+| Document | What it governs |
+|---|---|
+| `FRAMING.md` | The locked argument: vocabulary, the Leveling/Barrier dichotomy, confidence tiers. Binds every deck and the paper. |
+| `DECK_GUIDE.md` | How the presentations are built: the frame library, the master/30-min/15-min drivers, memos, and the research diary. |
+| `WRITING_GUIDE.md` | Paper structure (Evans 7-element intro). The deck is written to this structure and the paper mirrors it. |
+| `DATA_GUIDE.md` | Datasets, entity tokens, and the download → build → estimation lineage. |
+
+**Nara writes the paper.** Never draft prose into `output/paper/paper.tex` or
+`output/paper/extended_abstract.tex`. Claude owns the internal memos and the decks, and
+records paper-affecting decisions as an apply-to-the-paper sheet.
+
 ## File & output naming conventions (standing rule)
 
 Names must be self-explanatory: reading a script or output filename should tell you

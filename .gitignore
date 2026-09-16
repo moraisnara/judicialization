@@ -46,6 +46,9 @@ output/presentation/*
 # The talk drivers are GENERATED from the frame library, so their generator is a
 # deck source too -- an unsaved generator means the derivation cannot be redone.
 !output/presentation/*.py
+# DECK_WORKPLAN.md records the frame-by-frame review and its open design items;
+# ignored, it existed only on one disk.
+!output/presentation/*.md
 !output/figures/
 !output/tables/
 
