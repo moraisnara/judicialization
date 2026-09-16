@@ -1,12 +1,11 @@
-
-\begin{frame}{Appendix --- Voter Behavior: Turnout by Voter Profile}
+\begin{frame}{Voter Behavior: Turnout by Voter Profile}
 \hypertarget{src:turnoutprofile}{}
 \small
-Compulsory turnout is mechanically frozen, but turnout among the \textbf{facultative} electorate (ages 16--17 and 70$+$) is free to move (it rose from \TurnoutRateTwenty\% to \TurnoutRateFortyFour\% overall, with far larger municipal swings), and turnout has a strong \textbf{education gradient}. If litigation demobilizes, these elastic margins are where it should show. Each dot is the 2SLS effect of a one-SD shock; bars are 90\% (thick) and weak-IV (tF, thin) intervals. From the TSE \emph{perfil do eleitorado}; state FE, clustered by state.
+Turnout is compulsory for ages 18--69, but turnout among the \textbf{facultative} electorate (ages 16--17, over 70, and illiterate voters; CF/88 art.~14 \S1) is free to move, and turnout has a strong \textbf{education gradient}. If litigation demobilizes, these elastic margins are where it should show. Each dot is the 2SLS coefficient per unit of $\Delta\log(1+\text{lawsuits})$ (one SD $=\TreatSD$); bars are 90\% (thick) and weak-IV tF 95\% (thin) intervals. From the TSE \emph{perfil do eleitorado}; state FE, clustered by state.
 \smallskip
 \begin{center}
 \includegraphics[width=\linewidth,height=0.48\textheight,keepaspectratio]{../figures/turnout_coefplot.pdf}
 \end{center}
 \smallskip
-\footnotesize \textbf{Null on every margin.} Every interval crosses zero and the magnitudes are negligible: a one-SD rise in judicialization ($\approx\TreatSDMult\times$ more litigation) moves facultative turnout by only $\FacultativePerSDSigned$~pp and the education gap by $\EduGapPerSDSigned$~pp, both indistinguishable from zero. The high-education margin is closest to a signal ($p=\HighEdP$) but does not clear conventional significance.\hfill\hyperlink{app:turnoutprofile}{\beamergotobutton{Full table}}
+\footnotesize \textbf{Null on the elastic margins.} A one-SD rise in judicialization ($\approx\TreatSDMult\times$ more litigation) moves facultative turnout by $\FacultativePerSDSigned$~pp ($p=\FacultativeP$) and the education gap by $\EduGapPerSDSigned$~pp ($p=\EduGapP$). The high-education margin is closest to a signal ($p=\HighEdP$). Compulsory turnout is the exception: it rises by $\CompulsoryPerSDSigned$~pp per SD ($p=\CompulsoryP$), and its tF interval excludes zero.\hfill\hyperlink{app:turnoutprofile}{\beamergotobutton{Full table}}
 \end{frame}

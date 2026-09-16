@@ -11,17 +11,17 @@ The paper asks what happens to the candidate field, to voters, and to the shape 
 
 {\setlength{\fboxsep}{6pt}%
 \colorbox{mylight}{\parbox{0.96\textwidth}{%
-\textbf{\textcolor{myblue}{Design.}} We instrument the $2020\!\to\!2024$ change in adversarial litigation with each municipality's shift-share exposure to national, subject-level litigation diffusion, and read the 2024 outcome net of its clean 2016 baseline (2SLS, state fixed effects, state-clustered standard errors, $N=\NMunis$).}}}
+\textbf{\textcolor{myblue}{Design.}} We instrument the $2020\!\to\!2024$ change in adversarial litigation with each municipality's shift-share exposure to national, subject-level litigation diffusion, and read the 2024 outcome net of its clean 2016 baseline (2SLS, state fixed effects, state-clustered standard errors, $N=$~\NMunis{}).}}}
 \smallskip
 
-The results fall into four findings, ordered from who runs to what the contest produces, each reported at the confidence it holds:
-\begin{itemize}\itemsep2pt
-  \item \textbf{Candidate supply is unchanged.} Litigation neither thins nor recomposes the field; entry, renewal and descriptive representation are a precise null.
-  \item \textbf{Voters withdraw rather than re-sort.} Mayoral blank ($\BlankCoef$) and null ($\NullCoef$) votes rise and valid votes fall, most sharply in contested seats. \ns{Tentative: holds under conventional and exposure-robust inference, not the AR bootstrap.}
-  \item \textbf{The mayoral contest consolidates.} The top-two margin widens ($\MarginCoef$, $p=\MarginP$), the winner's share rises and the runner-up's falls. \ns{Robust: clears the AR wild-cluster bootstrap and the exposure-robust SE.}
+Four findings, ordered from who runs to what the contest produces, each at the confidence it holds:
+\begin{itemize}\itemsep1pt
+  \item \textbf{Candidate supply is unchanged.} Litigation neither thins nor recomposes the mayoral field; entry, renewal and descriptive representation do not move.
+  \item \textbf{Voters withdraw rather than re-sort.} In contested seats the mayoral blank rate rises ($\ContBlankCoef$, $p=\ContBlankP$) and the valid rate falls ($\ContValidCoef$, $p=\ContValidP$). Pooled, the blank rise ($\BlankCoef$, $p=\BlankP$) clears the exposure-robust SE ($p=\ERBlankPbhj$); null and valid are not significant. \ns{Tentative: fails the AR bootstrap ($p=\ARBlankP$).}
+  \item \textbf{The mayoral contest consolidates.} The top-two margin widens ($\MarginCoef$, $p=\MarginP$), the winner's share rises and the runner-up's falls. \ns{Robust: clears the AR wild-cluster bootstrap \citep{andersonrubin1949,roodman2019} and the exposure-robust SE \citep{borusyak2022,adao2019}.}
   \item \textbf{Who wins does not change.} The gender and race of the winner do not move.
 \end{itemize}
 \smallskip
 \rule{\linewidth}{0.4pt}\\[3pt]
-{\footnotesize These effects are confined to the mayoral race. The consolidation is general across seat types, but the barrier reading holds only where an incumbent is defended: voters leave the ballot in contested seats and not in open ones. The council race exhibits neither face, with both the ballot and the composition of the field flat.}
+{\footnotesize These effects are confined to the mayoral race. The margin widens in both seat types, but in open seats it was already widening before 2020 (pre-trend $p=\OpenPtMarginP$), so the barrier reading rests on contested seats, where voters leave the ballot. The council ballot is flat, and council composition is flat except the elected female share ($p=\CouncilElFemaleP$) and the pool's age ($p=\CouncilAgeP$).}
 \end{frame}

@@ -3,7 +3,7 @@
 \begin{frame}{Appendix --- Share Exogeneity: Intensity Control and Placebo Shifter}
 \hypertarget{app:shares}{}
 \footnotesize
-The exogenous-shares path requires that the 2020 exposure shares isolate the \emph{adversarial} channel rather than proxy a municipality's overall litigiousness. Two checks (full BHJ treatment):
+The exogenous-shares path requires that the 2020 exposure shares isolate the \emph{adversarial} channel rather than proxy a municipality's overall litigiousness. Two checks, following \citet{borusyak2022}:
 \begin{itemize}\itemsep0pt
   \item \textbf{Intensity control.} Add the 2020 \emph{level} of non-adversarial filings as a pre-determined control. If the shares proxied generic litigation volume, conditioning on it would move the estimate. It does not (margin $\PlaceboMainCoef\!\to\!\PlaceboIntensCoef$).
   \item \textbf{Placebo shifter.} Build an identically-constructed Bartik from the excluded mandatory and administrative filings. Its reduced form is null (margin $\PlaceboRFCoef$, SE $\PlaceboRFSE$) and its own relevance near zero ($F=\PlaceboRelevanceF$), as a non-channel should be.

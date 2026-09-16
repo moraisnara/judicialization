@@ -2,29 +2,29 @@
 \begin{frame}{Appendix --- Many Outcomes, No Family Cut}
 \hypertarget{app:multiplicity}{}
 \footnotesize
-The consolidation rests on a family of correlated outcomes, raising the question of whether it survives multiple-testing correction. We answer it without declaring which outcomes ``count,'' by two complementary routes.
+The consolidation rests on a family of correlated outcomes. Two routes test whether it survives multiple-testing correction without declaring which outcomes ``count.''
 \vspace{-2pt}
 
 \begin{columns}[T]
 \begin{column}{0.52\linewidth}
-\scriptsize \textbf{(a) Collapse each theory-declared family to one index} (Anderson 2008 inverse-covariance / Kling--Liebman--Katz average). One family $=$ one test. Each 2024 index is net of its own 2016 baseline; effects in SD units, positive $=$ consolidation.
+\scriptsize \textbf{(a) Collapse each theory-declared family to one index} (inverse-covariance weighted \ns{\citep{anderson2008}} and equal-weight \ns{\citep{kling2007}} indices). One family $=$ one test. Each 2024 index is net of its own 2016 baseline; effects in SD units, positive $=$ consolidation.
 \vspace{-4pt}
 \begin{center}
 \scriptsize
 \scalebox{0.95}{\resizebox{\linewidth}{!}{\input{../tables/tex/summary_indices.tex}}}
 \end{center}
-\scriptsize The overall combined index clears ($p<.05$) and closeness clears on its own, while representation and the council-ballot placebo are null. The index pools 8 of 12 non-ballot outcomes, and the ballot family alone is $p=.134$, so it establishes the consolidation rather than a face.
+\scriptsize The overall combined index clears ($p=\IdxOverallP$) and closeness clears on its own ($p=\IdxClosenessP$); concentration does not ($p=\IdxConcentrationP$), and representation and the council-ballot placebo are null. \IdxNonBallotK{} of the \IdxOverallK{} outcomes in the overall index are not ballot outcomes, and the ballot family alone is $p=\IdxWithdrawalP$, so the index establishes the consolidation rather than a face.
 \end{column}
 \begin{column}{0.46\linewidth}
-\scriptsize \textbf{(b) Romano--Wolf stepdown} over all 18 barrier/representation reduced forms, a \emph{joint} wild-cluster bootstrap ($B=10{,}000$, shared Rademacher weights) controlling the family-wise error rate.
+\scriptsize \textbf{(b) Romano--Wolf stepdown} \ns{\citep{romano2005,romano2016}} over all \RWFamilyN{} barrier/representation reduced forms, a \emph{joint} wild-cluster bootstrap ($B=9{,}999$, shared Rademacher weights) controlling the family-wise error rate.
 \vspace{-4pt}
 \begin{center}
 \scriptsize
 \scalebox{0.95}{\resizebox{\linewidth}{!}{\input{../tables/tex/romano_wolf_stepdown.tex}}}
 \end{center}
-\scriptsize Margin and runner-up survive raw and Holm correction. At the fully simultaneous family-wise level, which also carries the few-cluster penalty, they land borderline ($p_{\text{RW}}\!\approx\!.06$). Romano--Wolf is stricter than normal-approximation Holm because the bootstrap captures the \ARNClusters{}-cluster tails that the index averages over.
+\scriptsize On reduced-form $p$-values, margin and runner-up survive Holm ($p=\RFHolmMarginP$, $\RFHolmRunnerUpP$) \ns{\citep{holm1979}}. Romano--Wolf, which carries the \ARNClusters{}-cluster tails through the bootstrap, clears them only at 10\% ($p=\RWMarginP$, $\RWRunnerUpP$). On 2SLS $p$-values none of the \MultFamilyN{} survives Holm or BH \ns{\citep{benjamini1995}}; margin Holm $p=\MultMarginHolm$.
 \end{column}
 \end{columns}
-\vspace{-4pt}
-\footnotesize What the two routes establish is a pattern rather than a single star. The index, which requires no family cut, clears; the most heavily corrected coefficient is borderline, which is what \ARNClusters{} clusters buy. \ns{The family is fixed at these 18: the gender decomposition \hyperlink{src:gender}{\beamergotobutton{gender}} splits an outcome already inside it and is never counted as a new confirmatory test.} \hfill\hyperlink{src:spine1}{\beamerreturnbutton{Back to the margin}}
+\vspace{2pt}
+\footnotesize The index, which requires no family cut, clears; the most heavily corrected coefficient is borderline, which is what \ARNClusters{} clusters buy. \ns{The family is fixed at these \RWFamilyN{}: the gender decomposition \hyperlink{src:gender}{\beamergotobutton{gender}} splits an outcome already inside it and is never counted as a new confirmatory test.} \hfill\hyperlink{src:spine1}{\beamerreturnbutton{Back to the margin}}
 \end{frame}

@@ -2,7 +2,7 @@
 \begin{frame}{Appendix --- Rotemberg Weights and Shock Concentration}
 \hypertarget{app:rotemberg}{}
 \footnotesize
-\textcolor{myblue}{This is a Goldsmith--Pinkham (GPS) share-identified design rather than a many-shock design.} With only $K_{\text{eff}}=\KeffRotemberg$ effective shocks, credibility rests on the exogeneity of the 2020 shares rather than on averaging away many independent shifters \citep{goldsmith2020,borusyak2022}. The Rotemberg decomposition assigns each subject a weight $\alpha_k$, summing to one, for how much it drives the 2SLS estimate.
+\textcolor{myblue}{This is a Goldsmith-Pinkham, Sorkin and Swift (GPS) share-identified design rather than a many-shock design.} With only $K_{\text{eff}}=\KeffRotemberg$ effective shocks, credibility rests on the exogeneity of the 2020 shares rather than on averaging away many independent shifters \citep{goldsmith2020,borusyak2022}. The Rotemberg decomposition assigns each subject a weight $\alpha_k$, summing to one, for how much it drives the 2SLS estimate.
 \smallskip
 \begin{columns}[T]
 \begin{column}{0.55\textwidth}
@@ -21,15 +21,15 @@
 \textit{Top five} & \textbf{\RotTopFiveCumPct} & --- \\
 \bottomrule
 \end{tabular}\\[3pt]
-{\tiny All five are \emph{Propaganda Eleitoral} subjects.}
+{\tiny \RotPropTopFive{} of the five are \emph{Propaganda Eleitoral} subjects.}
 \end{column}
 \begin{column}{0.43\textwidth}
 \scriptsize
-What identifies the estimate is propaganda diffusion. The five highest-weight subjects carry \RotTopFiveCumPct\% of the net weight and propaganda subjects \RotPropagandaPct\%, above propaganda's \RecPropShare\% share of the instrument's raw variation, because the Rotemberg weight measures leverage rather than volume. These subjects are not weak (own $F_k$ of \RotFOne, \RotFTwo, \ldots), so the concentration is not a weak-instrument artifact: a few national propaganda-regulation shocks, covering internet rules, timing and permitted media, do the identifying work.
+What identifies the estimate is propaganda diffusion. The five highest-weight subjects carry \RotTopFiveCumPct\% of the net weight and propaganda subjects \RotPropagandaPct\%, above propaganda's \RecPropShare\% share of the instrument's raw variation, because the Rotemberg weight measures leverage rather than volume. Their own $F_k$ ranges from \RotFMin{} to \RotFMax{}. A few national propaganda-regulation shocks, covering internet rules, early campaigning, municipal ordinances and rallies, do the identifying work.
 \smallskip
 
 This does not contradict the national decline in propaganda litigation, because identification uses leave-own-state-out variation in each topic's growth across states rather than that trend: a topic can shrink on average and still diffuse unevenly. The exclusion restriction must then hold for propaganda specifically; the share-exogeneity checks address pre-trends and generic litigiousness, and a national recode is taken up separately \hyperlink{app:reclass}{\beamergotobutton{coding artifact?}}.
 \end{column}
 \end{columns}
-\footnotesize The concentration is intrinsic to litigation data rather than a modeling choice: a finer partition raises the shock count but destroys first-stage relevance. The design is therefore defended on share exogeneity.\hfill\hyperlink{src:identbrief}{\beamerreturnbutton{Back}}
+\footnotesize With few effective shocks, the design is defended on share exogeneity.\hfill\hyperlink{src:identbrief}{\beamerreturnbutton{Back}}
 \end{frame}

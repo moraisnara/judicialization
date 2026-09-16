@@ -6,7 +6,7 @@
 The headline uses conventional state-clustered standard errors. Two stress tests bracket that choice, one addressing weak instruments and one the few-shock shift-share structure.
 \smallskip
 
-\textbf{(a) Anderson--Rubin wild-cluster restricted bootstrap} (\ARNClusters{} state clusters). It inverts the AR statistic and is valid regardless of instrument strength.
+\textbf{(a) Anderson--Rubin wild-cluster restricted bootstrap} (\ARNClusters{} state clusters; \ns{\citealp{andersonrubin1949,roodman2019}}). It inverts the AR statistic and is valid regardless of instrument strength.
 \begin{center}\scriptsize\renewcommand{\arraystretch}{1.15}
 \begin{tabular}{lcc}
 \toprule
@@ -15,17 +15,17 @@ Outcome & AR 95\% CI & $p$ \\
 Top-two margin        & \ARMarginCI   & \ARMarginP \\
 Runner-up vote share  & \ARRunnerUpCI & \ARRunnerUpP \\
 Mayoral blank rate    & \ARBlankCI    & \ARBlankP \\
-Turnout (placebo)     & \ARTurnoutCI  & \ARTurnoutP \\
+Turnout (overall)     & \ARTurnoutCI  & \ARTurnoutP \\
 Female vote share     & \ARFemaleVSCI & \ARFemaleVSP \\
 \bottomrule
 \end{tabular}
 \end{center}
-\scriptsize The consolidation (margin, runner-up) clears. The blank-rate confidence interval straddles zero, which is why the withdrawal reading is carried as tentative. The compulsory-turnout placebo and the representation null are, as expected, indistinguishable from zero.
+\scriptsize The consolidation (margin, runner-up) clears. The blank-rate confidence interval straddles zero, which is why the withdrawal reading is carried as tentative. Overall turnout and the female vote share are indistinguishable from zero.
 \smallskip
 
-\textbf{(b) BHJ/AKM exposure-robust standard error}, the outer bound for a design identified off a handful of diffusing litigation topics. It re-clusters at the shock (subject) level.
+\textbf{(b) BHJ/AKM exposure-robust standard error} \ns{\citep{borusyak2022,adao2019}}, the outer bound for a design identified off a handful of diffusing litigation topics. It re-clusters at the shock (subject) level.
 \begin{center}\footnotesize
 Top-two margin: conventional SE $\ERMarginSEconv \to$ exposure-robust $\ERMarginSEbhj$ (a $\ERMarginRatio\times$ inflation); $p=\ERMarginPbhj$; null-imposed CI $\ERMarginCI$ excludes zero.
 \end{center}
-\footnotesize The consolidation survives even under the most conservative shock-level clustering. The standard error barely moves because the estimate does not hang on a single dominant shock. \hfill\hyperlink{src:spine1}{\beamerreturnbutton{Back to the margin}}
+\footnotesize The consolidation survives shock-level clustering, and the standard error barely moves. \hfill\hyperlink{src:spine1}{\beamerreturnbutton{Back to the margin}}
 \end{frame}

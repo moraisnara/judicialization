@@ -3,36 +3,31 @@
 \begin{frame}{Robustness: Four Threats and Their Verdicts}
 \hypertarget{src:robustness}{}
 \footnotesize
-The design rests on a few concentrated shocks and an extensive-margin first stage, so credibility comes from a battery of targeted checks rather than from averaging many independent shifters.
-\smallskip
-\renewcommand{\arraystretch}{1.05}
+With few concentrated shocks, credibility rests on the targeted checks below.
+\renewcommand{\arraystretch}{1.0}
 \begin{center}
 \scriptsize
-\begin{tabular}{@{}p{2.7cm} p{5.9cm} c @{\hskip 5pt}p{2.1cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.6cm} p{9.2cm} c@{}}
 \toprule\toprule
-\textbf{Threat} & \textbf{Check} & \textbf{Verdict} & \textbf{Appendix} \\
+\textbf{Threat} & \textbf{Check} & \textbf{Verdict} \\
 \midrule
-The identifying variation is not what we claim &
-Reduced form survives dropping every zero-litigation municipality and a presence dummy; count-native Poisson and NegBin confirm the weak intensive margin is a real null. &
-\tick &
-\hyperlink{app:extensive}{\beamergotobutton{extensive}}\, \hyperlink{app:reclass}{\beamergotobutton{reclass}} \\
+The identifying variation is not what we claim\par\vspace{3pt}\hyperlink{app:extensive}{\beamergotobutton{extensive}} \hyperlink{app:reclass}{\beamergotobutton{reclass}} &
+Reduced form survives dropping every zero-litigation municipality and a presence dummy; count-native Poisson \ns{\citep{santossilva2006}} and NegBin confirm the weak intensive margin is a real null. &
+\tick \\
 \midrule
-The treatment definition drives the result &
-Invariant across log1p, IHS, level, rate and binary definitions. Only weak-first-stage transforms lose significance, which is a weak-IV symptom rather than counter-evidence. &
-\tick &
-\hyperlink{app:tdef}{\beamergotobutton{treat.\ def.}} \\
+The treatment definition drives the result\par\vspace{3pt}\hyperlink{app:tdef}{\beamergotobutton{treat.\ def.}} &
+The reduced form does not depend on the definition ($p=\TdefRFp$), and the 2SLS sign is positive under all \TdefNdefs{}. It clears 5\% under log1p, IHS and binary, but not under levels ($p=\TdefLevelsP$, $F=\TdefLevelsF$) or the rate ($p=\TdefRateP$, $F=\TdefRateF$), the two definitions with weak first stages. &
+\tick \\
 \midrule
-The inference overstates precision &
-Consolidation clears the weak-IV-robust AR bootstrap and the BHJ/AKM exposure-robust SE, whose CI still excludes zero at the outer bound. First differences provide a conservative bracket. &
-\tick &
-\hyperlink{app:exposure}{\beamergotobutton{weak-IV}}\, \hyperlink{app:fd}{\beamergotobutton{FD}} \\
+The inference overstates precision\par\vspace{3pt}\hyperlink{app:exposure}{\beamergotobutton{weak-IV}} \hyperlink{app:fd}{\beamergotobutton{FD}} &
+Consolidation clears the weak-IV-robust AR bootstrap \ns{\citep{andersonrubin1949,roodman2019}} and the BHJ/AKM exposure-robust SE \ns{\citep{borusyak2022,adao2019}}, whose CI excludes zero ($\ERMarginCI$). Pure first differences return $\FDMarginCoef$ ($p=\FDMarginP$). &
+\tick \\
 \midrule
-The result is multiple testing &
-Clears Holm and Benjamini--Hochberg at 5\% (Romano--Wolf at 10\%: $p=.059$) and loads onto a combined consolidation index, with no favorable family cut. Pre-trend placebos are clean throughout. &
-\tick &
-\hyperlink{app:multiplicity}{\beamergotobutton{mult.}}\, \hyperlink{app:pretrend}{\beamergotobutton{pre-trend}} \\
+The result is multiple testing\par\vspace{3pt}\hyperlink{app:multiplicity}{\beamergotobutton{mult.}} \hyperlink{app:pretrend}{\beamergotobutton{pre-trend}} &
+Over the \RWFamilyN{} reduced forms the margin clears Holm ($p=\RFHolmMarginP$) and BH ($p=\RFBHMarginP$), and Romano--Wolf only at 10\% ($p=\RWMarginP$) \ns{\citep{holm1979,benjamini1995,romano2005}}; over the \MultFamilyN{} 2SLS $p$-values none survives (margin Holm $p=\MultMarginHolm$). The closeness ($p=\IdxClosenessP$) and overall ($p=\IdxOverallP$) indices clear. The consolidation measures pass the pre-trend placebo; turnout and the valid-vote rate do not. &
+\tick \\
 \bottomrule\bottomrule
 \end{tabular}
 \end{center}
-\footnotesize The consolidation clears every threat; the withdrawal result remains tentative, clearing the exposure-robust SE but not the AR bootstrap. The nulls remain null under each check.
+\footnotesize The margin fails correction on the 2SLS $p$-values, the weak-first-stage definitions and pure first differences. The blank-vote rise clears the exposure-robust SE ($p=\ERBlankPbhj$) but not the AR bootstrap ($p=\ARBlankP$).
 \end{frame}

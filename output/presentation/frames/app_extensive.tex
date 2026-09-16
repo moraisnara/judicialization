@@ -23,7 +23,7 @@
 \begin{column}{0.45\linewidth}
 {\scriptsize
 \textbf{Panel A: relevance is mostly extensive.} Among litigating municipalities only, the intensive slope collapses ($F=\ExtFSintensiveF$). The presence dummy alone is mechanically hyper-predictive, and its negative sign is the log1p floor, since a zero-litigation municipality can only grow. This is the convergence the first stage is identified off.\par
-\textbf{This is not a log1p artifact.} A count model has no floor and returns the same verdict: modeling the caseload natively (Poisson and NegBin ANCOVA, zeros absorbed directly) leaves $Z$ with no proportional effect conditional on the 2020 baseline (PPML $p=\ExtPPMLfullP$, NegBin $p=\ExtNBfullP$, and null among litigators as well). The weak intensive margin is real.\par
+\textbf{This is not a log1p artifact.} A count model has no floor and returns the same verdict: modeling the caseload natively (Poisson \ns{\citep{santossilva2006}} and NegBin ANCOVA, zeros absorbed directly) leaves $Z$ with no proportional effect conditional on the 2020 baseline (PPML $p=\ExtPPMLfullP$, NegBin $p=\ExtNBfullP$, and null among litigators as well). The weak intensive margin is real.\par
 \textbf{Panel B: the finding is not extensive.} The margin reduced form survives both dropping the entire zero mass point (litigating-only $p=\ExtRFpositiveP$) and a horse race against the presence dummy, where $Z$ stays significant ($p=\ExtRFhorseZP$) and presence is wrong-signed and null ($p=\ExtRFhorseDzeroP$). Only \ExtZonDzeroRtwo{} of $Z$'s variance is presence.\par}
 \end{column}
 \end{columns}

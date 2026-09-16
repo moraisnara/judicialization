@@ -2,12 +2,12 @@
 \begin{frame}{Appendix --- Consolidation Robust to the Full Pre-Treatment Path}
 \hypertarget{app:ptrobust}{}
 \small
-The balance test already clears the consolidation measures. As a further check we add the 2020 base-year level to the headline 2016 lag, so the two lags $\{2016, 2020\}$ span both where a municipality started and the pre-slope it was on. The 2020 level is pre-determined with respect to the 2020$\to$2024 shock, since the instrument's shares are dated 2020 and the shifter leaves the own state out, so it is a legitimate control. The coefficient is then identified off the 2024 deviation from each municipality's own path.
+The balance test clears the margin, effective-N and top-two share, with the Herfindahl borderline. As a further check we add the 2020 base-year level to the headline 2016 lag, so the two lags $\{2016, 2020\}$ span both where a municipality started and the pre-slope it was on. The 2020 level is pre-determined with respect to the 2020$\to$2024 shock, since the instrument's shares are dated 2020 and the shifter leaves the own state out, so it is a legitimate control. The coefficient is then identified off the 2024 deviation from each municipality's own path.
 \smallskip
 \begin{center}
 \scriptsize
 \resizebox{\linewidth}{!}{\input{../tables/tex/executive_iv_concentration_ptrobust.tex}}
 \end{center}
 \smallskip
-\footnotesize The estimates are essentially unchanged. The top-two margin barely moves from its headline value ($\MarginCoef$) and stays significant at 5\%, while effective-N and the Herfindahl shift only in the third decimal and remain imprecise, as in the headline. Conditioning on both the 2020 level and the pre-slope a municipality was on leaves the result intact, which places the consolidation as a response to the 2020$\to$2024 shock rather than the continuation of a pre-existing path. \hfill\hyperlink{src:pretrend}{\beamerreturnbutton{Back to balance test}}
+\footnotesize The estimates are essentially unchanged. The top-two margin moves from its headline value $\MarginCoef$ to $\PtRobMarginCoef$ ($p=\PtRobMarginP$), while effective-N and the Herfindahl shift only in the third decimal and remain imprecise, as in the headline. Conditioning on both the 2020 level and the pre-slope a municipality was on leaves the result intact, which places the consolidation as a response to the 2020$\to$2024 shock rather than the continuation of a pre-existing path. \hfill\hyperlink{src:pretrend}{\beamerreturnbutton{Back to balance test}}
 \end{frame}

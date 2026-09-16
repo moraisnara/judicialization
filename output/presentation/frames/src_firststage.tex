@@ -3,18 +3,18 @@
 \begin{frame}{Constructed Exposure Moves Realized Litigation}
 \hypertarget{src:firststage}{}
 \footnotesize
-Regressing the 2020$\to$2024 change in adversarial filings on $\bZ$, with controls and state fixed effects, gives a precise positive coefficient and a cluster-robust effective $F=\HeadlineF$, far above the weak-instrument threshold. Inference uses the $tF$ correction \citep{lee2022}.
+Regressing the 2020$\to$2024 change in adversarial filings on $\bZ$, with controls and state fixed effects, gives a precise positive coefficient and a cluster-robust effective $F=\HeadlineF$ \citep{montielolea2013}. That clears conventional weak-instrument thresholds \citep{stock2005} but sits just below the $F=104.7$ at which the $tF$ critical value returns to 1.96, so inference uses the $tF$ correction \citep{lee2022}.
 \smallskip
 \begin{columns}[T]
 \begin{column}{0.52\textwidth}
 \centering
 \resizebox{\linewidth}{!}{\input{../tables/tex/firststage.tex}}\\[8pt]
-\raggedright\scriptsize Coefficient $\FSCoef$ is the rise in $\Delta\log(1+\text{lawsuits})$ per unit of exposure. It is stable under the full control set (col.\ 2) and reproduces in each seat-type subsample (cols.\ 3--4).
+\raggedright\scriptsize Coefficient $\FSCoef$ is the rise in $\Delta\log(1+\text{adversarial lawsuits})$ per unit of exposure. It is stable under the full control set (col.\ 2) and reproduces in each seat-type subsample (cols.\ 3--4).
 \end{column}
 \begin{column}{0.46\textwidth}
 \centering
 \includegraphics[width=\linewidth,height=0.52\textheight,keepaspectratio]{../figures/firststage_linear.pdf}\\[4pt]
-\raggedright\scriptsize Realized growth against predicted exposure, both residualized on controls and state fixed effects (25 equal-count bins). The relationship is a single line through the origin, slope $\hat\beta=\FSCoef$.
+\raggedright\scriptsize Realized growth against predicted exposure, both residualized on controls and state fixed effects (25 equal-count bins). The line has the first-stage slope $\hat\beta=\FSCoef$.
 \end{column}
 \end{columns}
 \smallskip
