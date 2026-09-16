@@ -2,9 +2,10 @@
 
 **Status:** LOCKED, 2026-08-11.
 **Supersedes:** `WRITING_GUIDE.md` §3 ("Reconcile the framing FIRST"), which is now resolved.
-**Governs:** `output/presentation/slides_report.tex`, `output/presentation/slides_advisor.tex`,
+**Governs:** `output/presentation/slides_report.tex` (the only deck since 2026-09-16),
 and — as a reference for Nara's own drafting — `output/paper/paper.tex` and
-`output/paper/extended_abstract.tex`.
+`output/paper/extended_abstract.tex`. `slides_advisor.tex`, named below, was
+retired on 2026-09-16; those mentions record what was true when this file locked.
 
 This file records *what the paper claims and why*, so the decision is retrievable
 months from now without re-deriving it. Estimates are not duplicated here: the
@@ -134,6 +135,12 @@ assigned.**
 Read together: **consolidation is general** across seat types; the **face is
 seat-conditional**.
 
+*Fact added 2026-09-16, not a framing change:* the open-seat margin already widened
+before treatment (reduced-form pre-trend p=.047); the contested-seat margin did not
+(p=.905). "Consolidation is general" therefore rests on an open-seat estimate with a
+pre-trend. Whether the claim survives is listed under *Open result questions* in
+`output/presentation/DECK_WORKPLAN.md`.
+
 **"Decisiveness" is not a leveling claim.** Absence of a barrier signature is not
 evidence of leveling: valid votes do not *rise* in open seats, they merely fail to
 fall, and the winner's identity does not change. The honest label is coordination
@@ -147,9 +154,9 @@ The tiers are unchanged, but D4 makes them load-bearing rather than decorative.
 
 | Tier | Finding | Basis |
 |---|---|---|
-| **Robust** | The mayoral race consolidates | clears AR wild-cluster bootstrap **and** BHJ/AKM exposure-robust SE; multiplicity-corrected at 5% by Holm (p=.015) and BH (p=.011), and at 10% by Romano–Wolf (p=.059) |
-| **Tentative** | Voters withdraw (contested seats) | conventional + exposure-robust inference, **not** the AR bootstrap |
-| **Precise null** | Candidate supply, representation, renewal, who wins, elastic/education turnout, campaign finance, entire legislative side | tightly bounded around zero |
+| **Robust** | The mayoral race consolidates | clears AR wild-cluster bootstrap **and** BHJ/AKM exposure-robust SE. Multiplicity depends on the basis: over the 18 reduced-form p-values it survives Holm (p=.015) and BH (p=.011) at 5% and Romano–Wolf (p=.059) at 10%; over the 18 2SLS p-values it survives neither (Holm p=.237) |
+| **Tentative** | Voters withdraw (contested seats) | contested seats: blank p=.035, valid p=.084. Pooled blank clears the exposure-robust SE, is conventional only at 10%, and fails the AR bootstrap |
+| **Null** | Candidate supply, representation, renewal, who wins, elastic/education turnout, campaign finance, legislative side | no significant effect at 5%, with exceptions: 2 of 16 council outcomes (elected female share, mean age; no council multiplicity correction) and compulsory turnout (p=.054, tF rejects). Renamed from "Precise null" on 2026-09-16 because the bounds were not checked for precision |
 | **Exploratory** | The winner's gain lands on male front-runners | differential test does not clear (p=.129); outside the declared family |
 
 **The consequence, stated deliberately rather than blurred:**
@@ -181,7 +188,7 @@ One word per concept. Deviations are drift, not style.
 | Mechanisms | **information** · **weaponization** | never "lawfare" |
 | Excluded channel | **direct judicial action** | named once in the D2 boundary, never again |
 
-**Spelling: American**, throughout both decks and the paper — *Leveling, favors,
+**Spelling: American**, throughout the deck and the paper — *Leveling, favors,
 behavior, demobilization, characterize, organize*. (The decks previously mixed
 British `-our/-ise` forms with American "Leveling"; decided 2026-08-11.)
 
@@ -225,10 +232,21 @@ Recorded so the decision is retrievable. **These do not appear in prose.**
   disqualification.
 - **Romano–Wolf is a 10% pass, not a 5% one.** `romano_wolf_stepdown.csv` gives
   the margin p_rw = .059 (runner-up .071). Holm (.015) and BH (.011) clear at 5%;
-  Romano–Wolf does not. `slides_report.tex` L749 currently lists Romano–Wolf
-  among the Robust tier's clean passes without the qualifier. Corrected here;
-  the deck edit carries the same correction. The Robust tier still stands on
+  Romano–Wolf does not. These are reduced-form p-values; on the 2SLS p-values no
+  outcome survives Holm or BH. The deck's Findings frame
+  (`frames/src_findings.tex`) states both bases. The Robust tier still stands on
   AR-WCR and BHJ/AKM, which are the binding tests.
+- **Pre-trend failures outside the margin.** The reduced-form placebo passes the
+  margin (p=.137) but fails the mayoral valid-vote rate (p=.012), the council
+  valid-vote rate (p=.008) and turnout (p=.007). The valid-vote fall is part of
+  the ballot signature D4 relies on.
+- **Share balance.** On homoskedastic, unclustered tests, 14 of 14 tested topic
+  shares correlate with the baseline controls and 4 of 14 predict the 2016→2020
+  margin change (`gps_balance_tests.csv`, DRAP benchmark row excluded). Clustered
+  re-estimation has not been run.
+- **Two dead robustness specs.** `broader_treatment` and `base_conditioned` in
+  `executive_margin_iv_fixest.csv` add a 2020 litigation level as a control and
+  return a first-stage F of about 0.02. Neither reaches the deck.
 - **Extensive-margin identification.** The first stage moves treatment on the
   extensive margin (onset of adversarial contestation). Existence and sign are
   identified; per-unit-of-volume magnitude is not. The estimate is a local effect
@@ -270,7 +288,8 @@ Nara drafts the paper. This is what the locked framing requires of it.
 
 ## Application record
 
-**Status: applied 2026-08-11** on branch `framing-application`.
+**Status: applied 2026-08-11** on branch `framing-application`, merged into
+`main` in 3935b11 (the branch no longer exists).
 
 Planned scope was 11 edits to `slides_report.tex`
 (RQ block; Two Faces frame incl. its internal contradiction at L90; the

@@ -4,13 +4,13 @@
 
 | Document | What it governs |
 |---|---|
-| `FRAMING.md` | The locked argument: vocabulary, the Leveling/Barrier dichotomy, confidence tiers. Binds every deck and the paper. |
-| `DECK_GUIDE.md` | How the presentations are built: the frame library, the master/30-min/15-min drivers, memos, and the research diary. |
+| `FRAMING.md` | The locked argument: vocabulary, the Leveling/Barrier dichotomy, confidence tiers. Binds the deck and the paper. |
+| `DECK_GUIDE.md` | How the one deck (`slides_report.tex`) is built: the section spine, the frame library, the build and its checks. |
 | `WRITING_GUIDE.md` | Paper structure (Evans 7-element intro). The deck is written to this structure and the paper mirrors it. |
 | `DATA_GUIDE.md` | Datasets, entity tokens, and the download → build → estimation lineage. |
 
 **Nara writes the paper.** Never draft prose into `output/paper/paper.tex` or
-`output/paper/extended_abstract.tex`. Claude owns the internal memos and the decks, and
+`output/paper/extended_abstract.tex`. Claude owns the deck (`output/presentation/`), and
 records paper-affecting decisions as an apply-to-the-paper sheet.
 
 ## File & output naming conventions (standing rule)
@@ -75,7 +75,8 @@ domain vocabulary for figures **and** tables: `instrument`, `litigation`, `sampl
 subsample prefixes for regression tables. Canonical figure names:
 `instrument_histogram`, `instrument_map`, `sample_map`, `firststage_linear`,
 `representation_coefplot`, `entrant_coefplot`, `turnout_coefplot`,
-`voterbehavior_seat_coefplot`, `pretrend_coefplot`, `litigation_timing_shape`.
+`candidate_supply_coefplot`, `legislative_coefplot`, `heterogeneity_seat_coefplot`,
+`gender_consolidation_coefplot`, `pretrend_coefplot`, `litigation_timing_shape`.
 
 **Figures carry no baked-in titles/footnotes/captions** — those live on the Beamer
 frame. Producing scripts source `code/utils/figure_style.R`, whose `theme_report()`
@@ -86,25 +87,29 @@ match the slides. Never hard-code hex colors in a figure script.
 ## Regression-table conventions (standing rule)
 
 Every regression table that reaches a slide or the paper MUST:
-1. **Name outcomes in human-readable form**, never the raw variable name. In
-   `fixest::etable()` this is done by merging an outcome-label vector into the
-   `dict` (the dict translates the dependent-variable header row, not just
-   coefficient names). See `OUTCOME_LABELS` in `code/03_estimation/02_iv_main.R`.
-   Relabel FE rows and the cluster note via the same `dict` (e.g. `SG_UF` →
-   "State (UF)", `cluster_id` → "state") so no raw column names leak.
-2. **Report the dependent-variable mean** (a "Mean of dep. var." row). Attach
-   `attr(fit, "mean_delta") <- mean(samp[[y]], na.rm = TRUE)` at fit time and
-   emit it via `etable(..., extralines = ...)`. Pattern lives in the
-   `iv_etable()` wrapper in `02_iv_main.R`.
+1. **Name outcomes in human-readable form**, never the raw variable name.
+   `label_mods()` names each fit from `OUTCOME_LABELS`
+   (`code/03_estimation/02_iv_main.R`) or `LEG_OUTCOME_LABELS`
+   (`02b_iv_legislative.R`), and the table writer prints those names in the bold
+   `Dep.\ var.:` header row. The tables print no FE or cluster rows, so no raw
+   column names can leak there.
+2. **Report the dependent-variable mean.** In `02_iv_main.R` the fit carries
+   `attr(fit, "mean_delta")` (mean of the actual LHS: the 2024 level under ANCOVA,
+   the delta under FD) and, for ANCOVA, `attr(fit, "mean_2016")`; `iv_etable()`
+   prints them as the `2024 Mean` and `2016 Mean` rows. `leg_iv_table()` recovers
+   the mean from the fit (rule 5).
 3. **Not show a misleading first-stage F.** Suppress fixest's homoskedastic
-   `ivf` in outcome tables; the dedicated first-stage table carries the
-   cluster-robust F and tF critical value.
+   `ivf` in outcome tables; the dedicated first-stage table (`firststage.tex`)
+   carries the cluster-robust F. The tF critical value comes from the regression
+   CSVs (`tF_cv`) and reaches the deck as a macro (`\tFcv`), not a table row.
 4. **Use the hand-built house style with a HORIZONTAL shaded band** (the
    `judicial_bias` SGD-table aesthetic; Nara reversed the brief 2026-06-29
    column-highlight back to a row band on 2026-06-30: "i prefer the horizontal
    shaded area", applied to ALL hand-built tables). Each outcome table is emitted
    by `iv_etable()` (in `02_iv_main.R`) / `leg_iv_table()` (in
-   `02b_iv_legislative.R`) writing LaTeX **directly** — NOT via `etable()`:
+   `02b_iv_legislative.R`) writing LaTeX **directly**. No script calls `etable()`;
+   the `ETABLE_DICT`/`ETABLE_SIGNIF`/`write_etable_frag`/`etab_base` (`etab_leg`)
+   scaffolding in both scripts is defined but unused. The layout:
    `booktabs` double rules (`\toprule\toprule` … `\bottomrule\bottomrule`), bold
    outcome headers (`Dep.\ var.: & \textbf{...}`), a `\midrule`, then the
    **Judicialization** coefficient row, then the `\textcolor{mygray}{(se)}` row
@@ -115,24 +120,26 @@ Every regression table that reaches a slide or the paper MUST:
    finding IS the coefficient). Put `\rowcolor{mylight}` on its own line
    immediately before the coef row AND again before the SE row — both lines of the
    band must be shaded. No `highlight` argument; the band is automatic. The
-   hand-built panel tables band their headline row too: the ballot two-panel
-   shades Panel A (mayoral) via the `band=TRUE` arg of `panel_block()`; the
-   office×open-seat table is TRANSPOSED (rows = office×seat subsamples, cols =
+   hand-built ballot and seat tables band their headline row too. The ballot
+   result is two separate single-panel files written by `write_ballot()`, which
+   calls the nested `panel_block()`: `executive_iv_ballot_mayoral.tex`
+   (`band = TRUE`, main deck) and `executive_iv_ballot_council.tex`
+   (`band = FALSE`, appendix). The office×open-seat table
+   (`executive_iv_voter_behavior_office_openseat.tex`) is TRANSPOSED (rows = office×seat subsamples, cols =
    blank/null/valid + N) and bands the mayoral-Contested row.
    **No "+" on positive coefficients** (absence of a sign already reads positive;
    Nara 2026-06-30) — every coef cell uses `%.3f`, never `%+.3f`. **SE stacks on
    the line BELOW the coefficient**, never inline on the side (Nara 2026-06-30):
    in the transposed office×open-seat table each subsample is two lines (coef row +
-   gray-SE row beneath), both shaded when banded. That table is then
-   height-bound (`\resizebox{!}{0.36\textheight}`) so the mean rows + footnote fit.
+   gray-SE row beneath), both shaded when banded. Its frame height-binds it so the
+   mean rows and footnote fit.
 5. **Mean row(s) sit in the footer.** Executive ANCOVA tables show `2024 Mean`
    and `2016 Mean`; FD/legislative tables show a single `Mean of dep.\ var.`
    (recovered as `mean(fitted(m)+resid(m))` when no `mean_delta` attr exists).
    Always show `$N$` (formatted with `formatC(..., big.mark = ",")`). The compulsory-
    turnout table is an appendix **placebo** (`app:turnoutplacebo`), not a main result.
 6. **Standard significance stars:** `*** = 1%, ** = 5%, * = 10%` (`hb_star()`
-   helper; `ETABLE_SIGNIF <- c("***"=.01,"**"=.05,"*"=.10)` for any residual
-   etable use). Applies to **both** generators. **Do NOT print a stars legend**
+   helper, defined in both scripts). Applies to **both** generators. **Do NOT print a stars legend**
    in the slide captions ("Stars: ***/**/* at 1/5/10%") — the convention is
    universally understood, so the legend was dropped (Nara 2026-06-30); the stars
    stay on the cells, computed from the 2SLS cluster-robust p-value. (Caveat noted
@@ -140,74 +147,66 @@ Every regression table that reaches a slide or the paper MUST:
    inference — Nara chose to keep them as the standard mark anyway.)
 
 The colors `mylight` (pale blue band) and `mygray` (SE) are defined in the deck
-preamble (`slides_report.tex`); `booktabs` + `colortbl` are loaded there. The
-report wraps each fragment in `\resizebox{\linewidth}{!}{\input{...}}`.
-
-Tall two-panel tables are height-constrained
-(`\resizebox{!}{0.24\textheight}{...}`) so they do not overflow the frame; the
-office×open-seat table stays width-bound (`\resizebox{\linewidth}{!}`).
-The multi-panel hand-built tables (`executive_iv_voter_behavior_office_openseat.tex`,
-the ballot two-panel) shade their headline ROW with `\rowcolor{mylight}` to match
-the main mold. `nonadversarial_robustness.tex` keeps its own bespoke 4-spec
-booktabs comparison layout.
+preamble (`output/presentation/slides_preamble.tex`); `booktabs` + `colortbl` are loaded there.
+Frames wrap each fragment in `\resizebox`: width-bound (`\resizebox{\linewidth}{!}`)
+by default, height-bound (`\resizebox{!}{<factor>\textheight}`) for tall tables such
+as the two ballot tables and the two seat tables. The factor is set on each frame.
+`nonadversarial_robustness.tex` keeps its own bespoke 4-spec booktabs comparison
+layout.
 
 ## Quick data reference
 
-### Raw data (`data/raw/`)
-All zipped TSE files. Do not unzip manually — scripts handle this.
+`DATA_GUIDE.md` is the full reference: raw sources, every clean and estimation dataset,
+and the output CSV headers. The essentials:
 
-| File | Content |
-|------|---------|
-| `consulta_cand_2020.zip` / `..._2024.zip` | TSE candidate registry. Cols: `DS_GENERO`, `DS_COR_RACA`, `DS_GRAU_INSTRUCAO`, `DS_ESTADO_CIVIL`, `NR_IDADE_DATA_POSSE`, office codes, party, municipality IBGE code |
-| `processo_eleitoral_2020.zip` / `..._2024.zip` | Lawsuit records: class, subject code (`CD_ASSUNTO`), filing date, instance |
-| `processos_eleitorais_assuntos_*.zip` | Subject-level panel (2018–2024) |
-| `processos_eleitorais_partes_2020.zip` | Parties to each lawsuit (petitioner / respondent) |
-| `decisoes_2020.zip` / `..._2024.zip` | Decisions per lawsuit |
-| `recursos_2020.zip` / `..._2024.zip` | Appeals |
-| `bd_municipio_tse_ibge.csv` | TSE↔IBGE municipality crosswalk |
-
-### Clean data (`data/clean/`) — key files
-
-| File | Unit | Key columns |
-|------|------|-------------|
-| `office_candidate_outcomes_panel.csv` | municipality × office × year | `female_share`, `nonwhite_share`, `higher_education_share`, `mean_age`, `elected_female_share`, `elected_nonwhite_share`, `elected_higher_education_share`, `elected_mean_age`, `new_candidate_share`, `incumbent_candidate_share`, `incumbent_reelected_share`, `total_candidates`, `party_count` |
-| `executive_vote_shift_share_design.csv` | municipality (wide, 2020+2024) | All above pivoted to `_2020`/`_2024` + `female_vote_share_*`, `nonwhite_vote_share_*`, `winner_is_female_*`, `delta_*` |
-| `executive_shift_share_design.csv` | municipality (wide) | Candidate composition wide, no vote shares |
-| `legislative_shift_share_design.csv` | municipality (wide) | Same structure as executive, vereadores |
-| `electoral_admin_outcomes.csv` | municipality × year | `registered_voters`, `turnout_rate`, `blank_rate`, `null_rate`, `valid_vote_rate` — **no voter gender breakdown** |
-| `zona_lawsuit_panel.csv` | zona × year × subject | Lawsuit counts by topic, raw panel |
-| `municipality_bartik_components.csv` | municipality × subject | Shares and shifts for Bartik IV |
-| `municipal_covariates.csv` | municipality | Census 2010 controls + 2016 electoral baseline |
-| `candidate_experience_panel.csv` | candidate × cycle | Cross-cycle history for new/serial/returning typology |
-| `zona_eleitoral_lookup.csv` | zona | TSE zona → municipality crosswalk |
-
-### Estimation data (`data/estimation/`)
-
-| File | Content |
-|------|---------|
-| `executive_margin_design.csv` | Final analysis panel: 5,571 rows, 345 cols (estimation N is smaller — controls and lagged outcomes are missing for some municipalities). Instrument cols: `bartik_iv_2020_2024`, `placebo_bartik_iv_2020_2024`, `bartik_iv_no_rrc`. Endogenous: `delta_log1p_*`. All IV outcomes. The `bartik_iv_{family}` columns are **not** in the committed vintage — `exploration/03_estimation/01c_patch_family_ivs.py` adds them in place when the family lane is run. |
-| `legislative_design.csv` | Same structure, legislative outcomes, same instrument from executive design |
-
-### Output tables (`output/tables/`)
-
-| Path | Content |
-|------|---------|
-| `regressions/executive_margin_iv_fixest.csv` | IV results: all specs × all outcomes, with tF columns |
-| `regressions/legislative_iv_fixest.csv` | Legislative IV results |
-| `regressions/legislative_first_stage_fixest.csv` | Legislative first stages |
-| `tables/tex/*.tex` | LaTeX fragments for presentation (generated by `02_iv_main.R` and `02b_iv_legislative.R` via `etable()`) |
-| `regressions/exposure_robust_se.csv` | BHJ/AKM SEs |
-| `descriptives/rotemberg_weights.csv` | Rotemberg alpha, F_k per topic |
-| `descriptives/gps_balance_tests.csv` | Share balance tests (covariate + pre-trend) |
-| `descriptives/shift_descriptives.csv` | BHJ shift table |
-
-### What is NOT in this project
-- Voter registration by gender (needs TSE *perfil do eleitorado* — separate download)
-- 2016 lawsuit panel (needed for pre-period placebo)
-- TRE judge composition data
+- **Raw (`data/raw/`, 26 GB, gitignored).** Most TSE sources sit there as extracted
+  folders, some also as zips. The instrument comes from the SIG municipality-resolved
+  export (`processos_eleitorais.csv.zip` for 2020; `processos_eleitorais_2024.csv`, which
+  is a zip despite its extension, for 2024), read by `02_build/02_shift_share_design.py`.
+  The `decisoes_*` and `recursos_*` zips that `01_download/01_lawsuits.py` targets and
+  `00_verify_raw_data.py` requires are not on disk.
+- **Clean (`data/clean/`).**
+  - `municipality_bartik_components.csv`: municipality × subject at the 2020 baseline
+    (shares, leave-own-state-out shifts, components).
+  - `office_candidate_outcomes_panel.csv`, `office_vote_outcomes_panel.csv`:
+    municipality × office × year outcomes.
+  - `electoral_admin_outcomes.csv`: registered voters, turnout, blank/null/valid rates
+    (mayoral, plus `*_vereador` ballot rates). Registered voters and turnout by sex,
+    education, age band, race and compulsory status are in
+    `comparecimento_disaggregated.csv` (long); `voter_disaggregated_outcomes.csv` carries
+    the wide facultative/compulsory, education and sex turnout columns.
+  - `municipal_covariates.csv`: Census 2010 controls, the 2016 electoral baseline, the
+    2020 experience baseline.
+  - `zona_lawsuit_panel.csv`: zone × class × subject × year counts of pre-election cases,
+    built by `01_lawsuit_panel.py` from the `processo_eleitoral_YYYY` dockets. It is not
+    the instrument source; only `04_analysis/08_lawsuit_composition_sp.py` reads it.
+  - `zona_eleitoral_lookup.csv`: `SG_UF`, `zona`, `nome_zona` only. No script reads or
+    writes it.
+- **Estimation (`data/estimation/`).**
+  - `executive_margin_design.csv`: 5,571 rows, 346 columns; estimation N = 5,560.
+    Instruments `bartik_iv_2020_2024` (headline), `placebo_bartik_iv_2020_2024`,
+    `bartik_iv_no_rrc`; endogenous `delta_log1p_competition_lawsuits_2024_2020`;
+    `cluster_id` is the state (`SG_UF`). The family IVs and `share_{code}_2020` topic
+    shares are not in it; `exploration/03_estimation/01c_patch_family_ivs.py` adds them in
+    place for the exploration lane.
+  - `legislative_design.csv`: 5,560 rows, 98 columns; the same headline instrument,
+    council outcomes.
+- **Output CSVs (`output/tables/regressions/`, `descriptives/`, gitignored).**
+  `executive_margin_iv_fixest.csv` and `legislative_iv_fixest.csv` (all specs × outcomes,
+  with the cluster-robust `first_stage_F_lookup` and the tF columns), the matching
+  `*_first_stage_fixest.csv`, `wild_bootstrap_ar.csv` (AR-WCR), `exposure_robust_se.csv`
+  (BHJ/AKM), `multiplicity_adjusted.csv`, `rotemberg_weights.csv`,
+  `gps_balance_tests.csv`, `shift_descriptives.csv`. The 35 fragments in
+  `output/tables/tex/` are tracked and are what the deck `\input`s.
+- **Not in the project.** A national 2016 lawsuit panel (the only pre-2020 snapshot is
+  the TRE-SP SAC-JE file, state-level shares, used by `08_lawsuit_composition_sp.py`);
+  case decisions and appeals (the `decisoes`/`recursos` files are not on disk); TRE judge
+  composition.
 
 ## Environment
 - Python: `C:\Users\naral\AppData\Local\Programs\Python\Python313\python.exe`
-- R: `C:\Program Files\R\R-4.6.0\bin\Rscript.exe` (not on PATH, call explicitly)
+- R: `C:\Program Files\R\R-4.6.0\bin\Rscript.exe`. `run_all.py` calls bare `Rscript`, so
+  that `bin` directory must be on `PATH`; on this machine it resolves in both Git Bash and
+  PowerShell.
 - Shell: PowerShell, Windows 11
 - Working dir: `c:/Users/naral/Desktop/Nara/Doutorado/Tese/judicialization`

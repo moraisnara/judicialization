@@ -9,16 +9,15 @@ election outcomes in Brazil, using a Bartik shift-share instrument built from TS
 
 ## What this repo produces
 
-The pipeline exists to produce four deliverables. Everything else is an intermediate.
+The pipeline exists to produce three deliverables. Everything else is an intermediate.
 
 | Deliverable | Path | Built by |
 |---|---|---|
-| **Report deck** (the full research report) | `output/presentation/slides_report.pdf` | `pdflatex` on `slides_report.tex` |
-| **Advisor deck** (10-min preliminary results) | `output/presentation/slides_advisor.pdf` | `pdflatex` on `slides_advisor.tex` |
+| **Deck** (the full research report) | `output/presentation/slides_report.pdf` | `pdflatex` on `slides_report.tex` |
 | **Estimating-equations note** | `output/paper/estimating_equations.pdf` | `pdflatex`, no pipeline dependency |
 | **Extended abstract / paper draft** | `output/paper/extended_abstract.pdf`, `paper.pdf` | `pdflatex` + `bibtex` |
 
-Both decks are pure consumers: every number in them comes from
+The deck is a pure consumer: every number in it comes from
 `output/tables/tex/abstract_macros.tex`, every table from an `output/tables/tex/*.tex`
 fragment, every figure from `output/figures/*.pdf`. Nothing is typed by hand into a slide.
 That is why `04_analysis/06_abstract_macros.py` must be the **last** script to run.
@@ -31,15 +30,12 @@ That is why `04_analysis/06_abstract_macros.py` must be the **last** script to r
 # Full pipeline, correct order, ~1 command
 python code/run_all.py
 
-# Then compile the decks (three passes for nav/refs/bib)
+# Then compile the deck (three passes for nav/refs/bib)
 cd output/presentation
 pdflatex -interaction=nonstopmode slides_report.tex
 bibtex slides_report
 pdflatex -interaction=nonstopmode slides_report.tex
 pdflatex -interaction=nonstopmode slides_report.tex
-
-pdflatex -interaction=nonstopmode slides_advisor.tex
-pdflatex -interaction=nonstopmode slides_advisor.tex
 ```
 
 `run_all.py` encodes the correct dependency order, which is **not** the numeric order of the
@@ -64,11 +60,15 @@ deck is recompiled, or the slides will show the previous vintage's numbers.
 If you only want the consolidation estimate and its first stage (not the full deck):
 
 ```
-02_build/01_lawsuit_panel.py → 02_shift_share_design.py → 04_candidate_history.py
+02_build/02_shift_share_design.py → 04_candidate_history.py
   → 03_vote_outcomes.py → 05_turnout_ballot_outcomes.py → 06_turnout_profile_panel.py
   → 07_turnout_profile_outcomes.py → 08_electoral_controls_2016.py → 09_municipal_covariates.py
 03_estimation/01_assemble_design.py → 02_iv_main.R
 ```
+
+This assumes `data/raw/` is populated and `data/clean/censo2010_municipal_ibge.csv` exists
+(written by `01_download/05_municipal_characteristics.R`), since `09_municipal_covariates.py`
+reads it. `01_lawsuit_panel.py` is not needed: nothing on this path reads its output.
 
 Result lands in `output/tables/regressions/executive_margin_iv_fixest.csv` and
 `executive_margin_first_stage_fixest.csv`.
@@ -118,13 +118,13 @@ vote-shares are silently `NaN` — no error is raised.
 |---|---|---|
 | 01 | `01_assemble_design.py` | `data/estimation/executive_margin_design.csv` |
 | 01b | `01b_assemble_legislative_design.py` | `data/estimation/legislative_design.csv` |
-| 02 | `02_iv_main.R` | headline executive 2SLS + 14 `.tex` fragments + `executive_margin_{iv,first_stage}_fixest.csv` |
+| 02 | `02_iv_main.R` | headline executive 2SLS + 16 `.tex` fragments + `executive_margin_{iv,first_stage}_fixest.csv` |
 | 02b | `02b_iv_legislative.R` | council 2SLS + 3 `.tex` fragments + `legislative_{iv,first_stage}_fixest.csv` |
 | 04 | `04_placebo_nonadversarial.R` | `nonadversarial_placebo.csv`, `nonadversarial_robustness.tex` |
 | 05 | `05_pretrend_balance.R` | `pretrend_balance.csv`, `pretrend_coefplot.pdf` |
-| 06 | `06_wild_bootstrap_ar.R` | `wild_bootstrap_ar.csv` — the headline AR-WCR inference |
+| 06 | `06_wild_bootstrap_ar.R` | `wild_bootstrap_ar.csv` — AR-WCR weak-IV-robust inference |
 | 07 | `07_multiplicity.R` | `multiplicity_adjusted.csv` |
-| 09 | `09_extensive_margin.R` | `extensive_margin{,_decomposition}.{tex,csv}`, `zero_exposure_robustness.csv` |
+| 09 | `09_extensive_margin.R` | `extensive_margin{,_macros}.tex`, `extensive_margin_decomposition.csv`, `zero_exposure_robustness.csv` |
 | 10 | `10_mechanism_finance.R` | `mechanism_finance_fixest.csv`, `mechanism_finance_seat.tex` |
 | 11 | `11_summary_indices.R` | `summary_indices*.{tex,csv}`, `romano_wolf_stepdown.{tex,csv}` |
 | 12 | `12_treatment_definition.R` | `treatment_definition{,_macros}.tex`, `treatment_definition.csv` |
@@ -145,7 +145,7 @@ Exploration scripts for this stage live in `exploration/03_estimation/` — see
 |---|---|---|
 | 01 | `01_descriptives.py` | overview + composition + timing + BHJ shift CSVs, `litigation_composition.tex` |
 | 02 | `02_descriptive_figures.R` | `litigation_timing_shape.pdf`, `sample_map.pdf`, `instrument_{histogram,map}.pdf` |
-| 03 | `03_result_figures.R` | all 9 result figures (first stage + coefplots) |
+| 03 | `03_result_figures.R` | the 8 result figures (first stage + coefplots) |
 | 04 | `04_iv_diagnostics.py` | `rotemberg_weights.csv`, `gps_balance_tests.csv` |
 | 07 | `07_exposure_robust_se.R` | `exposure_robust_{se,akm}.csv` — needs `rotemberg_weights.csv` from 04 |
 | 08 | `08_lawsuit_composition_sp.py` | `lawsuit_composition_sp.{csv,tex}` |
@@ -153,9 +153,9 @@ Exploration scripts for this stage live in `exploration/03_estimation/` — see
 | 10 | `10_candidate_rank_profile.py` | `candidate_rank_profile.{csv,tex}` |
 | ⚠ 06 | `06_abstract_macros.py` | `abstract_macros.tex`, `abstract_table.tex` — **runs last** |
 
-⚠ **06 runs last, not sixth.** It reads 14 upstream CSVs (both estimation vintages, the
-descriptives, AR-WCR, exposure-robust SEs, Rotemberg) and emits every number the decks
-display. It also **degrades silently**: missing inputs are caught by `try/except
+⚠ **06 runs last, not sixth.** It reads the upstream CSVs (the executive and legislative
+estimates, the descriptives, AR-WCR, exposure-robust SEs, Rotemberg weights, multiplicity)
+and emits every number the deck displays. It also **degrades silently**: missing inputs are caught by `try/except
 FileNotFoundError`, so a partial pipeline produces a macros file with stale or absent
 numbers rather than an error. Always run it at the end of a complete pass.
 
@@ -176,7 +176,7 @@ install.packages(c("fixest", "data.table", "dplyr", "readr", "ggplot2", "scales"
 ```
 
 `run_all.py` invokes R as bare `Rscript`, so R's `bin` directory must be on `PATH`
-(it resolves in Git Bash on this machine; check before running from PowerShell).
+(on this machine it resolves in both Git Bash and PowerShell).
 
 ---
 
@@ -192,34 +192,44 @@ where `s_{ik}` is municipality `i`'s 2020 baseline share of lawsuits in topic `k
 the leave-own-state-out log growth of topic `k` nationally from 2020 to 2024.
 
 **Adversarial filter:** administrative and procedural classes/subjects (candidate registration,
-party lists, campaign-finance accounts — ≈48.5% of filings) are excluded at the build stage
-in `02_shift_share_design.py`, retaining only substantive electoral-competition cases.
+party lists, campaign-finance accounts) are excluded at the build stage in
+`02_shift_share_design.py`, retaining only substantive electoral-competition cases. The filter
+drops 96.2% of the pooled 2020+2024 caseload and keeps 3.8% (`\DroppedNonAdvPct`,
+`\KeptAdversarialPct`).
 This produces the primary instrument `bartik_iv_2020_2024`, first-stage F ≈ 102 on N = 5,560.
 
 **Estimator:** the headline is an ANCOVA on the 2016 pre-window baseline —
 `Y_2024 ~ D̂ + Y_2016 + controls | state FE`, clustered by state (G = 26) — with the
 first-difference specification demoted to the appendix.
 
-Inference is conventional cluster-robust SE (headline), with appendix layers: GPS (2020)
-Rotemberg-weight decomposition, BHJ (2022/2024) diagnostics, Lee et al. (2022) tF critical
-values, Anderson–Rubin wild-cluster restricted bootstrap (`06_wild_bootstrap_ar.R`), and
-AKM (2019)/BHJ (2022) exposure-robust SEs (`07_exposure_robust_se.R`).
+Coefficients, standard errors, p-values and table stars use conventional state-clustered
+SEs. The tests a headline finding must clear to count as robust are the Anderson–Rubin
+wild-cluster restricted bootstrap (`06_wild_bootstrap_ar.R`) and the AKM (2019)/BHJ (2022)
+exposure-robust SEs (`07_exposure_robust_se.R`); `FRAMING.md` (Confidence architecture)
+assigns each finding its tier. Appendix layers: GPS (2020) Rotemberg-weight decomposition,
+BHJ (2022/2024) diagnostics, Lee et al. (2022) tF critical values.
 
 The exact equations, in Ash–Morelli–Vannoni form alongside this design's first and second
 stage, are written up in `output/paper/estimating_equations.pdf`.
 
-**Specifications** (both executive and legislative):
+**Specifications.** The executive branch (`02_iv_main.R`) runs all nine below on six
+controls plus the outcome's own 2016 lag where one exists. The council branch
+(`02b_iv_legislative.R`) runs `baseline`, `single_zone`, `extended_controls`,
+`broader_treatment` and `ancova_2020lvl`, all as first differences on five controls (no
+`higher_educ_share_2010` and no 2016 lag: the legislative design has no 2016 composition
+levels).
 
 | Spec | Description |
 |---|---|
-| `baseline` | ANCOVA-2016 headline: 2016-baseline lag + controls + state FE |
+| `baseline` | Executive: ANCOVA-2016 headline, 2016 lag + controls + state FE. Council: first difference + controls + state FE |
 | `single_zone` | Same, restricted to single-zone municipalities |
-| `extended_controls` | Adds demographic/composition controls |
-| `open_seat` | 2020 winner term-limited (no incumbent running in 2024) |
-| `contested_seat` | Incumbent can seek reelection in 2024 |
-| `broader_treatment` | Baseline + `log1p_lawsuits_no_rrc_2020` as covariate |
-| `fd` | First difference (appendix; over-differences a barely-persistent outcome) |
-| `ancova_2020lvl` | ANCOVA on the 2020 level instead of the 2016 baseline |
+| `extended_controls` | Executive adds 2016 ENP and 2020 vote shares by gender, race and education, party and coalition counts, turnout and null rates, and the first-time-candidate share. Council adds the 2020 female, nonwhite, incumbent and new-candidate shares |
+| `open_seat` | Executive only. 2020 winner term-limited (no incumbent running in 2024) |
+| `contested_seat` | Executive only. Incumbent can seek reelection in 2024 |
+| `broader_treatment` | Baseline + `log1p_lawsuits_no_rrc_2020` as covariate. The first stage collapses (cluster-robust F 0.018 executive, 0.014 council) |
+| `base_conditioned` | Executive only. Baseline + `log1p_competition_lawsuits_2020`, the 2020 level of the treatment; a diagnostic, not a preferred spec. First-stage F 0.018 |
+| `fd` | Executive only. First difference (appendix; over-differences a barely-persistent outcome) |
+| `ancova_2020lvl` | Change outcome with the 2020 competition levels as controls (executive: top-two margin and candidate count; council: candidate count and effective party count) |
 
 ---
 
@@ -228,7 +238,7 @@ stage, are written up in `output/paper/estimating_equations.pdf`.
 ```
 judicialization/
 ├── data/
-│   ├── raw/          — TSE/IBGE downloads, never modified (27 GB, gitignored)
+│   ├── raw/          — TSE/IBGE downloads, never modified (26 GB, gitignored)
 │   ├── clean/        — intermediate datasets from 02_build (gitignored)
 │   └── estimation/   — regression-ready design matrices (gitignored)
 ├── output/
@@ -236,12 +246,12 @@ judicialization/
 │   ├── tables/
 │   │   ├── regressions/  — coefficients, CSV (gitignored: *.csv)
 │   │   ├── descriptives/ — diagnostics + summary stats, CSV (gitignored)
-│   │   └── tex/          — LaTeX fragments \input into the decks (tracked)
-│   ├── presentation/ — Beamer sources + compiled decks
+│   │   └── tex/          — LaTeX fragments \input into the deck (tracked)
+│   ├── presentation/ — Beamer sources (driver, preamble, frames/) + compiled deck
 │   └── paper/        — paper, extended abstract, estimating-equations note
 ├── code/
 │   ├── 01_download/  ├── 02_build/  ├── 03_estimation/  ├── 04_analysis/
-│   ├── utils/        — figure_style.R, tf_critical_values.R
+│   ├── utils/        — figure_style.R, tf_critical_values.R, audit_pipeline.py
 │   └── run_all.py
 └── logs/             — verification inventory from 02_build/00
 ```
@@ -255,23 +265,34 @@ produced anywhere in the pipeline.
 
 ### `data/raw/`
 
+Sources sit here as extracted folders; some downloaded zips remain beside them.
+
 | Folder / file | Contents |
 |---|---|
-| `processo_eleitoral_YYYY/` | case-level docket registry (2018–2024) |
-| `processos_eleitorais_assuntos_YYYY/` | case × legal subject mapping (2018–2024) |
-| `decisoes_YYYY/`, `recursos_YYYY/` | decisions and appeals (2018–2024) |
-| `consulta_cand_YYYY/` | candidate registry by state (2012–2024) |
+| `processos_eleitorais.csv.zip`, `processos_eleitorais_2024.csv` | SIG lawsuit export for 2020 and 2024 (the 2024 file is a zip despite its extension); the instrument source, read by `02_shift_share_design.py` |
+| `processo_eleitoral_YYYY/` | Portal case-level docket registry (2018/2020/2022/2024); read by `01_lawsuit_panel.py` and for the SIG label bridge in `02_shift_share_design.py` |
+| `assuntos_YYYY/`, `processos_eleitorais_assuntos_YYYY.zip` | case × legal subject mapping (2018/2020/2022/2024) |
+| `processos_eleitorais_partes_2020.zip` | parties to each 2020 case |
+| `consulta_cand_YYYY/` | candidate registry (2012/2016/2020/2024) |
 | `votacao_candidato_munzona_YYYY/` | candidate vote counts by zone (2016/2020/2024) |
-| `detalhe_votacao_munzona_YYYY/` | turnout, blank, null by zone (2020/2024) |
+| `detalhe_votacao_munzona_YYYY/` | turnout, blank, null by zone (2016/2020/2024) |
+| `perfil_comparecimento_abstencao_YYYY/` | turnout and abstention by voter trait (2020/2024); read by `06_turnout_profile_panel.py` |
+| `spce_candidatos_YYYY/`, `prestacao_de_contas_eleitorais_candidatos_YYYY.zip` | campaign finance (2020/2024); read by `10_candidate_finance.py` |
+| `SAC-JE_769756-Distribuicao_de_casos_novos_por_eleicao.xlsx` | TRE-SP new cases by election, the pre-2020 state-level snapshot read by `08_lawsuit_composition_sp.py` |
 | `lista-zonas-municipios-10-07-24.csv` | official TSE zone → municipality lookup |
 | `bd_municipio_tse_ibge.csv`, `bd_diretorio_municipio.csv` | TSE ↔ IBGE crosswalks |
-| `tpu_eleitoral_tree.json` | TPU subject-code tree (feeds `exploration/04_analysis/11_lawsuit_topic_selection.py`) |
+| `tpu_eleitoral_tree.json`, `tpu_{assunto,classe}_reference.csv` | TPU subject and class codes (read by `exploration/04_analysis/11_lawsuit_topic_selection.py`) |
+
+No script reads `78_Tabela_Classes_Justica_Eleitoral_ZE.xls`,
+`79_Tabela_Assuntos_Justica_Eleitoral_ZE.xls`, `560520_distribuicao_zonas_eleicao_2016.xlsx`,
+`atlas_noticias/` or `poder360_sample.rds`. The `decisoes_YYYY` and `recursos_YYYY` files
+that `01_lawsuits.py` targets are not on disk (see Known gap 12).
 
 ### `data/clean/`
 
 | File | Produced by | Contents |
 |---|---|---|
-| `zona_lawsuit_panel.csv` | `01_lawsuit_panel.py` | zone × class × subject panel, pre-election cases |
+| `zona_lawsuit_panel.csv` | `01_lawsuit_panel.py` | zone × class × subject × year panel, pre-election cases; read only by `08_lawsuit_composition_sp.py` |
 | `shift_share_subject_crosswalk.csv` | **hand-maintained** | subject code → litigation family |
 | `label_code_bridge.csv` | `02_shift_share_design.py` (cache) | SIG text labels → TSE codes |
 | `municipality_bartik_components.csv` | `02_shift_share_design.py` | per (muni, subject): `s_ik × g_k`, share, shock |
@@ -287,7 +308,7 @@ produced anywhere in the pipeline.
 | `legislative_vote_shift_share_design.csv` | `03_vote_outcomes.py` | legislative design + vote outcomes |
 | `electoral_admin_outcomes.csv` | `05_turnout_ballot_outcomes.py` | turnout, blank/null rate, registered voters |
 | `comparecimento_disaggregated.csv` | `06_turnout_profile_panel.py` | long turnout panel by voter trait |
-| `voter_disaggregated_outcomes.csv` | `07_turnout_profile_outcomes.py` | wide facultative / low-education turnout |
+| `voter_disaggregated_outcomes.csv` | `07_turnout_profile_outcomes.py` | wide facultative/compulsory, education and sex turnout |
 | `electoral_controls_2016.csv` | `08_electoral_controls_2016.py` | 2016 baseline margin, HHI, ENP, winner |
 | `censo2010_municipal_ibge.csv` | `05_municipal_characteristics.R` | Census 2010 municipal covariates |
 | `municipal_covariates.csv` | `09_municipal_covariates.py` | master covariate table |
@@ -297,7 +318,7 @@ produced anywhere in the pipeline.
 
 | File | Produced by | Contents |
 |---|---|---|
-| `executive_margin_design.csv` | `01_assemble_design.py` | one row per municipality (5,571 rows, 345 cols); instrument, treatment, all executive outcomes, controls, cluster ID. Estimation N = 5,560. Family IVs and topic shares are **not** in the committed vintage — `exploration/03_estimation/01c_patch_family_ivs.py` patches them in for the family lane, and nothing in `code/` reads them. |
+| `executive_margin_design.csv` | `01_assemble_design.py` | one row per municipality (5,571 rows, 346 cols); instrument, treatment, all executive outcomes, controls, cluster ID. Estimation N = 5,560. Family IVs and topic shares are **not** in the committed vintage — `exploration/03_estimation/01c_patch_family_ivs.py` patches them in for the family lane, and nothing in `code/` reads them. |
 | `legislative_design.csv` | `01b_assemble_legislative_design.py` | same instrument and controls; vereador candidate-pool, elected-composition and party-competition outcomes. |
 
 ---
@@ -308,27 +329,27 @@ produced anywhere in the pipeline.
 
 Figures carry no baked-in titles, captions or footnotes — those live on the Beamer frame.
 Every producing script sources `code/utils/figure_style.R` for the shared theme and `PAL`
-palette, which mirrors the deck colours. Never hard-code a hex colour in a figure script.
+palette, which mirrors the deck colors. Never hard-code a hex color in a figure script.
+All 13 figures are shown in the deck.
 
-| File | Produced by | Shown on |
-|---|---|---|
-| `litigation_timing_shape.pdf` | `02_descriptive_figures.R` | report |
-| `sample_map.pdf`, `instrument_map.pdf`, `instrument_histogram.pdf` | `02_descriptive_figures.R` | report |
-| `firststage_linear.pdf` | `03_result_figures.R` | report |
-| `representation_coefplot.pdf`, `entrant_coefplot.pdf`, `turnout_coefplot.pdf` | `03_result_figures.R` | report |
-| `candidate_supply_coefplot.pdf`, `legislative_coefplot.pdf` | `03_result_figures.R` | report (+ advisor) |
-| `heterogeneity_seat_coefplot.pdf`, `gender_consolidation_coefplot.pdf` | `03_result_figures.R` | report + advisor |
-| `voterbehavior_seat_coefplot.pdf` | `03_result_figures.R` | advisor |
-| `pretrend_coefplot.pdf` | `05_pretrend_balance.R` | report |
+| File | Produced by |
+|---|---|
+| `litigation_timing_shape.pdf` | `02_descriptive_figures.R` |
+| `sample_map.pdf`, `instrument_map.pdf`, `instrument_histogram.pdf` | `02_descriptive_figures.R` |
+| `firststage_linear.pdf` | `03_result_figures.R` |
+| `representation_coefplot.pdf`, `entrant_coefplot.pdf`, `turnout_coefplot.pdf` | `03_result_figures.R` |
+| `candidate_supply_coefplot.pdf`, `legislative_coefplot.pdf` | `03_result_figures.R` |
+| `heterogeneity_seat_coefplot.pdf`, `gender_consolidation_coefplot.pdf` | `03_result_figures.R` |
+| `pretrend_coefplot.pdf` | `05_pretrend_balance.R` |
 
 ### `output/tables/tex/`
 
-All 35 fragments are `\input` by a deck.
+All 35 fragments are `\input` by the deck.
 
 The four `*_macros.tex` files (`abstract`, `extensive_margin`, `treatment_definition`,
 `reclassification_robustness`) are `\input` from `slides_preamble.tex`, not from a frame.
 
-Table style is the hand-built house mould: `booktabs` double rules, bold outcome headers,
+Table style is the hand-built house mold: `booktabs` double rules, bold outcome headers,
 a `\rowcolor{mylight}` horizontal band on the **Judicialization** coefficient row and its
 SE row, mean-of-dep-var rows in the footer, `***/**/*` at 1/5/10% with no printed legend.
 See `CLAUDE.md` for the full convention.
@@ -342,10 +363,12 @@ fragment or macro reports it. Producers are listed in the stage-03 and stage-04 
 
 | File | Contents |
 |---|---|
-| `slides_preamble.tex` | shared Beamer preamble — house colours, `\takeaway`, `\pos`/`\negt`/`\ns`, and the `\input` of all four macro files. **Edit colours and commands here**, not in a deck. |
-| `slides_report.tex` / `.pdf` | full report deck (the research report; frame count is not a constraint) |
-| `slides_advisor.tex` / `.pdf` | 10-minute preliminary-results deck: one frame per layer, results-only backups |
-| `biblio.bib`, `judicial system.bib` | bibliography |
+| `slides_preamble.tex` | Beamer preamble — house colors, `\takeaway`, `\pos`/`\negt`/`\ns`, and the `\input` of all four macro files. **Edit colors and commands here**, not in a frame. |
+| `slides_report.tex` / `.pdf` | the deck driver and the compiled deck (the research report; frame count is not a constraint) |
+| `frames/` | the frame library the driver `\input`s |
+| `check_links.py` | checks that every deck button resolves |
+| `DECK_WORKPLAN.md` | frame-by-frame review record and open design items |
+| `biblio.bib` | bibliography |
 
 ### `output/paper/`
 
@@ -356,31 +379,31 @@ fragment or macro reports it. Producers are listed in the stage-03 and stage-04 
 | `paper.tex` / `.pdf` | paper draft skeleton |
 | `references.bib`, `extended_abstract.bib` | bibliography |
 
-`WRITING_GUIDE.md` (Evans 7-element intro structure + proposal guide) sits at the repo
-root with `CLAUDE.md` — it is a working guide, not an output. The redesign spec is not at
-the root: it lives at `exploration/SPECIFICATION_tse_shift_share.md`, with the lane it
-specifies.
+The companion documents `FRAMING.md` (the locked argument), `DECK_GUIDE.md` (how the deck
+is built), `WRITING_GUIDE.md` (Evans 7-element intro structure + proposal guide) and
+`DATA_GUIDE.md` (datasets and lineage) sit at the repo root with `CLAUDE.md`, which indexes
+them. They are working guides, not outputs. The first-difference redesign spec lives at
+`exploration/SPECIFICATION_tse_shift_share.md`, with the lane it specifies, and is marked
+superseded.
 
 ---
 
 ## Known gaps
 
-Open items as of the 2026-08-05 audit, as they stand after the 2026-08-06 remediation
-pass. None block a run; all affect reproducibility or completeness.
+Open items as of 2026-09-16. Items marked Resolved are kept as a record.
 
-1. **Output vintages are mixed.** `executive_margin_design.csv` and the `02_iv_main.R`
-   outputs date from 2026-08-04; the legislative estimation, every stage-03 robustness
-   script and every stage-04 diagnostic still carry 2026-07-02/07-08 outputs. Shared
-   coefficients agree across vintages (the margin estimate is identical to 10 digits),
-   but a full `run_all.py` pass is needed before the results can be called reproduced.
+1. **One output predates the rest.** Both estimation designs and every regression and
+   descriptive CSV, figure and `.tex` fragment date from 2026-08-12, except
+   `lawsuit_composition_sp.{csv,tex}` (2026-07-03) and `abstract_macros.tex`/`abstract_table.tex`
+   (regenerated 2026-09-16). Re-run `08_lawsuit_composition_sp.py` to bring the SP table level.
 2. **`legislative_vote_shift_share_design.csv` is built and never used.** The council
    branch estimates candidate-pool and elected-composition outcomes only; legislative
    *vote* outcomes exist in `data/clean/` but no design assembles them.
-3. **The share-balance defense shows no numbers.** `gps_balance_tests.csv` holds the
-   share-covariate balance test, but the deck asserts that defense in prose
-   (`slides_report.tex:989`) without citing a figure from it — and the test is
-   computed in Python, which the R-only rule bars for anything reaching a slide.
-   Port to R and cite, or drop the claim.
+3. **The share-balance test is computed in Python.** `04_iv_diagnostics.py` writes the
+   per-topic share balance tests to `gps_balance_tests.csv`, and `06_abstract_macros.py`
+   turns them into `\GpsNTopics`, `\GpsCovFail` and `\GpsMarginPtFail`, which the
+   Limitations frame cites. The R-only rule bars Python for any regression that reaches a
+   slide, so the test should be ported to R.
 4. **`data/clean/zona_eleitoral_lookup.csv` is referenced by no script.** It is a
    leftover of the pre-SIG zone-level design. Note that **no script writes it either**,
    so deleting it is not undoable by re-running the pipeline.
@@ -402,17 +425,18 @@ pass. None block a run; all affect reproducibility or completeness.
    orphan outputs on demand; the reorganization deleted the nine that existed and
    stripped the blocks that regenerated them.
 9. **The spec on disk documents a different design** than the pipeline builds. Resolved
-   2026-08-12. The `tse-shift-share` first-difference redesign spec moved off the repo
+   2026-08-12. The first-difference redesign spec moved off the repo
    root to `exploration/SPECIFICATION_tse_shift_share.md`, where its filename and its
    lane both say it is a proposal rather than documentation of the committed
    propaganda-Bartik/ANCOVA design. `exploration/README.md` records why.
-10. **`output/tables/` is the declared source of truth but is entirely untracked.**
-    `*.csv` is gitignored repo-wide, so a clean checkout has no saved regression
-    records — they exist only on the machine that ran the pipeline. Consistent with
+10. **The CSVs under `output/tables/` are the declared source of truth but are untracked.**
+    `*.csv` is gitignored repo-wide. The 35 `.tex` fragments and the 13 figures are
+    tracked, so a clean checkout has the fragments but no saved regression records; those
+    exist only on the machine that ran the pipeline. Consistent with
     "data never leaves this repo", but currently a side effect rather than a decision.
 11. **`output/paper/extended_abstract.tex` cannot compile.** Found 2026-08-12. It
-    `\includegraphics`es `../figures/forest_voter_behavior.pdf`, which is not on disk —
-    the voter-behavior forest plot was replaced by `voterbehavior_seat_coefplot.pdf`.
+    `\includegraphics`es `../figures/forest_voter_behavior.pdf`, which is not on disk and
+    which no script produces.
     This is the one standing BUILD BREAKER `code/utils/audit_pipeline.py` reports. Nara
     writes the paper, so the fix is hers: point the include at the surviving figure or
     drop it.
@@ -424,7 +448,8 @@ pass. None block a run; all affect reproducibility or completeness.
     guard against a stale or partial `data/raw/`) and cannot be tested without a full
     re-download, so it is recorded rather than fixed.
 
-**Closed by the 2026-08-06 pass:** the deck sources are no longer git-ignored
-(`.gitignore` now whitelists `output/presentation/*.tex` by extension rather than by a
-stale filename list); `08b_lawsuit_topic_selection.py` was renamed to slot `11` and moved
-after `10` in `run_all.py`; `WRITING_GUIDE.md` moved to the repo root.
+**Closed earlier:** the deck sources are no longer git-ignored (`.gitignore` whitelists
+`output/presentation/*.tex` and `output/presentation/frames/*.tex` by extension rather than
+by a stale filename list); `08b_lawsuit_topic_selection.py` became
+`11_lawsuit_topic_selection.py` and now lives in `exploration/04_analysis/`, run by hand
+rather than from `run_all.py`; `WRITING_GUIDE.md` moved to the repo root.

@@ -1,6 +1,18 @@
-# SPECIFICATION — TSE shift-share design (branch `tse-shift-share`)
+# SPECIFICATION — TSE shift-share redesign (exploratory)
 
-**Status:** working specification, written 2026-07-04 from the from-scratch redesign
+**Status (2026-09-16):** exploratory and superseded. The design the paper and the deck
+use is the committed subject-level shift-share with the ANCOVA-2016 headline
+(`code/03_estimation/02_iv_main.R`), documented in `README.md` and `FRAMING.md`. This
+first-difference, K\*-selected redesign was not adopted. Earlier versions of this file
+named a branch `tse-shift-share`; no such branch exists in the repository, whose only
+branch is `main` (tags: `archive/act-redesign-wip`, `pre-sig-rebuild`). The file paths in
+§3 are updated to the `exploration/` lane. `kstar_endog_counts.csv` (§4) is not on disk
+and no script writes it. The numbers below come from the 2026-07-04 exploration runs;
+the committed pipeline's CSVs do not reproduce them (its adversarial filter keeps 3.8% of
+pooled 2020+2024 filings, `\KeptAdversarialPct`). Apart from the path, file and branch
+notes and American spelling, the text below is the record as written.
+
+**Original status:** working specification, written 2026-07-04 from the from-scratch redesign
 (2026-07-03 onward). This is the *specified* design — the estimation harness must be
 built to THIS document, not inherited from the committed `main` mold
 (`02_iv_main.R`, ANCOVA-on-2016). The committed propaganda-Bartik/ANCOVA design on
@@ -63,8 +75,8 @@ Z_m  =  Σ_{k ∈ K*}  s_{m,k,2020}  ·  g_k^(−uf)
   (denominator/coverage artifact, no genuine differential shift) and is a documented
   tested-and-rejected version. The normative agenda survives only as the topic **selector**.
 - **K\* selector** = normatively-salient, non-procedural, non-sparse, non-covid leaf
-  subjects. Operationalized in `code/04_analysis/11_lawsuit_topic_selection.py` →
-  `output/tables/descriptives/lawsuit_topic_selection_worksheet.csv`
+  subjects. Operationalized in `exploration/04_analysis/11_lawsuit_topic_selection.py` →
+  `exploration/output/tables/descriptives/lawsuit_topic_selection_worksheet.csv`
   (`keep_suggestion` starter = in a normative family & not sparse (<50) & not procedural
   & not covid-suspect). Per-subtopic keep/drop/roll-up decisions are Nara's to finalize;
   the worksheet is the ledger. [OPEN — final K\* list]
@@ -94,7 +106,8 @@ collapsed-propaganda variant only 0.62–0.68; splitting doubles the first-stage
 - **W = log(1 + adversarial first-instance count)**, adversarial-only (mandatory dropped),
   **restricted to the same K\* topic universe as the instrument** — Z and W share one topic
   set. ΔW = W_2024 − W_2020. Counts already built: `kstar_endog_counts.csv`
-  (`c20_base`, `c24_base`; `_imp` variants for the impugnação test).
+  (`c20_base`, `c24_base`; `_imp` variants for the impugnação test). As of 2026-09-16
+  this file is not on disk and no script writes it.
 - The comparison run earlier used the committed all-adversarial `delta_log1p_competition_
   lawsuits` — that was the wrong (non-K\*) endogenous and is superseded here.
 - **Zero-handling — run BOTH log1p and Poisson [DECIDED 2026-07-04: try both, compare]:**
@@ -135,7 +148,7 @@ as a share-control ladder** so the headline's dependence on the control set is v
 Plus a **predetermined covariate block** (2010 Census, strictly pre-period, no Lord's-paradox
 2020 levels): `log_pop_2010, urban_share_2010, log_income_pc_2010, higher_educ_share_2010`.
 NOT `margin_2016` or 2020 competition levels in the headline (those bias the FD via
-regression-to-the-mean; keep for a labelled robustness bracket only).
+regression-to-the-mean; keep for a labeled robustness bracket only).
 
 ## 7. Outcomes — two-tier [DECIDED; confirm exact variables]
 
@@ -176,7 +189,8 @@ has no 2016 level).
 
 ## 10. Reproducibility rules [DECIDED]
 
-- Branch `tse-shift-share`; `main` design untouched and reproducible.
+- Work kept separate from the `main` design, which stays untouched and reproducible.
+  (Originally a branch `tse-shift-share`; no such branch exists now, see the status line.)
 - New instrument writes to **NEW-named files** (new entity tokens); never overwrite a shared
   clean-data file in place. Shared floor (downloads, outcome panels, crosswalks) reused
   byte-identical.

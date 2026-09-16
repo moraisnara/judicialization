@@ -1,4 +1,4 @@
-# ── Raw data (6.9 GB — download via code/01_download/) ───────────────────────
+# ── Raw data (26 GB — download via code/01_download/) ────────────────────────
 data/raw/
 
 # ── Clean data files too large for GitHub (> 100 MB) ─────────────────────────
@@ -17,10 +17,13 @@ data/clean/candidate_vote_panel.csv
 *.synctex.gz
 *.blg
 
-# ── Overleaf whitelist ────────────────────────────────────────────────────────
-# Ignore everything under output/, then re-add the source files (and the
-# figures/tables folders) that the Overleaf-linked repo must track.
-# output/paper/ holds written documents: extended_abstract now, full paper later.
+# ── output/ whitelist ─────────────────────────────────────────────────────────
+# Ignore everything under output/, then re-add the document sources (and the
+# figures/tables folders) that this repo tracks. This repo is not linked to
+# Overleaf: the Overleaf project links to moraisnara/phd-thesis, which takes flat
+# copies of output/figures and output/tables through its sync_assets.sh.
+# output/paper/ holds the written documents: the extended abstract, the paper
+# draft (paper.tex) and the estimating-equations note.
 output/*
 !output/paper/
 output/paper/*
@@ -34,17 +37,14 @@ output/presentation/*
 # were renamed, which silently left the entire report deck untracked.
 !output/presentation/*.tex
 !output/presentation/*.bib
-# The frame library and the memos are deck sources too. Line 31 ignores these
-# directories, and git will not descend into an ignored directory -- so the
+# The frame library is a deck source too. output/presentation/* ignores the frames/
+# directory, and git will not descend into an ignored directory -- so the
 # directory must be un-ignored before the .tex inside it can be whitelisted.
-# Same trap as above, one level down: without these four lines every frame in
+# Same trap as above, one level down: without these two lines every frame in
 # the deck is untracked while slides_report.tex (tracked) holds only \input lines.
 !output/presentation/frames/
 !output/presentation/frames/*.tex
-!output/presentation/memos/
-!output/presentation/memos/*.tex
-# The talk drivers are GENERATED from the frame library, so their generator is a
-# deck source too -- an unsaved generator means the derivation cannot be redone.
+# check_links.py verifies every deck button resolves.
 !output/presentation/*.py
 # DECK_WORKPLAN.md records the frame-by-frame review and its open design items;
 # ignored, it existed only on one disk.
