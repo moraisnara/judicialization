@@ -1,10 +1,9 @@
 # 03_result_figures.R — causal-result figures for the deck
 # ===========================================================================
 # PURPOSE: figures that report the ESTIMATION RESULTS (the instrument's data
-# universe is described in 02_descriptive_figures.R). Seven blocks:
+# universe is described in 02_descriptive_figures.R). Six blocks:
 #
 #   [B] First stage, linear (AMV style)     -> firststage_linear.pdf
-#   [C] Voter disengagement by seat type    -> voterbehavior_seat_coefplot.pdf
 #   [D] Null-family coefficient plots       -> representation_coefplot.pdf
 #                                              entrant_coefplot.pdf
 #                                              turnout_coefplot.pdf
@@ -135,80 +134,6 @@ cat(sprintf("  Saved firststage_linear.pdf  (beta=%.3f, se=%.3f, F=%.1f)\n",
 
 
 # ============================================================================
-# [C] VOTER DISENGAGEMENT by seat type (mayoral ballot). Turnout is compulsory,
-#     so withdrawal cannot show up as staying home -- it shows up inside the
-#     ballot: blank / null votes that elect no one, and a falling valid share.
-#     Three series per outcome -- the POOLED mayoral estimate plus the two seat
-#     subsamples (open = term-limited, contested = incumbent eligible) -- so the
-#     headline voter result and where it concentrates read off ONE exhibit.
-#     Faceted by outcome with a FREE x: the valid-vote delta sits on a wider
-#     scale than blank/null. Seat is on the y-axis, so color is free to encode
-#     5%-significance as in the other coefplots (no legend needed); a faint rule
-#     separates the pooled row from the two subsamples.
-#     CONSOLIDATION outcomes are deliberately absent -- they carry their own
-#     exhibits (executive_iv_competition.tex; heterogeneity_seat_coefplot.pdf in
-#     [G] keeps both channels for the report deck). This block replaced the
-#     orphaned voterbehavior_forest.pdf, which no deck consumed and which showed
-#     compulsory turnout (a mechanical null) instead of the valid-vote share.
-# ============================================================================
-cat("\n[C] Voter disengagement by seat type...\n")
-
-iv_raw <- as.data.frame(fread(file.path(REGRESSIONS, "executive_margin_iv_fixest.csv")))
-spec_col <- if ("spec" %in% names(iv_raw)) "spec" else "sample"
-iv_raw$spec_name <- iv_raw[[spec_col]]
-
-DISENGAGE_OUTCOMES <- c(
-  delta_blank_rate_2024_2020      = "Blank-vote rate",
-  delta_null_rate_2024_2020       = "Null-vote rate",
-  delta_valid_vote_rate_2024_2020 = "Valid-vote rate")
-DISENGAGE_SPECS <- c(
-  baseline       = "All mayoral races",
-  open_seat      = "Open seat (term-limited)",
-  contested_seat = "Contested (incumbent)")
-
-dis_df <- iv_raw %>%
-  filter(spec_name %in% names(DISENGAGE_SPECS),
-         outcome   %in% names(DISENGAGE_OUTCOMES)) %>%
-  mutate(
-    trait   = factor(unname(DISENGAGE_OUTCOMES[outcome]),
-                     levels = unname(DISENGAGE_OUTCOMES)),
-    seat    = factor(unname(DISENGAGE_SPECS[spec_name]),
-                     levels = rev(unname(DISENGAGE_SPECS))),
-    sig     = p < 0.05,
-    ci90_lo = coef - qnorm(0.95) * se,
-    ci90_hi = coef + qnorm(0.95) * se,
-    ci95_lo = ifelse(is.na(ci95_low_tF),  coef - 1.96 * se, ci95_low_tF),
-    ci95_hi = ifelse(is.na(ci95_high_tF), coef + 1.96 * se, ci95_high_tF))
-
-p_disengage <- ggplot(dis_df, aes(x = coef, y = seat)) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "grey45", linewidth = 0.5) +
-  geom_hline(yintercept = 2.5, color = "grey85", linewidth = 0.4) +
-  geom_errorbarh(aes(xmin = ci95_lo, xmax = ci95_hi),
-                 height = 0, color = COL_GRAY, linewidth = 0.6, alpha = 0.6) +
-  geom_errorbarh(aes(xmin = ci90_lo, xmax = ci90_hi, color = sig),
-                 height = 0, linewidth = 1.4) +
-  geom_point(aes(color = sig), size = 3.0) +
-  geom_text(aes(label = sprintf("%+.3f", coef)),
-            vjust = -1.1, size = 2.8, color = "grey25") +
-  scale_color_manual(values = c(`TRUE` = COL_RED, `FALSE` = COL_BLUE), guide = "none") +
-  facet_wrap(~ trait, ncol = 3, scales = "free_x") +
-  scale_x_continuous(expand = expansion(mult = 0.20),
-                     labels = scales::label_number(accuracy = 0.005)) +
-  labs(x = expression("2SLS effect of " * Delta * " log(1 + adversarial lawsuits)"),
-       y = NULL) +
-  theme_report() +
-  theme(panel.grid.major.x = element_line(color = "grey90"),
-        panel.grid.major.y = element_blank(),
-        strip.text = element_text(face = "bold"),
-        axis.text.y = element_text(size = 9.5))
-ggsave(file.path(FIG_DIR, "voterbehavior_seat_coefplot.pdf"),
-       p_disengage, width = 9.5, height = 3.0)  # flat aspect: the deck frame is
-                                                # height-bound, so a shorter
-                                                # figure embeds WIDER
-cat("  Saved voterbehavior_seat_coefplot.pdf (3 ballot outcomes x pooled/open/contested)\n")
-
-
-# ============================================================================
 # [D] COEFFICIENT PLOTS for the "nothing moves" families
 #     One dot per outcome, 90% (thick) + 95% tF (thin) CI, zero line. Significant-
 #     at-5% points highlighted; coefficient printed at the point. Titles are set
@@ -216,6 +141,10 @@ cat("  Saved voterbehavior_seat_coefplot.pdf (3 ballot outcomes x pooled/open/co
 #     bakes a title.
 # ============================================================================
 cat("\n[D] Coefficient plots (null families)...\n")
+
+iv_raw <- as.data.frame(fread(file.path(REGRESSIONS, "executive_margin_iv_fixest.csv")))
+spec_col <- if ("spec" %in% names(iv_raw)) "spec" else "sample"
+iv_raw$spec_name <- iv_raw[[spec_col]]
 
 iv_base <- iv_raw[iv_raw$spec_name == "baseline", ]
 

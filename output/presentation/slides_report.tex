@@ -3,13 +3,10 @@
 % Nara Livia Morais (FEA-USP)
 % ------------------------------------------------------------
 % THIS FILE IS A DRIVER. It holds no prose: every frame lives in frames/,
-% and the sectioning lives here, because sectioning is exactly what a talk
-% reorganizes. See DECK_GUIDE.md.
+% and the sectioning lives here. See DECK_GUIDE.md.
 %
-% The macro sections below are THE SPINE, shared by every report deck and
-% by the paper (WRITING_GUIDE.md Sec. 5). A short deck may glue adjacent
-% sections; it may never reorder, drop, or invent one. Subsections and
-% frames are what differ between decks.
+% The macro sections below are THE SPINE, shared with the paper
+% (WRITING_GUIDE.md Sec. 5).
 %
 % Last rebuilt: subject-level committed design (municipio-resolved SIG
 % lawsuits, no many-to-many merge), GPSS exposure identification,
@@ -23,7 +20,7 @@
 \documentclass[aspectratio=169,10pt]{beamer}
 
 % ---- House theme, colors, commands, and the auto-generated number macros ----
-% Shared with slides_advisor.tex. Edit colors/commands THERE, not here.
+% Edit colors/commands THERE, not here.
 \input{slides_preamble.tex}
 
 % ---- Title info ----
@@ -67,7 +64,7 @@
 % candidate; voters have no standing) and the shifts are NATIONAL, reaching
 % a municipality only through its own prior exposure.
 % Here those facts are STATED; the argument built on them is Sec. 4. There
-% is space to separate them, so they are separated. A short deck glues them.
+% is space to separate them, so they are separated.
 % ============================================================
 \section{Institutional Background}
 
@@ -95,7 +92,6 @@
 \input{frames/src_datasources.tex}
 
 \subsection{What We Keep}
-% Full defense of the mandatory-filing exclusion: memos/memo_adversarial_filter.tex
 \input{frames/src_adversarialfilter.tex}
 
 \subsection{What We Measure}
@@ -120,7 +116,7 @@
 % [2026-07-02 consolidation] Old "Clustering and the Few-Clusters Caveat" frame removed; its content is reconciled and merged into the "Inference: Few Clusters and the Exposure-Robust Bound" frame placed after the shares-defense frame. The fix corrects two stale claims: (i) the mayoral blank rate straddles zero (p=ARBlankP=0.108), it does NOT exclude zero; (ii) the exposure-robust bound inflates the margin SE by only ERMarginRatio=1.06x, so the consolidation DOES clear it.
 
 
-% [2026-07-02 consolidation] "The First Stage, Visually" frame removed; the binscatter (firststage_linear.pdf) is now the right-hand column of "The First Stage: Strong, Linear, and Stable".
+% [2026-07-02 consolidation] "The First Stage, Visually" frame removed; the binscatter (firststage_linear.pdf) is now the right-hand column of the first-stage frame (frames/src_firststage.tex).
 
 
 \subsection{Identification \& Inference}
@@ -151,9 +147,11 @@
 % ============================================================
 \subsection{The First Stage}
 % Its own subsection, not an opener to "The Result": the coefficient is
-% NEGATIVE, so identification runs off convergence -- municipalities
-% catching up -- not amplification. Miss that and every complier statement
-% in Sec. 4 is misread.
+% positive, but it is identified on the extensive margin. Municipalities with
+% no adversarial litigation in 2020 (Z = 0) gain filings; litigating ones
+% lose them, with no gradient across nonzero exposure. The compliers are
+% municipalities where litigation starts, not places where it amplifies.
+% Miss that and every complier statement is misread.
 \input{frames/src_firststage.tex}
 
 
@@ -186,8 +184,8 @@
 % left unaddressed, a referee stops believing the headline. Two are queued
 % against it and decided when the primary results lock -- app_exposure
 % (BHJ/AKM exposure-robust SEs, the one binding ANCOVA caveat) and
-% app_multiplicity (survives BH only in the tight closeness family;
-% Romano-Wolf margin p_rw = .059).
+% app_multiplicity (the margin clears Holm and BH on the reduced-form
+% p-values, Romano-Wolf only at 10%, and no correction on the 2SLS p-values).
 % ============================================================
 \section{Robustness}
 \input{frames/src_robustness.tex}
@@ -202,7 +200,7 @@
 % predating that reorder. What a conclusion adds that an introduction
 % cannot is the conditions under which the paper fails -- so Limitations is
 % the load-bearing frame, and its job is to name what would overturn the
-% TENTATIVE face-assignment. The file is kept in frames/, unreferenced.
+% TENTATIVE face-assignment. The file was deleted 2026-09-16.
 % ============================================================
 \section{Conclusion}
 \input{frames/src_findings.tex}
@@ -243,8 +241,8 @@
 \input{frames/app_ballotcouncil.tex}
 \input{frames/app_legislative.tex}
 \input{frames/app_abstract.tex}
-% UNRESOLVED -- these two are src_-prefixed (talk-eligible) but sit in the
-% appendix run. By the outcome layers they are main-section evidence:
+% UNRESOLVED -- these two are src_-prefixed (main-section frames) but sit in
+% the appendix run. By the outcome layers they are main-section evidence:
 % src_entrant is layer 1 (who runs), src_turnoutprofile is layer 2 (how
 % voters respond). Left in place pending the primary-results lock; promoting
 % them changes the argument, which is a Results decision, not a spine one.
