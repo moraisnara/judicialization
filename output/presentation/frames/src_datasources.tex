@@ -1,0 +1,46 @@
+
+
+\begin{frame}{Data Sources}
+\hypertarget{src:datasources}{}
+
+\vspace{2pt}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.18}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{L{5.6cm}L{2.4cm}C{1.9cm}L{2.4cm}}
+  \toprule
+  \textbf{Dataset} & \textbf{Source} & \textbf{Years} & \textbf{Use} \\
+  \midrule
+
+  % ---- LAWSUITS ----
+  \rowcolor{bandlaw} \multicolumn{4}{l}{\textbf{Lawsuits}} \\
+  \quad Electoral lawsuit filings & TSE (SIG export) & 2020, 2024 & Instrument \\
+  \midrule
+
+  % ---- CANDIDATES ----
+  \rowcolor{bandcnd} \multicolumn{4}{l}{\textbf{Candidates}} \\
+  \quad Candidate registry & TSE & 2012--2024 & Outcome \\
+  \quad Election results & TSE & 2016--2024 & Outcome \\
+  \quad Campaign finance (SPCE) & TSE & 2020, 2024 & Mechanism \\
+  \midrule
+
+  % ---- ELECTORATE ----
+  \rowcolor{bandvot} \multicolumn{4}{l}{\textbf{Electorate}} \\
+  \quad Turnout \& ballot composition & TSE & 2016--2024 & Outcome \\
+  \quad Turnout by voter profile (\emph{perfil}) & TSE & 2020, 2024 & Outcome \\
+  \midrule
+
+  % ---- MUNICIPALITY CHARACTERISTICS ----
+  \rowcolor{bandctl} \multicolumn{4}{l}{\textbf{Municipality characteristics}} \\
+  \quad Census 2010 & IBGE & 2010 & Control \\
+
+  \bottomrule
+\end{tabular}
+
+\medskip
+
+{\raggedright\scriptsize
+\textbf{Use:} Instrument = shift-share IV \,$\cdot$\, Outcome = causal estimand \,$\cdot$\, Mechanism = channel test \,$\cdot$\, Control = covariate.\\[3pt]
+Two additions are pending. News-outlet coverage (Atlas da Not\'{i}cia, Volt Data Lab) and poll coverage (Poder360) would support the media-salience mechanism and heterogeneity by information environment. A pre-2018 lawsuit panel would support the $2016\to2020$ placebo; the LAI request for 2016 and 2012 is outstanding.\par}
+\end{frame}

@@ -1,0 +1,65 @@
+
+
+% ------------------------------------------------------------
+% --- Timeline sources (verified against TSE/STF/Camara/LexML, 2026-06-29) ---
+% 2004 STF RE 197.917 (DJ 07/05/2004) + Res.-TSE 21.702/2004 -- numero de vereadores propto populacao
+% 2007 Res.-TSE 22.610 (25/10/2007), apos STF MS 26.602/603/604 -- fidelidade partidaria
+% 2009 Lei 12.034 (29/09/2009) -- propaganda na internet; cota de genero "reservar"->"preencher" 30%
+% 2010 LC 135/2010 (Ficha Limpa, 04/06/2010); STF ADC 29/ADC 30/ADI 4578 (16/02/2012) constitucional+retroativa; RE 633703 (23/03/2011) anterioridade -> vigora desde 2012
+% 2017 EC 97 (04/10/2017) -- fim das coligacoes proporcionais (a partir de 2020) + clausula de desempenho
+% 2018 STF ADI 5617 (15/03/2018) -- >=30% do fundo partidario a mulheres; TSE CTA 0600252-18 (2018) estende ao FEFC+tempo de TV
+% 2019 jurisprudencia de fraude a cota de genero (caso lider Jacobina/BA); Sumula TSE 73 -- candidaturas ficticias anulam a chapa
+% 2020 STF ADPF 738 (liminar 09/09/2020; plenario 02/10/2020, 10x1) -- FEFC+tempo de TV a candidatos negros, ja em 2020 (TSE CTA 0600306-47 fixara 2022)
+% 2022 Res.-TSE 23.714 (20/10/2022) -- poder de remocao de desinformacao eleitoral (STF ADI 7261 constitucional)
+% 2024 Res.-TSE 23.732 (27/02/2024, altera Res. 23.610/2019) -- aviso de uso de IA, proibicao de deepfake, responsabilidade de plataformas
+\begin{frame}{The Normative Role: What the Courts Now Police}
+\hypertarget{app:timeline}{}
+\footnotesize
+\noindent Through \emph{resolu\c{c}\~oes}, \emph{s\'umulas} and STF review, the Electoral Justice has steadily widened what it polices. Each regulatory front it opens becomes a front on which candidates can litigate, and recent cycles are dominated by the most recently opened. Lane color marks the front:
+
+\begin{center}
+\begin{tikzpicture}[
+    x=0.515cm, y=0.76cm,
+    lane/.style={very thin},
+    grid/.style={very thin, gray!25},
+    lab/.style={font=\tiny, inner sep=1pt, align=center, text width=1.75cm, text=black!82},
+    lanelab/.style={font=\scriptsize\bfseries, anchor=east, align=right, text width=1.7cm, inner sep=2pt},
+    leader/.style={very thin},
+  ]
+  % year gridlines + axis labels
+  \foreach \yr in {2004,2009,2014,2019,2024}{
+     \pgfmathtruncatemacro\xx{\yr-2004}
+     \draw[grid] (\xx,-1.35) -- (\xx,5.3);
+     \node[font=\scriptsize, text=gray!70, anchor=north] at (\xx,-1.4) {\yr};
+  }
+  % lane guide rails + left labels (color = regulatory front)
+  \draw[lane, myblue!40]  (-0.4,4.5) -- (20.4,4.5);
+  \draw[lane, mygreen!40] (-0.4,3.0) -- (20.4,3.0);
+  \draw[lane, myred!40]   (-0.4,1.5) -- (20.4,1.5);
+  \draw[lane, orange!45]  (-0.4,0.0) -- (20.4,0.0);
+  \node[lanelab, text=myblue]  at (-1.0,4.5) {party \& representation};
+  \node[lanelab, text=mygreen] at (-1.0,3.0) {candidate integrity};
+  \node[lanelab, text=myred]   at (-1.0,1.5) {gender \& race inclusion};
+  \node[lanelab, text=orange!85!black] at (-1.0,0.0) {information \& propaganda};
+  % ---- events: dot + label ----
+  % party: 2004, 2007, 2017
+  \fill[myblue] (0,4.5) circle (2.2pt);  \node[lab, anchor=south, yshift=3pt] at (0,4.5)  {RE 197.917\\\textit{vereadores}};
+  \fill[myblue] (3,4.5) circle (2.2pt);  \node[lab, anchor=south, yshift=3pt] at (3,4.5)  {Res.\,22.610\\\textit{fidelidade}};
+  \fill[myblue] (13,4.5) circle (2.2pt); \node[lab, anchor=south, yshift=3pt] at (13,4.5) {EC 97\\\textit{fim coliga\c{c}\~oes}};
+  % integrity: 2010
+  \fill[mygreen] (6,3.0) circle (2.2pt); \node[lab, anchor=south, yshift=3pt] at (6,3.0) {LC 135\\\textit{Ficha Limpa}};
+  % inclusion: 2018, 2019, 2020 -- leaders fan out to avoid overlap
+  \fill[myred] (14,1.5) circle (2.2pt); \draw[leader,myred!55] (14,1.5) -- (12.6,2.55); \node[lab, anchor=south] at (12.6,2.55) {ADI 5617\\\textit{fundo: mulheres}};
+  \fill[myred] (15,1.5) circle (2.2pt); \draw[leader,myred!55] (15,1.5) -- (15.0,2.1);  \node[lab, anchor=south] at (15.0,2.1)  {fraude \`a\\\textit{cota de g\^enero}};
+  \fill[myred] (16,1.5) circle (2.2pt); \draw[leader,myred!55] (16,1.5) -- (17.6,2.55); \node[lab, anchor=south] at (17.6,2.55) {ADPF 738\\\textit{fundo: negros}};
+  % information: 2009, 2022, 2024
+  \fill[orange] (5,0.0) circle (2.2pt);  \node[lab, anchor=north, yshift=-3pt] at (5,0.0)  {Lei 12.034\\\textit{internet}};
+  \fill[orange] (18,0.0) circle (2.2pt); \draw[leader,orange!60] (18,0.0) -- (16.7,-0.7); \node[lab, anchor=north] at (16.7,-0.7) {Res.\,23.714\\\textit{desinforma\c{c}\~ao}};
+  \fill[orange] (20,0.0) circle (2.2pt); \draw[leader,orange!60] (20,0.0) -- (19.9,-0.7); \node[lab, anchor=north] at (19.9,-0.7) {Res.\,23.732\\\textit{IA \& deepfake}};
+\end{tikzpicture}
+\end{center}
+\vspace{-2pt}
+{\centering\scriptsize\ns{The same arc appears in our caseload. Adversarial litigation recomposes across these fronts, with \emph{fraude \`a cota} up and propaganda down, rather than rising in aggregate.}\par}
+\smallskip
+\centerline{\hyperlink{app:recomp}{\beamergotobutton{Show it in the caseload}}\quad\hyperlink{src:motivation}{\beamerreturnbutton{Back}}}
+\end{frame}

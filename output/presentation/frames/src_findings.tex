@@ -1,0 +1,16 @@
+% ============================================================
+
+\begin{frame}{Findings by Confidence Tier}
+\hypertarget{src:findings}{}
+\footnotesize
+On the clean 2016 baseline the evidence sorts into four tiers of confidence:
+\medskip
+\begin{itemize}\itemsep1pt
+  \item[\textcolor{myred}{\rule{1.2ex}{1.2ex}}] \textbf{Robust.} The mayoral race consolidates: the top-two margin widens ($\MarginCoef$, $p=\MarginP$), the winner's share rises ($\WinShareCoef$) and the runner-up's falls ($\RunnerUpCoef$). It clears the weak-IV-robust AR wild-cluster bootstrap (margin $p=\ARMarginP$, runner-up $p=\ARRunnerUpP$), the BHJ/AKM exposure-robust SE (CI $\ERMarginCI$ excludes zero), and multiplicity correction at 5\% by Holm and Benjamini--Hochberg, with Romano--Wolf, the most conservative of the three, clearing at 10\% ($p=.059$).
+  \item[\textcolor{myred!55}{\rule{1.2ex}{1.2ex}}] \textbf{Tentative.} Voters disengage on the same ballot: mayoral blank ($\BlankCoef$) and null ($\NullCoef$) votes rise and valid votes fall, concentrated in contested seats, while compulsory turnout stays pinned. Significant under conventional and exposure-robust inference (exposure-robust $p=\ERBlankPbhj$) but not the AR bootstrap ($p=\ARBlankP$).
+  \item[\textcolor{mygray}{\rule{1.2ex}{1.2ex}}] \textbf{Precise nulls.} Descriptive representation and renewal, the entrant typology, elastic and education-stratified turnout, campaign finance, and the entire legislative side are all tightly bounded around zero. The consolidation's cost belongs here as well: the runner-up's loss splits evenly by gender ($\RUGapCoef$, $p=\RUGapP$) \hyperlink{src:gender}{\beamergotobutton{gender}}.
+  \item[\textcolor{mygray!55}{\rule{1.2ex}{1.2ex}}] \textbf{Exploratory.} The winner's gain lands on male front-runners ($\MaleWinSharePerSDSigned$~pp, $p=\MaleWinShareP$) with the female winner's share flat, but the differential test does not clear ($p=\WinGapP$) and these outcomes sit outside the declared family. The data suggest the direction without establishing it.
+\end{itemize}
+\medskip
+\footnotesize The candidate side is quiet while some voters withdraw, so the consolidation is the electorate re-allocating votes toward the leader rather than candidates being removed. The two halves of the claim carry different weight: the consolidation is robust, while the barrier reading sits one tier down because it rests on the ballot.\hfill\hyperlink{app:abstract}{\beamergotobutton{summary table}}\, \hyperlink{src:mechanism}{\beamergotobutton{mechanism}}
+\end{frame}

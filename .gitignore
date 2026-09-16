@@ -34,6 +34,18 @@ output/presentation/*
 # were renamed, which silently left the entire report deck untracked.
 !output/presentation/*.tex
 !output/presentation/*.bib
+# The frame library and the memos are deck sources too. Line 31 ignores these
+# directories, and git will not descend into an ignored directory -- so the
+# directory must be un-ignored before the .tex inside it can be whitelisted.
+# Same trap as above, one level down: without these four lines every frame in
+# the deck is untracked while slides_report.tex (tracked) holds only \input lines.
+!output/presentation/frames/
+!output/presentation/frames/*.tex
+!output/presentation/memos/
+!output/presentation/memos/*.tex
+# The talk drivers are GENERATED from the frame library, so their generator is a
+# deck source too -- an unsaved generator means the derivation cannot be redone.
+!output/presentation/*.py
 !output/figures/
 !output/tables/
 

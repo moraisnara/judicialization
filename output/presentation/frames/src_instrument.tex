@@ -1,0 +1,27 @@
+
+\begin{frame}{Constructing the Instrument: Shares $\times$ Shifts}
+\hypertarget{src:instrument}{}
+\footnotesize
+The instrument combines a pre-determined 2020 exposure share with a leave-own-state-out national shift, at the subject level (\NSubjectsKept{} kept TSE subjects; no family aggregation is imposed on $\bZ$).
+\smallskip
+
+\textbf{Shares:} each municipality's 2020 adversarial-subject mix, fixed two cycles before 2024 outcomes.
+\[
+s_{m,k,2020} \;=\; \frac{\text{adversarial lawsuits of subject } k \text{ in } m,\ 2020}{\text{all adversarial lawsuits in } m,\ 2020},
+\qquad \sum_k s_{m,k,2020}=1.
+\]
+\textbf{Shifts:} each subject's log caseload growth, summed over all other states.
+\[
+g_{\text{UF}(m),\,k} \;=\; \log\!\bigl(1 + L_{-\text{UF},\,k,\,2024}\bigr) - \log\!\bigl(1 + L_{-\text{UF},\,k,\,2020}\bigr),
+\qquad L_{-\text{UF},\,k,\,t} = L^{\text{nat}}_{k,t} - L^{\text{own-UF}}_{k,t}.
+\]
+\textbf{Instrument:} the portfolio-weighted predicted exposure, one number per municipality.
+\[
+\bZ \;=\; \sum_{k} \; \underbrace{s_{m,k,2020}}_{\text{share (pre-determined)}} \;\cdot\; \underbrace{g_{\text{UF}(m),\,k}}_{\text{shift (other states)}}
+\]
+\smallskip
+\begin{itemize}\itemsep2pt
+  \item Leaving out the own state purges any local litigation wave. A municipality's shift excludes its whole state, so every municipality in a state shares the same per-subject shift and state fixed effects absorb it. Identification therefore comes from within-state variation in the 2020 shares, and the adjudication locus (the zone) sits inside the state.
+  \item The variation is off subjects that diffuse across states, such as jurisprudence, MPE priorities and party legal strategy, rather than off local politics. The same $\bZ$ is carried into the executive and legislative designs.
+\end{itemize}
+\end{frame}

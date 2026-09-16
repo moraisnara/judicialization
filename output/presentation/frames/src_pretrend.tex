@@ -1,0 +1,12 @@
+
+\begin{frame}{The Consolidation Measures Are Pre-Trend Clean}
+\hypertarget{src:pretrend}{}
+\small
+A free 2016 lag raises a fair question: does the instrument load on municipalities already moving in the consolidating direction? To test this we regress the 2016$\to$2020 pre-period change on the instrument, conditioning only on pre-determined (2010 Census) covariates and state FE. A clean, share-exogenous design wants every coefficient near zero, since the shock should not predict past movement.
+\smallskip
+\begin{center}
+\includegraphics[width=\linewidth,height=0.44\textheight,keepaspectratio]{../figures/pretrend_coefplot.pdf}
+\end{center}
+\smallskip
+\footnotesize Every consolidation measure is clean. Margin ($p=\PtMarginP$), effective-N ($p=\PtEffNP$), Herfindahl ($p=\PtHHIP$) and top-two share ($p=\PtTopTwoP$) all straddle zero, as does ballot composition. One caveat is worth stating: turnout does pre-trend ($p<.01$), reflecting the convergence the first stage is identified off, and the valid share, being an electorate share, mechanically inherits it. Consolidation and ballot composition are untouched. Adding the 2020 level as a second lag moves nothing \hyperlink{app:ptrobust}{\beamergotobutton{full pre-path}}. \emph{(Thick 90\%, thin 95\% CI; red $p<.05$.)}\hfill\hyperlink{app:pretrend}{\beamergotobutton{Placebo table}}
+\end{frame}

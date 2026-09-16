@@ -1,0 +1,21 @@
+
+
+\begin{frame}{Specification: 2SLS on a 2016 Baseline}
+\hypertarget{src:spec}{}
+\small
+First stage (OLS), instrumenting the change in litigation intensity:
+\[
+\underbrace{\Delta\log(1+\ell_{m})}_{\text{endogenous}} \;=\; \alpha + \beta\, \bZ + \mathbf{X}_m'\boldsymbol{\gamma} + \delta_{\text{UF}(m)} + \varepsilon_m
+\]
+Second stage (2SLS), ANCOVA on the 2016 pre-window baseline:
+\[
+Y_{m,2024} \;=\; \alpha + \tau\, \widehat{\Delta\log(1+\ell_{m})} + \lambda\, Y_{m,2016} + \mathbf{X}_m'\boldsymbol{\gamma} + \delta_{\text{UF}(m)} + u_m
+\]
+\begin{itemize}\itemsep1pt
+  \item $\ell_m$ = adversarial lawsuits (originating filings in the cycle) resolved to the municipality of origin; $\Delta$ = first difference 2024$-$2020.
+  \item The outcome enters in levels on a clean 2016 baseline. $Y_{m,2016}$ predates the 2020 exposure shares, so it is a true pre-treatment lag; $\lambda$ is freely estimated and $\tau$ reads the 2024 level holding 2016 fixed.
+  \item \hypertarget{src:fd}{}ANCOVA is preferred to first differences because municipal outcomes barely persist. First differences pin $\lambda=1$, over-differencing and attenuating the estimate, so FD serves as an appendix check \hyperlink{app:fd}{\beamergotobutton{FD bracket}}. Outcomes with no clean 2016 analog remain in FD.
+  \item $\mathbf{X}_m$ = 6 pre-determined controls (log population, urbanization, log income p.c., 2010 higher-education share, 2020 valid-vote volume, 2016 top-two margin); $\delta_{\text{UF}(m)}$ = state FE (\NClusters{} of 27 UFs). SE clustered by state.
+\end{itemize}
+\centerline{\footnotesize \hyperlink{app:readtau}{\beamergotobutton{How to read the coefficient $\tau$}}}
+\end{frame}

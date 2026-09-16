@@ -1,0 +1,39 @@
+
+\begin{frame}{Candidates, Voters, and What the Contest Produces}
+\hypertarget{src:story}{}
+\small
+An election is produced by two behaviors: candidates decide whether to run and how to campaign, and voters decide whether to turn out and how to mark the ballot. We isolate the contest's judicial dimension and ask how each side responds and what the two jointly produce.
+\vspace{-4pt}
+\begin{center}
+\scalebox{0.94}{
+\begin{tikzpicture}[
+  font=\scriptsize,
+  exp/.style={draw=myblue, thick, rounded corners, fill=myblue!8, align=center, inner sep=5pt, text width=8.6cm},
+  eng/.style={draw, rounded corners, align=center, inner sep=5pt, minimum height=1.75cm, text width=3.6cm},
+  res/.style={draw, rounded corners, align=center, inner sep=5pt, minimum height=1.4cm, text width=6.4cm},
+  flow/.style={-{Latex}, myblue, line width=1.4pt},
+]
+  \node[exp] (exp) at (0,2.25)
+    {\textbf{The contest's judicial dimension}\\[1pt]adversarial decisions $+$ the presence / noise of litigation \;(exposure measured by the instrument)};
+  \node[eng, fill=mygray!8] (cand) at (-2.9,0.4)
+    {\textcolor{myblue}{\textbf{Candidates}}\\[1pt]\ns{who runs \& how they campaign}\\[1pt]
+     \colorbox{mygray!30}{\textbf{\,null\,}}\\[1pt]
+     {field \& funding unmoved}};
+  \node[eng, fill=myred!6] (vot) at (2.9,0.4)
+    {\textcolor{myblue}{\textbf{Voters}}\\[1pt]\ns{turnout \& the ballot}\\[1pt]
+     \colorbox{myred!20}{\textcolor{myred}{\textbf{\,withdraw\,}}}\\[1pt]
+     {blanks \& nulls rise, valid falls}};
+  \node[res, fill=myred!6] (res) at (0,-1.55)
+    {\textcolor{myblue}{\textbf{The election result}} \;\ns{shape of the contest \& who is elected}\\[1pt]
+     \colorbox{myred!20}{\textcolor{myred}{\textbf{\,consolidates\,}}}\;\colorbox{mygray!30}{\textbf{\,who wins: null\,}}\\[1pt]
+     {top-two margin widens ($\MarginCoef$); winner's identity unchanged}};
+  \draw[flow] (exp) -- (cand);
+  \draw[flow] (exp) -- (vot);
+  \draw[flow] (cand) -- (res);
+  \draw[flow] (vot) -- (res);
+\end{tikzpicture}
+}
+\end{center}
+\vspace{-4pt}
+\footnotesize The candidate side is quiet while voters withdraw where an incumbent is defended. The consolidation is general across seat types and comes from the electorate re-allocating toward the leader rather than from candidates being removed. A narrower contest does not by itself name a face, so the barrier reading rests on the ballot, and the council race is null throughout.
+\end{frame}

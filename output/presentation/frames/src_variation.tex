@@ -1,0 +1,32 @@
+% ============================================================
+
+\begin{frame}{Same National Shift, Unequal Local Exposure}
+\hypertarget{src:variation}{}
+\small
+Estimating the effect of the adversarial arena on a race requires variation in litigation that local politics does not manufacture: municipalities that litigate more are not a random sample of the country.
+\smallskip
+
+National, subject-level litigation trends land unevenly across municipalities, according to each one's \emph{prior} caseload mix. Two municipalities meet the same national shift with different exposure:
+\vspace{2pt}
+\begin{center}
+\begin{tikzpicture}[
+  font=\footnotesize,
+  wave/.style={draw=myblue, thick, rounded corners, fill=myblue!8, align=center, inner sep=5pt},
+  muni/.style={draw=black!55, rounded corners, align=center, inner sep=4pt, minimum width=3.3cm},
+  hi/.style={-{Latex}, myblue, line width=2.6pt},
+  lo/.style={-{Latex}, myblue!45, line width=0.9pt},
+]
+  \node[wave] (nat) at (0,2.25) {\textbf{National shift} in litigation topic $k$\\ \scriptsize (e.g.\ \emph{fraude \`a cota}), measured leave-own-state-out};
+  \node[muni, fill=myblue!16] (a) at (-3.5,0) {\textbf{Muni A}\\ \scriptsize \emph{heavy} in $k$ in 2020};
+  \node[muni, fill=myblue!4]  (b) at (3.5,0)  {\textbf{Muni B}\\ \scriptsize \emph{light} in $k$ in 2020};
+  \draw[hi] (nat) -- (a) node[midway,above left=-2pt]{large push};
+  \draw[lo] (nat) -- (b) node[midway,above right=-2pt]{small push};
+  \node[below=3pt of a, myblue]   {\scriptsize \textbf{high} predicted exposure $Z_A$};
+  \node[below=3pt of b, black!55] {\scriptsize \textbf{low} predicted exposure $Z_B$};
+\end{tikzpicture}
+\end{center}
+\vspace{2pt}
+\centerline{\footnotesize The comparison is between municipalities pushed harder by \emph{identical} national trends.}
+\smallskip
+\footnotesize Two ingredients construct it: each municipality's 2020 caseload mix across litigation subjects, and the national shift in each subject measured leave-own-state-out. Both rest on a prior decision about which filings count as adversarial.
+\end{frame}

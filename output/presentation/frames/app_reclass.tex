@@ -1,0 +1,32 @@
+
+% ---------------------------------------------------------------------------
+% Confronts topic-reclassification of the SHIFTER (assunto codes changing between
+% 2020 and 2024). Honest, partly-uncomfortable frame: the instrument is 71%
+% propaganda national shift (negative). Family-level Z (immune to within-family
+% recode) keeps F=177, margin RF p=0.079; dropping propaganda entirely collapses
+% the first stage (F=2.0) -- so identification rests on the propaganda decline being
+% BEHAVIORAL (regime substitution: litigation -> takedowns), which is the thesis.
+% Numbers from reclassification_robustness{,_macros}.tex (13_...R).
+% ---------------------------------------------------------------------------
+\begin{frame}{Appendix --- Topic Reclassification and the Shifter}
+\hypertarget{app:reclass}{}
+\footnotesize
+\noindent The shifts are leave-own-state-out national growth rates of each \emph{assunto} (subject) code. A national recode between 2020 and 2024 would make a subject's growth spurious, and leave-own-state-out cannot absorb it, because such a recode hits every state at once. The exposure is concrete: \RecPropShare\% of the instrument's variation is the propaganda national shift, that shift is negative ($\RecPropShock$), and propaganda is the topic with documented recoding.
+\smallskip
+\begin{columns}[T]
+\begin{column}{0.55\linewidth}
+\centering
+\resizebox{\linewidth}{!}{\input{../tables/tex/reclassification_robustness.tex}}
+\end{column}
+\begin{column}{0.43\linewidth}
+{\scriptsize
+The unit of the shifter is the subject, not the procedural vehicle: it is built on the \emph{assunto} rather than the \emph{classe}, so the documented propaganda$\leftrightarrow$Representa\c{c}\~ao recode, a vehicle relabeling, does not move its units.\par
+\smallskip
+Within-family recoding is not the explanation either. Rebuilding the instrument at the topic-family level makes it immune to reshuffling among subjects inside a family: the first stage stays strong ($F=\RecFamF$) and the margin reduced form positive ($\RecFamRFcoef$), softening to $p=\RecFamRFp$.\par
+\smallskip
+The limit is worth stating plainly. Dropping propaganda's shift entirely collapses the first stage ($F=\RecNoPropF$): the instrument is the propaganda decline. Identification therefore rests on that decline being behavioral, and the 2020--2024 fall in propaganda litigation is the documented substitution of case-by-case suits by administrative and platform takedown orders. That change in the arena's mode of operation is the expanded role this paper studies.\par}
+\end{column}
+\end{columns}
+\smallskip
+\centerline{\hyperlink{app:tdef}{\beamerreturnbutton{Treatment definition}}\quad\hyperlink{src:firststage}{\beamerreturnbutton{First stage}}\quad\hyperlink{src:spine1}{\beamerreturnbutton{Back to the margin}}}
+\end{frame}

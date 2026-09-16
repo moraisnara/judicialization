@@ -1,0 +1,38 @@
+% ============================================================
+
+\begin{frame}{Robustness: Four Threats and Their Verdicts}
+\hypertarget{src:robustness}{}
+\footnotesize
+The design rests on a few concentrated shocks and an extensive-margin first stage, so credibility comes from a battery of targeted checks rather than from averaging many independent shifters.
+\smallskip
+\renewcommand{\arraystretch}{1.05}
+\begin{center}
+\scriptsize
+\begin{tabular}{@{}p{2.7cm} p{5.9cm} c @{\hskip 5pt}p{2.1cm}@{}}
+\toprule\toprule
+\textbf{Threat} & \textbf{Check} & \textbf{Verdict} & \textbf{Appendix} \\
+\midrule
+The identifying variation is not what we claim &
+Reduced form survives dropping every zero-litigation municipality and a presence dummy; count-native Poisson and NegBin confirm the weak intensive margin is a real null. &
+\tick &
+\hyperlink{app:extensive}{\beamergotobutton{extensive}}\, \hyperlink{app:reclass}{\beamergotobutton{reclass}} \\
+\midrule
+The treatment definition drives the result &
+Invariant across log1p, IHS, level, rate and binary definitions. Only weak-first-stage transforms lose significance, which is a weak-IV symptom rather than counter-evidence. &
+\tick &
+\hyperlink{app:tdef}{\beamergotobutton{treat.\ def.}} \\
+\midrule
+The inference overstates precision &
+Consolidation clears the weak-IV-robust AR bootstrap and the BHJ/AKM exposure-robust SE, whose CI still excludes zero at the outer bound. First differences provide a conservative bracket. &
+\tick &
+\hyperlink{app:exposure}{\beamergotobutton{weak-IV}}\, \hyperlink{app:fd}{\beamergotobutton{FD}} \\
+\midrule
+The result is multiple testing &
+Clears Holm and Benjamini--Hochberg at 5\% (Romano--Wolf at 10\%: $p=.059$) and loads onto a combined consolidation index, with no favorable family cut. Pre-trend placebos are clean throughout. &
+\tick &
+\hyperlink{app:multiplicity}{\beamergotobutton{mult.}}\, \hyperlink{app:pretrend}{\beamergotobutton{pre-trend}} \\
+\bottomrule\bottomrule
+\end{tabular}
+\end{center}
+\footnotesize The consolidation clears every threat; the withdrawal result remains tentative, clearing the exposure-robust SE but not the AR bootstrap. The nulls remain null under each check.
+\end{frame}

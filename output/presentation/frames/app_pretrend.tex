@@ -1,0 +1,13 @@
+
+\begin{frame}{Appendix --- Pre-Trend Placebo (consolidation ladder, numeric)}
+\hypertarget{app:pretrend}{}
+\small
+The numeric placebo behind the balance coefplot: the 2016$\to$2020 pre-period change in each consolidation outcome, regressed on the instrumented 2020$\to$2024 treatment. A future shock cannot cause a past change, so a clean design returns coefficients near zero. Conditioned on pre-determined (2010 Census) covariates only; state FE; state-clustered.
+\smallskip
+\begin{center}
+\scriptsize
+\resizebox{\linewidth}{!}{\input{../tables/tex/pretrend_falsification.tex}}
+\end{center}
+\smallskip
+\footnotesize Every rung is clean: margin ($\PtMarginCoef$, $p=\PtMarginP$), effective-N ($\PtEffNCoef$, $p=\PtEffNP$), Herfindahl ($\PtHHICoef$, $p=\PtHHIP$), top-two share ($\PtTopTwoCoef$, $p=\PtTopTwoP$). This differs from an earlier draft because that version conditioned the balance test on \texttt{margin\_2016}, the ladder's own 2016 baseline, which induced a regression-to-the-mean (Lord's paradox) artifact that read as a pre-trend. The baseline is inadmissible when the outcome is itself a 2016-based change, and dropping it clears every rung. \hfill\hyperlink{src:pretrend}{\beamerreturnbutton{Back to balance test}}
+\end{frame}

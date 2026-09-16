@@ -1,0 +1,15 @@
+
+
+\begin{frame}{Appendix --- How to Read the Coefficient $\tau$}
+\hypertarget{app:readtau}{}
+\small
+The headline number in every table is $\tau$, the 2SLS coefficient on the \emph{instrumented} change in litigation. Three things fix its meaning:
+\smallskip
+\begin{itemize}\itemsep3pt
+  \item The treatment is a log-change. $\Delta\log(1+\ell_m)$ is approximately the proportional growth in a municipality's adversarial caseload from 2020 to 2024. A one-unit rise multiplies litigation by $e$ ($\approx+170\%$), and a doubling of lawsuits is a rise of $\log 2 \approx 0.69$. So $\tau$ is the outcome change per unit of log-growth in litigation, and $0.69\,\tau$ is the change per doubling.
+  \item The outcome is a 2024 level net of its 2016 baseline. Conditioning on the 2016 baseline makes $\tau$ the effect on where a municipality ends up in 2024, holding its 2016 starting point fixed, rather than the effect on a change score. Shares, rates and margins lie in $[0,1]$, so $\tau=0.092$ means $+9.2$ percentage points, to be compared with the ``Mean of dep.\ var.'' row.
+  \item It is a LATE for onset compliers. 2SLS recovers the effect for municipalities whose litigation responds to the diffusing national shock, not an average over all \NMunis. The first stage is identified off the extensive margin, meaning whether a contest enters the judicial arena at all (see \hyperlink{app:extensive}{extensive-margin appendix}), so the compliers are municipalities crossing into adversarial contestation rather than those scaling up an existing caseload.
+\end{itemize}
+\smallskip
+\footnotesize \emph{Worked example, top-two margin ($\tau=\MarginCoef$).} A municipality whose adversarial litigation doubled relative to another ends 2024 with a margin $0.69\times\MarginCoef\approx\MarginDoublePP$ percentage points wider, starting from the same 2016 margin, against a 2024 mean of \MarginMean. Equivalently, a one-unit rise in predicted exposure (the Bartik index) raises litigation growth by $\FSCoef$ of a log-unit (first stage), i.e.\ a $\approx\MarginRFperUnitPP$pp wider margin in reduced form.\hfill\hyperlink{src:spec}{\beamerreturnbutton{Back to spec}}
+\end{frame}

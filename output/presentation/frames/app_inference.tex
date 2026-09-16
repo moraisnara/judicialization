@@ -1,0 +1,15 @@
+
+
+\begin{frame}{Appendix --- Inference: Few Clusters and the Exposure-Robust Bound}
+\hypertarget{app:inference}{}
+\footnotesize
+The point estimate is invariant to how standard errors are computed. What moves is precision, and with it the weak-IV verdict. We cluster at the state level, where the leave-own-state shift is constant.
+\smallskip
+\begin{itemize}\itemsep3pt
+  \item \textbf{Why state.} With a shift-share instrument, residuals correlate across units sharing shocks \citep{adao2019}; here the shifter is identical within a state, so state clustering is the principled, conservative default.
+  \item \textbf{Few clusters $\Rightarrow$ weak-IV-robust AR.} State clustering leaves only \textbf{\NClusters{} clusters}, where asymptotic cluster-robust SEs can under-cover. Headline inference is therefore carried by an Anderson--Rubin \textbf{wild-cluster restricted bootstrap} ($B=9999$, Rademacher weights over \ARNClusters{} states). It confirms the consolidation (margin $p=\ARMarginP$, runner-up share $p=\ARRunnerUpP$, both excluding zero), leaves the mayoral blank rate tentative (the AR set straddles zero, $p=\ARBlankP$), and leaves the null outcomes (turnout, winner-majority, female share) null.
+  \item \textbf{Exposure-robust outer bound.} The BHJ/AKM standard error, built for the few-shock shift-share structure and re-clustered at the subject (shock) level, inflates the headline margin SE by only $\ERMarginRatio\times$, so the consolidation still clears. The SE barely moves because the estimate does not hang on one dominant shock. \hfill\hyperlink{app:exposure}{\beamergotobutton{weak-IV \& exposure-robust appendix}}
+\end{itemize}
+
+\centerline{\hyperlink{src:identbrief}{\beamerreturnbutton{Back}}}
+\end{frame}
