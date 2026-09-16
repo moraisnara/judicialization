@@ -97,6 +97,10 @@ ANCOVA_LEVEL = {
     'delta_margin_top1_top2_2024_2020':              'margin_top1_top2_2024',
     'delta_winner_vote_share_2024_2020':             'winner_vote_share_2024',
     'delta_runnerup_vote_share_2024_2020':           'runnerup_vote_share_2024',
+    'delta_female_winner_vote_share_2024_2020':      'female_winner_vote_share_2024',
+    'delta_male_winner_vote_share_2024_2020':        'male_winner_vote_share_2024',
+    'delta_female_runnerup_vote_share_2024_2020':    'female_runnerup_vote_share_2024',
+    'delta_male_runnerup_vote_share_2024_2020':      'male_runnerup_vote_share_2024',
     'delta_winner_majority_2024_2020':               'winner_majority_2024',
     'delta_log1p_n_candidates_with_votes_2024_2020': 'log1p_n_candidates_with_votes_2024',
     'delta_female_vote_share_2024_2020':             'female_vote_share_2024',
@@ -202,6 +206,14 @@ r_pt_top2   = get_iv('baseline', 'pretrend_top2_vote_share_2020_2016')
 # IV — open seat heterogeneity (blank rate)
 r_blank_open = get_iv('open_seat',     'delta_blank_rate_2024_2020')
 r_blank_cont = get_iv('contested_seat','delta_blank_rate_2024_2020')
+
+# IV — seat split of the consolidation and the ballot (frames/src_seathet.tex)
+r_margin_open = get_iv('open_seat',      'delta_margin_top1_top2_2024_2020')
+r_margin_cont = get_iv('contested_seat', 'delta_margin_top1_top2_2024_2020')
+r_wmaj_open   = get_iv('open_seat',      'delta_winner_majority_2024_2020')
+r_wmaj_cont   = get_iv('contested_seat', 'delta_winner_majority_2024_2020')
+r_valid_open  = get_iv('open_seat',      'delta_valid_vote_rate_2024_2020')
+r_valid_cont  = get_iv('contested_seat', 'delta_valid_vote_rate_2024_2020')
 
 # IV — composition: female
 r_female_vs   = get_iv('baseline', 'delta_female_vote_share_2024_2020')
@@ -376,6 +388,17 @@ M['ContBlankSE']   = se_par(r_blank_cont['se'])
 M['ContBlankP']    = pval(r_blank_cont['p'])
 M['ContBlankTF']   = tick_cross(r_blank_cont['reject_tF_5pct'])
 
+# Seat split of the margin, the majority, and the valid vote. The frame reads
+# the consolidation as general (margin in both seat types) and the mechanism
+# as seat-specific (majority in open seats, blank/valid in contested ones).
+for _tag, _r in [('OpenMargin', r_margin_open), ('ContMargin', r_margin_cont),
+                 ('OpenWinMaj', r_wmaj_open),   ('ContWinMaj', r_wmaj_cont),
+                 ('OpenValid',  r_valid_open),  ('ContValid',  r_valid_cont)]:
+    M[f'{_tag}Coef'] = coef(_r['coef'])
+    M[f'{_tag}SE']   = se_par(_r['se'])
+    M[f'{_tag}P']    = pval(_r['p'])
+    M[f'{_tag}TF']   = tick_cross(_r['reject_tF_5pct'])
+
 # --- Legislative ---
 M['LegCandCoef']   = coef(r_leg_cand['coef'])
 M['LegCandSE']     = se_par(r_leg_cand['se'])
@@ -489,8 +512,8 @@ for tag, r in (('CandExec', r_cand), ('LegCand', r_leg_cand)):
 # female-minus-male difference estimated as its own outcome -- those p-values, not
 # the contrast between a starred male component and an unstarred female one, are
 # what licenses any claim that the incidence is gendered. All are share-scale, so
-# the per-SD macros are in percentage points. Built for the advisor deck's layer-3
-# gender frame; see GENDER_CONSOL_OUTCOMES in 03_estimation/02_iv_main.R.
+# the per-SD macros are in percentage points. Feeds the deck's layer-3 gender
+# frame (frames/src_gender.tex); see GENDER_CONSOL_OUTCOMES in 03_estimation/02_iv_main.R.
 #
 # The four slot components carry an explicit *Share suffix. Without it, \FemWinCoef
 # (the female winner's VOTE SHARE) sits one character from the deck's long-standing
@@ -534,6 +557,10 @@ M['ValidVerMean']  = m3(repmean(panel_ex,  'delta_valid_vote_rate_vereador_2024_
 M['CandExecMean']  = m3(repmean(panel_ex,  'delta_log1p_n_candidates_with_votes_2024_2020'))
 M['MarginMean']    = m3(repmean(panel_ex,  'delta_margin_top1_top2_2024_2020'))
 M['RunnerUpMean']  = m3(repmean(panel_ex,  'delta_runnerup_vote_share_2024_2020'))
+M['WinShareMean']  = m3(repmean(panel_ex,  'delta_winner_vote_share_2024_2020'))
+# Gender components of the winner/runner-up shares (app_gender: they sum to the totals).
+for _tag in ('FemWinShare', 'MaleWinShare', 'FemRUShare', 'MaleRUShare'):
+    M[f'{_tag}Mean'] = m3(repmean(panel_ex, _GENDER_ROWS[_tag]))
 M['WinMajMean']    = m3(repmean(panel_ex,  'delta_winner_majority_2024_2020'))
 M['FemaleVSMean']  = m3(repmean(panel_ex,  'delta_female_vote_share_2024_2020'))
 M['FemaleWinMean'] = m3(repmean(panel_ex,  'delta_winner_is_female_2024_2020'))
@@ -720,6 +747,158 @@ try:
     M['MultBlankHolm']  = pval(mm.loc['delta_blank_rate_2024_2020', 'p_holm'])
     M['MultBlankBH']    = pval(mm.loc['delta_blank_rate_2024_2020', 'p_bh'])
 except (FileNotFoundError, IndexError, KeyError):
+    pass
+
+# ── Multiplicity on the reduced form: Romano-Wolf, Holm, BH ───────────────────
+# code/03_estimation/11_summary_indices.R tests the 18 barrier/representation
+# REDUCED FORMS (y ~ Z): Holm and BH on normal-approximation p-values, and a joint
+# wild-cluster Romano-Wolf stepdown. This is a different basis from the 2SLS
+# cluster-t family above (MultHolmSig/MultBHSig), where nothing survives. Frames
+# must name the basis whenever they report a correction.
+try:
+    rwd = pd.read_csv(os.path.join(REG, 'romano_wolf_stepdown.csv')).set_index('outcome')
+    M['RWFamilyN'] = big(len(rwd))
+    M['RWSig']     = big(int((rwd['p_rw'] < .05).sum()))
+    M['RWSigTen']  = big(int((rwd['p_rw'] < .10).sum()))
+    M['RFHolmSig'] = big(int((rwd['p_holm'] < .05).sum()))
+    M['RFBHSig']   = big(int((rwd['p_bh'] < .05).sum()))
+    for tag, oc in (('Margin',   'delta_margin_top1_top2_2024_2020'),
+                    ('RunnerUp', 'delta_runnerup_vote_share_2024_2020'),
+                    ('Winner',   'delta_winner_vote_share_2024_2020'),
+                    ('Blank',    'delta_blank_rate_2024_2020')):
+        M[f'RW{tag}P']     = pval(rwd.loc[oc, 'p_rw'])
+        M[f'RFHolm{tag}P'] = pval(rwd.loc[oc, 'p_holm'])
+        M[f'RFBH{tag}P']   = pval(rwd.loc[oc, 'p_bh'])
+except (FileNotFoundError, KeyError):
+    pass
+
+# 2SLS-basis adjusted p for the runner-up, next to MultMarginHolm/BH.
+try:
+    M['MultRunnerUpHolm'] = pval(mm.loc['delta_runnerup_vote_share_2024_2020', 'p_holm'])
+    M['MultRunnerUpBH']   = pval(mm.loc['delta_runnerup_vote_share_2024_2020', 'p_bh'])
+except (NameError, KeyError):
+    pass
+
+# ── Summary indices (KLK standardized average; ICW as the Anderson variant) ──
+# One test per theory-declared family (11_summary_indices.R). The "disengagement"
+# family in the CSV is the ballot family; the deck calls it withdrawal.
+try:
+    si = pd.read_csv(os.path.join(REG, 'summary_indices_fixest.csv'))
+    for tag, fam in (('Closeness', 'closeness'), ('Concentration', 'concentration'),
+                     ('Withdrawal', 'disengagement'), ('Repr', 'representation'),
+                     ('Council', 'council_placebo'), ('Overall', 'barrier_overall')):
+        for agg, suf in (('KLK', ''), ('ICW', 'ICW')):
+            r = si.loc[(si['family'] == fam) & (si['aggregator'] == agg)].iloc[0]
+            M[f'Idx{tag}{suf}Coef'] = coef(r['coef_sd'])
+            M[f'Idx{tag}{suf}P']    = pval(r['p'])
+        M[f'Idx{tag}K'] = big(int(r['k_outcomes']))
+    # Outcomes of the overall index that are not ballot outcomes.
+    _k = si.loc[si['aggregator'] == 'KLK'].set_index('family')['k_outcomes']
+    M['IdxNonBallotK'] = big(int(_k['closeness'] + _k['concentration']))
+except (FileNotFoundError, IndexError, KeyError):
+    pass
+
+# ── Council (legislative) cells that are not null ─────────────────────────────
+# Of the 16 baseline council outcomes, the elected female share and the pool's
+# mean age clear 5%; no multiplicity correction is computed for the council.
+for tag, oc in (('CouncilElFemale',   'delta_elected_female_share_2024_2020'),
+                ('CouncilElHigherEd', 'delta_elected_higher_ed_share_2024_2020'),
+                ('CouncilNewCand',    'delta_new_candidate_share_2024_2020'),
+                ('CouncilReelect',    'delta_incumbent_reelected_share_2024_2020')):
+    _r = get_leg('baseline', oc)
+    M[f'{tag}Coef'] = coef(_r['coef'])
+    M[f'{tag}SE']   = se_par(_r['se'])
+    M[f'{tag}P']    = pval(_r['p'])
+    M[f'{tag}TF']   = tick_cross(_r['reject_tF_5pct'])
+_legb = leg.loc[leg['spec'] == 'baseline']
+M['CouncilNOutcomes'] = big(len(_legb))
+M['CouncilNSig']      = big(int((_legb['p'] < .05).sum()))
+
+# ── Pre-trend balance: reduced-form p on every 2016->2020 change ──────────────
+# 05_pretrend_balance.R regresses each pre-period change on Z (pre-determined
+# controls, state FE). These are the p-values behind pretrend_coefplot.pdf.
+try:
+    ptb = pd.read_csv(os.path.join(REG, 'pretrend_balance.csv')).set_index('outcome')
+    for tag, oc in (('Margin',   'pretrend_margin_top1_top2_2020_2016'),
+                    ('EffN',     'pretrend_effective_n_candidates_vote_2020_2016'),
+                    ('HHI',      'pretrend_vote_hhi_candidate_2020_2016'),
+                    ('TopTwo',   'pretrend_top2_vote_share_2020_2016'),
+                    ('Blank',    'pretrend_blank_rate_2020_2016'),
+                    ('Null',     'pretrend_null_rate_2020_2016'),
+                    ('Valid',    'pretrend_valid_vote_rate_2020_2016'),
+                    ('BlankVer', 'pretrend_blank_rate_vereador_2020_2016'),
+                    ('NullVer',  'pretrend_null_rate_vereador_2020_2016'),
+                    ('ValidVer', 'pretrend_valid_vote_rate_vereador_2020_2016'),
+                    ('Turnout',  'pretrend_turnout_rate_2020_2016')):
+        M[f'PtRF{tag}P'] = pval(ptb.loc[oc, 'rf_p'])
+    # Counts cover the outcomes pretrend_coefplot.pdf plots (the composition
+    # placebos in group 'other' are in the CSV but not on the figure).
+    _ptp = ptb.loc[ptb['group'] != 'other']
+    M['PtNTests'] = big(len(_ptp))
+    M['PtNFail']  = big(int((_ptp['rf_p'] < .05).sum()))
+except (FileNotFoundError, KeyError):
+    pass
+M['PtHHITF'] = tick_cross(r_pt_hhi['reject_tF_5pct'])
+
+# Seat split of the margin pre-trend: the open-seat margin was already widening.
+r_pt_margin_open = get_iv('open_seat',      'pretrend_margin_top1_top2_2020_2016')
+r_pt_margin_cont = get_iv('contested_seat', 'pretrend_margin_top1_top2_2020_2016')
+M['OpenPtMarginCoef'] = coef(r_pt_margin_open['coef'])
+M['OpenPtMarginP']    = pval(r_pt_margin_open['p'])
+M['OpenPtMarginTF']   = tick_cross(r_pt_margin_open['reject_tF_5pct'])
+M['ContPtMarginCoef'] = coef(r_pt_margin_cont['coef'])
+M['ContPtMarginP']    = pval(r_pt_margin_cont['p'])
+
+# ── GPS share-balance tests (04_iv_diagnostics.py) ────────────────────────────
+# For each tested topic share: joint F of the controls, and whether the share
+# predicts the 2016->2020 margin change. Both tests use homoskedastic, unclustered
+# SEs. The DRAP row is a mandatory-filing benchmark outside the instrument, so the
+# counts cover instrument topics only.
+try:
+    gps = pd.read_csv(os.path.join(DESC, 'gps_balance_tests.csv'))
+    gps = gps.loc[~gps['is_drap'].astype(bool)]
+    M['GpsNTopics']      = big(len(gps))
+    M['GpsCovFail']      = big(int((gps['p_cov_balance'] < .05).sum()))
+    M['GpsMarginPtFail'] = big(int((gps['p_margin'] < .05).sum()))
+except (FileNotFoundError, KeyError):
+    pass
+
+# ── First differences and treatment definitions ──────────────────────────────
+r_fd_margin = get_iv('fd', 'delta_margin_top1_top2_2024_2020')
+# Both pre-period lags (2016 and 2020 levels): app_ptrobust.
+r_ptrob_margin = get_iv('ancova_2020lvl', 'delta_margin_top1_top2_2024_2020')
+M['PtRobMarginCoef'] = coef(r_ptrob_margin['coef'])
+M['PtRobMarginP']    = pval(r_ptrob_margin['p'])
+M['FDMarginCoef'] = coef(r_fd_margin['coef'])
+M['FDMarginP']    = pval(r_fd_margin['p'])
+M['MarginCoefPP'] = f"{abs(r_margin['coef']) * 100:.1f}"
+
+try:
+    tdef = pd.read_csv(os.path.join(REG, 'treatment_definition.csv'))
+    tdm = tdef.loc[tdef['outcome'] == 'margin'].set_index('tdef')
+    for tag, td in (('Levels', 'levels'), ('Rate', 'rate'), ('Binary', 'binary')):
+        M[f'Tdef{tag}P'] = pval(tdm.loc[td, 'iv_p'])
+        M[f'Tdef{tag}F'] = f1(tdm.loc[td, 'fs_F'])
+except (FileNotFoundError, KeyError):
+    pass
+
+# ── Rotemberg: weakest own F and propaganda count among the top five ─────────
+try:
+    M['RotFMin']         = f1(top5['f_stat_k'].min())
+    M['RotFMax']         = f1(top5['f_stat_k'].max())
+    M['RotPropTopFive']  = big(int(top5['topic_name'].astype(str).str.startswith('Propaganda').sum()))
+except NameError:
+    pass
+
+# ── Campaign-finance mechanism (10_mechanism_finance.R) ──────────────────────
+try:
+    fin = pd.read_csv(os.path.join(REG, 'mechanism_finance_fixest.csv'))
+    M['FinFFull'] = f1(fin.loc[fin['seat'] == 'full', 'first_stage_F'].min())
+    M['FinFOpen'] = f1(fin.loc[fin['seat'] == 'open', 'first_stage_F'].min())
+    M['FinFCont'] = f1(fin.loc[fin['seat'] == 'contested', 'first_stage_F'].min())
+    M['FinBestP']     = pval(fin['p'].min())
+    M['FinBestContP'] = pval(fin.loc[fin['seat'] == 'contested', 'p'].min())
+except (FileNotFoundError, KeyError):
     pass
 
 # ── Write abstract_macros.tex ─────────────────────────────────────────────────
