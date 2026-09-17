@@ -1,0 +1,285 @@
+% ============================================================
+%  theory_model.tex -- companion theory model
+%  Spec: docs/superpowers/specs/2026-09-17-toy-model-design.md
+%
+%  Build from docs/model/:
+%    pdflatex theory_model
+%    bibtex   theory_model
+%    pdflatex theory_model
+%    pdflatex theory_model
+% ============================================================
+\documentclass[11pt]{article}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[authoryear,round]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{proposition}{Proposition}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\title{What a Filing Reveals:\\ A Companion Model for the Electoral Costs of
+Judicialization}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Adversarial electoral litigation widens the top-two margin in Brazilian
+mayoral races. This note asks what mechanism can produce that, and finds that
+the natural candidate cannot. In the transfer class of campaign-attack models,
+an attack moves support from its target to its sender; under the attack
+direction those models derive and document, the map is a contraction on the
+top-two margin, so it cannot generate the result. The alternative developed
+here turns on what a filing reveals. A filing is a noisy signal about a
+candidate's type and a precise signal about a candidate's rank, because the
+filer is optimizing and targets the leading opponent. Litigation therefore
+informs voters about position more than about quality. Coordination on the
+revealed leader widens the margin; the collapse of pivot probability sends
+some of the runner-up's support off the valid ballot, which under compulsory
+voting means a blank or null vote. Whether that support joins the leader or
+leaves depends on how settled the leader's reputation is, which is what
+separates open from contested seats.
+\end{abstract}
+
+\section{Environment}
+\label{sec:env}
+
+One mayoral race. Candidates $j = 1,\dots,J$ are indexed by pre-shock support
+$s^\circ_1 \ge s^\circ_2 \ge \dots \ge s^\circ_J$, and there is a continuum of
+voters of mass one. Voter $i$'s payoff from candidate $j$ is
+\[
+  u_{ij} \;=\; \hat\theta_j \;-\; \tfrac{\rho}{2}\,\hat V_i(\theta_j)
+          \;+\; \varepsilon_{ij},
+\]
+where $\theta_j$ is a common-value valence nobody observes and
+$\varepsilon_{ij}$ is a fixed idiosyncratic taste the voter knows. Beliefs
+about valence start at $\theta_j \sim N(m_j, 1/h_j)$: $m_j$ is the candidate's
+reputation and $h_j$ measures how settled the record is. An incumbent who has
+governed for four years has a high $h$; a first-time candidate has a low one.
+Let $\bar b$ denote the payoff from a blank or null vote, which is what
+refusing to endorse anyone is worth once the ballot carries no instrumental
+value.
+
+Treatment is $\lambda$, the intensity of adversarial filings in the race, and
+it is the object the shift-share instrument shifts. Two institutional facts
+fix the timing and the margin of adjustment. Candidate registration closes on
+15 August while adversarial filings run through October, so the candidate set
+is predetermined with respect to $\lambda$. And voting is compulsory
+(CF/88 art.~14 \S1), so a voter who wants out of the contest adjusts the mark
+rather than the attendance: the exit option is a blank or null vote.
+
+\section{The transfer channel cannot produce the result}
+\label{sec:foil}
+
+\subsection{The map}
+
+\citet{nakaguma2025} model a campaign attack as a transfer. An attack from $k$
+on $j$ moves a fraction $\phi$ of $j$'s support away from $j$; in their
+Appendix G.2 demobilization extension a fraction $\alpha$ of that mass leaves
+for the outside option instead of reaching $k$, and the attacker loses a
+fraction $\gamma$ of its own support to backlash.
+
+Their equilibrium has every candidate target the highest-ranked opponent, so
+in a three-candidate race the profile is $1 \to 2$, $2 \to 1$ and $3 \to 1$:
+mutual between the top two, with the third attacking the leader. Their data
+agrees. Measuring attacks as electoral lawsuits, the observed frequencies in
+three-candidate races are $2 \to 1$ at 3.0pp, $1 \to 2$ at 1.9pp and
+$3 \to 1$ at 0.8pp. The second-place candidate is the most aggressive and the
+front-runner is the most attacked.
+
+\subsection{The contraction}
+
+\begin{proposition}[Transfer cannot consolidate]
+\label{prop:foil}
+Under mutual $1 \leftrightarrow 2$ attacks, post-attack support is
+\[
+  s_1 = s^\circ_1(1 - \phi - \gamma) + \phi(1-\alpha)\,s^\circ_2,
+  \qquad
+  s_2 = s^\circ_2(1 - \phi - \gamma) + \phi(1-\alpha)\,s^\circ_1,
+\]
+so the top-two margin satisfies
+\[
+  s_1 - s_2 \;=\; (s^\circ_1 - s^\circ_2)\,\kappa,
+  \qquad
+  \kappa \;\equiv\; 1 - \gamma - \phi(2-\alpha).
+\]
+For every $\phi \in (0,1)$, $\alpha \in [0,1]$ and $\gamma \in [0,1)$ we have
+$\kappa < 1$. Adding $3 \to 1$ subtracts a further $\phi\,s^\circ_1$ from the
+margin. Hence the transfer map cannot widen the top-two margin while
+preserving the identity of the leader.
+\end{proposition}
+
+\begin{proof}
+Subtracting,
+\[
+  s_1 - s_2
+  = (s^\circ_1 - s^\circ_2)(1 - \phi - \gamma)
+    - \phi(1-\alpha)(s^\circ_1 - s^\circ_2)
+  = (s^\circ_1 - s^\circ_2)\bigl[1 - \gamma - \phi(2-\alpha)\bigr].
+\]
+Since $\alpha \le 1$ we have $2 - \alpha \ge 1$, so $\phi(2-\alpha) \ge \phi >
+0$, and with $\gamma \ge 0$ this gives $\kappa < 1$. If $\kappa \in (0,1)$ the
+margin strictly narrows. If $\kappa \le 0$ the sign of $s_1 - s_2$ is
+non-positive, so candidate 2 has caught or passed candidate 1 and the leader
+is no longer the pre-attack leader. When $3 \to 1$ is added, candidate 1 loses
+a further $\phi\,s^\circ_1$ and candidate 2 loses nothing, so
+$s_1 - s_2 = (s^\circ_1 - s^\circ_2)\kappa - \phi\,s^\circ_1$, which is
+smaller still.
+\end{proof}
+
+\begin{remark}
+Widening the margin under the transfer map requires a one-sided downward
+attack, $1 \to 2$ with no reciprocation. That is excluded by the equilibrium,
+in which candidate 2's best target is candidate 1, and it is not what the data
+shows. The per-pair attack frequencies are also 1--3pp, an order of magnitude
+too small to move municipality-level vote shares by three points.
+\end{remark}
+
+\begin{remark}[Object of comparison]
+\citet{nakaguma2025} work with a win probability through a logit contest
+function, whereas the estimates here are vote-share margins. The two are
+monotone in $s_1 - s_2$, so Proposition~\ref{prop:foil} transfers, but the
+mapping is an assumption and not an identity.
+\end{remark}
+
+\begin{remark}[What Proposition~\ref{prop:foil} does not do]
+\label{rem:orderstat}
+The top-two margin is an order statistic, so any mean-preserving increase in
+the dispersion of vote shares widens it mechanically.
+Proposition~\ref{prop:foil} rules out the transfer channel under the
+documented attack direction; it does not rule out a generic dispersion shock.
+What rules that out is the ballot response and the contrast between seat
+types in Section~\ref{sec:seat}: a dispersion shock predicts neither, and
+predicts no directional flow from the runner-up to the leader.
+\end{remark}
+
+\section{What a filing emits}
+\label{sec:signals}
+
+A filing carries two signals, and their precisions differ by an order of
+magnitude.
+
+\paragraph{The type signal.}
+A filing is an allegation about $\theta_j$. It is informative with probability
+$\pi$ and pure noise with probability $1 - \pi$, and the voter cannot tell
+which. Writing $\tau_I$ for the precision of an informative filing, the
+effective precision is $\bar\tau = \pi\tau_I$, and the posterior mean is
+\[
+  \hat\theta_j \;=\; \frac{h_j m_j + \bar\tau s_j}{h_j + \bar\tau}.
+\]
+Genuine information about a candidate and a weapon that happens to persuade
+enter through the same $\bar\tau$. They are therefore not separable for the
+voter, and not separable for the econometrician either. The
+non-separability that the empirical design has to live with is a property of
+the environment, not a shortcoming of the instrument
+\citep{feddersen1996}.
+
+\paragraph{The status signal.}
+The filer is optimizing and targets the highest-ranked opponent, which is the
+premise Proposition~\ref{prop:foil} takes from \citet{nakaguma2025}. So the
+identity of the target is informative about who is ahead, and its precision is
+high, because the filer knows the race. A court case also draws local
+attention, and revealing which candidates are first and second is known to
+move votes \citep{anagol2016}.
+
+Litigation is thus precise about position and imprecise about quality.
+
+\section{Consolidation}
+\label{sec:consolidation}
+
+\begin{proposition}[Consolidation]
+\label{prop:consolidation}
+As $\lambda$ rises, rank moves toward common knowledge while valence beliefs
+barely update. In a coordination equilibrium over the two leading candidates
+\citep{myerson1993,fey1997,cox1997}, support flows from the runner-up to the
+leader. The identity of the leader is unchanged and the size of the field is
+unchanged.
+\end{proposition}
+
+The candidate-supply null is structural rather than incidental: the status
+signal arrives after the registration deadline, so it cannot act on the
+candidate set.
+
+\begin{proposition}[Concentration indices are redundant]
+\label{prop:concentration}
+If the shift is a one-parameter reallocation between the top two, then every
+summary concentration index -- the effective number of candidates, the
+Herfindahl index, the combined top-two share -- is a monotone function of that
+same parameter, and none of them carries a restriction independent of the
+margin.
+\end{proposition}
+
+This is why concentration cannot identify which mechanism is at work. The
+point is not that the concentration estimates are imprecise; it is that even a
+precise one would be the margin restated. Pushing the estimated top-two
+reallocation through each municipality's own 2024 share vector implies
+$\Delta\mathrm{HHI} = +0.018$ and $\Delta\mathrm{ENP} = -0.053$, and the
+separately estimated index regressions give $+0.023$ (0.013) and $-0.044$
+(0.039). Both implied values sit inside the estimated intervals, so the index
+regressions add no restriction to the margin result
+(\texttt{docs/model/check\_proposition2.py}).
+
+\section{Exit and the seat split}
+\label{sec:seat}
+
+\begin{proposition}[Exit]
+\label{prop:exit}
+A supporter of the runner-up who learns the race is not close faces a
+collapsed pivot probability, so the choice becomes expressive: mark the leader
+if $\hat\theta_1 + \varepsilon_{i1} \ge \bar b$, and otherwise mark blank.
+Under compulsory voting the exit option is a blank or null vote rather than
+abstention, so turnout is unmoved \citep{ghirardato2006}.
+\end{proposition}
+
+\begin{proposition}[The seat split]
+\label{prop:seat}
+The runner-up loses a similar mass whichever kind of seat is contested. What
+differs is where that mass goes: to the leader where the revealed leader is a
+fresh candidate, and off the valid ballot where the revealed leader is an
+incumbent.
+\end{proposition}
+
+Two primitives differ across seat types, and both push the same way.
+
+First, the prior precision $h_1$. In a contested seat the leader is the
+incumbent, $h_1$ is high, $\hat\theta_1 \approx m_1$, and the type signal moves
+nothing. In an open seat the leader is a fresh candidate with a diffuse
+reputation and a genuinely unresolved rank, so the status signal has more to
+resolve and coordination is stronger.
+
+Second, selection on $\varepsilon_{i1}$. Supporting the challenger against a
+sitting mayor is itself evidence of a settled negative view of that mayor, so
+the distribution of $\varepsilon_{i1}$ among the runner-up's supporters is
+first-order dominated in contested seats. A larger mass sits below $\bar b$
+and exits. An open-seat leader has not been in office long enough to have
+accumulated committed opponents.
+
+\section{What the model does not do}
+\label{sec:scope}
+
+The model produces signs and orderings. It is not calibrated and not
+structurally estimated. It does not separate a genuine allegation from a
+persuasive weapon, and Section~\ref{sec:signals} is the reason that is a
+property of the environment rather than a gap to be closed. It does not
+endogenize the filer's decision: the attack direction is taken from
+\citet{nakaguma2025} as a maintained assumption, because endogenizing it would
+require exactly the selection the instrument exists to sidestep. It says
+nothing about judges, and nothing about welfare. Runoff municipalities, where
+a second round changes the coordination problem, are outside it.
+
+Two conditions bound the mechanism. Coordination needs a small number of
+focal contenders, so a genuinely three-way race weakens it. And the reasoning
+in Section~\ref{sec:consolidation} applies to a single-winner plurality
+contest; an open-list proportional council race offers no focal rank for the
+status signal to reveal, which is the model's clearest out-of-sample
+implication.
+
+\bibliographystyle{apalike}
+\bibliography{../../output/presentation/biblio}
+
+\end{document}
