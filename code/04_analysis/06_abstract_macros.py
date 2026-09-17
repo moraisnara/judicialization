@@ -97,6 +97,7 @@ ANCOVA_LEVEL = {
     'delta_margin_top1_top2_2024_2020':              'margin_top1_top2_2024',
     'delta_winner_vote_share_2024_2020':             'winner_vote_share_2024',
     'delta_runnerup_vote_share_2024_2020':           'runnerup_vote_share_2024',
+    'delta_others_vote_share_2024_2020':             'others_vote_share_2024',
     'delta_female_winner_vote_share_2024_2020':      'female_winner_vote_share_2024',
     'delta_male_winner_vote_share_2024_2020':        'male_winner_vote_share_2024',
     'delta_female_runnerup_vote_share_2024_2020':    'female_runnerup_vote_share_2024',
@@ -214,6 +215,19 @@ r_wmaj_open   = get_iv('open_seat',      'delta_winner_majority_2024_2020')
 r_wmaj_cont   = get_iv('contested_seat', 'delta_winner_majority_2024_2020')
 r_valid_open  = get_iv('open_seat',      'delta_valid_vote_rate_2024_2020')
 r_valid_cont  = get_iv('contested_seat', 'delta_valid_vote_rate_2024_2020')
+
+# Seat split of the vote-share partition and the rest of the ballot. Needed to
+# put the winner, the runner-up and the ballot on one denominator.
+r_win_open  = get_iv('open_seat',      'delta_winner_vote_share_2024_2020')
+r_win_cont  = get_iv('contested_seat', 'delta_winner_vote_share_2024_2020')
+r_ru_open   = get_iv('open_seat',      'delta_runnerup_vote_share_2024_2020')
+r_ru_cont   = get_iv('contested_seat', 'delta_runnerup_vote_share_2024_2020')
+r_oth_open  = get_iv('open_seat',      'delta_others_vote_share_2024_2020')
+r_oth_cont  = get_iv('contested_seat', 'delta_others_vote_share_2024_2020')
+r_null_open = get_iv('open_seat',      'delta_null_rate_2024_2020')
+r_null_cont = get_iv('contested_seat', 'delta_null_rate_2024_2020')
+r_turn_open = get_iv('open_seat',      'delta_turnout_rate_2024_2020')
+r_turn_cont = get_iv('contested_seat', 'delta_turnout_rate_2024_2020')
 
 # IV — composition: female
 r_female_vs   = get_iv('baseline', 'delta_female_vote_share_2024_2020')
@@ -388,6 +402,9 @@ M['ContBlankSE']   = se_par(r_blank_cont['se'])
 M['ContBlankP']    = pval(r_blank_cont['p'])
 M['ContBlankTF']   = tick_cross(r_blank_cont['reject_tF_5pct'])
 
+open_mask = panel_ex['open_seat_2024'] == 1
+cont_mask = panel_ex['open_seat_2024'] == 0
+
 # Seat split of the margin, the majority, and the valid vote. The frame reads
 # the consolidation as general (margin in both seat types) and the mechanism
 # as seat-specific (majority in open seats, blank/valid in contested ones).
@@ -398,6 +415,58 @@ for _tag, _r in [('OpenMargin', r_margin_open), ('ContMargin', r_margin_cont),
     M[f'{_tag}SE']   = se_par(_r['se'])
     M[f'{_tag}P']    = pval(_r['p'])
     M[f'{_tag}TF']   = tick_cross(_r['reject_tF_5pct'])
+
+# --- Ballot decomposition: one denominator for the whole ballot ---------------
+# The winner, runner-up and others shares are shares of VALID votes; the blank,
+# null, valid and turnout rates are shares of REGISTERED voters. Mixing the two
+# hides the seat contrast, because the top two move by similar amounts in valid
+# shares and what differs is the size of the valid pie.
+#
+# With w the winner's share of valid votes and v the valid rate, the winner's
+# share of registered voters is w*v, so a one-unit treatment increase moves it
+# by (w+dw)(v+dv) - w*v, evaluated at the subsample 2024 means. The three valid
+# shares partition the valid vote, so dw+dr+do should be zero; it is not
+# exactly, because each outcome is estimated on its own non-missing sample, and
+# that discrepancy is reported as Resid rather than absorbed into a column.
+def _dpp(x):
+    """A change in shares of registered voters, in signed percentage points."""
+    return f'{x * 100:+.1f}'
+
+
+for _seat, _mask, _rs in [
+        ('Open', open_mask, dict(win=r_win_open, ru=r_ru_open, oth=r_oth_open,
+                                 valid=r_valid_open, blank=r_blank_open,
+                                 null=r_null_open, turn=r_turn_open)),
+        ('Cont', cont_mask, dict(win=r_win_cont, ru=r_ru_cont, oth=r_oth_cont,
+                                 valid=r_valid_cont, blank=r_blank_cont,
+                                 null=r_null_cont, turn=r_turn_cont))]:
+    # 2024 levels on the subsample: shares of valid, then rates of registered.
+    _W = repmean(panel_ex, 'delta_winner_vote_share_2024_2020',   extra=_mask)
+    _R = repmean(panel_ex, 'delta_runnerup_vote_share_2024_2020', extra=_mask)
+    _O = repmean(panel_ex, 'delta_others_vote_share_2024_2020',   extra=_mask)
+    _V = repmean(panel_ex, 'delta_valid_vote_rate_2024_2020',     extra=_mask)
+
+    _dW, _dR, _dO = _rs['win']['coef'], _rs['ru']['coef'], _rs['oth']['coef']
+    _dV, _dB, _dN = _rs['valid']['coef'], _rs['blank']['coef'], _rs['null']['coef']
+    _dT = _rs['turn']['coef']
+
+    _parts = {
+        'Winner':   (_W + _dW) * (_V + _dV) - _W * _V,
+        'RunnerUp': (_R + _dR) * (_V + _dV) - _R * _V,
+        'Others':   (_O + _dO) * (_V + _dV) - _O * _V,
+        'Exit':     _dB + _dN,
+        'Turnout':  _dT,
+    }
+    _ps = {'Winner': _rs['win']['p'], 'RunnerUp': _rs['ru']['p'],
+           'Others': _rs['oth']['p'], 'Turnout': _rs['turn']['p'],
+           # The exit option has no joint test; report the tighter of the two.
+           'Exit': min(_rs['blank']['p'], _rs['null']['p'])}
+
+    for _k, _v in _parts.items():
+        M[f'Decomp{_seat}{_k}']     = _dpp(_v)
+        M[f'Decomp{_seat}{_k}P']    = pval(_ps[_k])
+    # Departure from the partition: dw+dr+do should be zero.
+    M[f'Decomp{_seat}Resid'] = f'{(_dW + _dR + _dO) * 100:+.2f}'
 
 # --- Legislative ---
 M['LegCandCoef']   = coef(r_leg_cand['coef'])
@@ -543,8 +612,6 @@ def m3(x):
     """Mean, signed, 3 dp."""
     return f'{x:.3f}'
 
-open_mask = panel_ex['open_seat_2024'] == 1
-cont_mask = panel_ex['open_seat_2024'] == 0
 # Under the ANCOVA-2016 headline these report the 2024-LEVEL mean (the LHS the
 # coefficient acts on); outcomes with no 2016 analog fall back to the delta mean.
 M['BlankMean']     = m3(repmean(panel_ex,  'delta_blank_rate_2024_2020'))
