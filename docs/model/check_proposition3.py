@@ -1,4 +1,4 @@
-"""Proposition 2: the concentration estimates are the top-two margin restated.
+"""Proposition 3: the concentration estimates are the top-two margin restated.
 
 Take the estimated reallocation between the top two (winner +dW, runner-up +dR,
 others unchanged), apply it to each municipality's observed 2024 share vector,
@@ -6,9 +6,14 @@ and recompute the Herfindahl index and the effective number of candidates. If
 the implied changes sit inside the confidence intervals of the separately
 estimated index regressions, the index regressions add no information.
 
+The baseline Herfindahl index is the municipality's own candidate-level index
+(vote_hhi_candidate_2024), which is what effective_n_candidates_vote inverts.
+Reconstructing it from the three top-two-plus-others shares would lump every
+non-top-two candidate into a single bin and understate the index.
+
 Run from the repository root:
 
-    python docs/model/check_proposition2.py
+    python docs/model/check_proposition3.py
 """
 
 import sys
@@ -23,8 +28,8 @@ PANEL = ROOT / "data" / "estimation" / "executive_margin_design.csv"
 
 TREAT = "delta_log1p_competition_lawsuits_2024_2020"
 INSTR = "bartik_iv_2020_2024"
-SHARES = ["winner_vote_share_2024", "runnerup_vote_share_2024",
-          "others_vote_share_2024"]
+HHI = "vote_hhi_candidate_2024"
+SHARES = ["winner_vote_share_2024", "runnerup_vote_share_2024"]
 
 
 def coef(iv, outcome):
@@ -41,21 +46,29 @@ def main():
     iv = pd.read_csv(IV)
     panel = pd.read_csv(PANEL)
 
+    # The two estimates do not sum to zero (d_win + d_run = -0.0009), so the
+    # applied shift is not literally the zero-sum one-parameter reallocation
+    # Proposition 3 hypothesizes. These are the estimates; they stand as they
+    # are, and the residual is three orders of magnitude below either leg.
     d_win, _, _ = coef(iv, "delta_winner_vote_share_2024_2020")
     d_run, _, _ = coef(iv, "delta_runnerup_vote_share_2024_2020")
 
+    # Exclusions, stage by stage, so the estimation sample is legible.
+    n_all = len(panel)
     keep = panel[TREAT].notna() & panel[INSTR].notna()
-    for col in SHARES:
+    n_design = int(keep.sum())
+    for col in SHARES + [HHI]:
         keep &= panel[col].notna()
-    d = panel.loc[keep, SHARES]
+    n_obs = int(keep.sum())
 
-    w = d["winner_vote_share_2024"].to_numpy()
-    r = d["runnerup_vote_share_2024"].to_numpy()
-    o = d["others_vote_share_2024"].to_numpy()
+    d = panel.loc[keep, SHARES + [HHI]]
+    w = d[SHARES[0]].to_numpy()
+    r = d[SHARES[1]].to_numpy()
 
-    hhi_0 = w ** 2 + r ** 2 + o ** 2
-    hhi_1 = (w + d_win) ** 2 + (r + d_run) ** 2 + o ** 2
+    hhi_0 = d[HHI].to_numpy()
+    hhi_1 = hhi_0 + (w + d_win) ** 2 - w ** 2 + (r + d_run) ** 2 - r ** 2
     ok = (hhi_0 > 0) & (hhi_1 > 0)
+    n_used = int(ok.sum())
 
     implied = {
         "delta_vote_hhi_candidate_2024_2020":
@@ -64,9 +77,15 @@ def main():
             float(np.mean(1.0 / hhi_1[ok] - 1.0 / hhi_0[ok])),
     }
 
-    print(f"reallocation applied: winner {d_win:+.4f}, runner-up {d_run:+.4f}")
-    print(f"municipalities used: {int(ok.sum())} "
-          f"(dropped {int((~ok).sum())} with a degenerate share vector)")
+    print(f"reallocation applied: winner {d_win:+.4f}, runner-up {d_run:+.4f} "
+          f"(sum {d_win + d_run:+.4f}, not zero -- these are the estimates)")
+    print(f"rows in the design file: {n_all}")
+    print(f"    with the treatment and the instrument: {n_design} "
+          f"(dropped {n_all - n_design})")
+    print(f"    with the top-two shares and the candidate HHI: {n_obs} "
+          f"(dropped {n_design - n_obs} for missing values)")
+    print(f"    with a non-degenerate share vector: {n_used} "
+          f"(dropped {n_obs - n_used})")
 
     outside = 0
     for outcome, imp in implied.items():

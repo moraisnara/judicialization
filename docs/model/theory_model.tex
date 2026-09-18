@@ -16,6 +16,9 @@
 \usepackage[hidelinks]{hyperref}
 
 \newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{assumption}{Assumption}
 \theoremstyle{remark}
 \newtheorem*{remark}{Remark}
 
@@ -38,12 +41,15 @@ top-two margin, so it cannot generate the result. The alternative developed
 here turns on what a filing reveals. A filing is a noisy signal about a
 candidate's type and a precise signal about a candidate's rank, because the
 filer is optimizing and targets the leading opponent. Litigation therefore
-informs voters about position more than about quality. Coordination on the
-revealed leader widens the margin; the collapse of pivot probability sends
-some of the runner-up's support off the valid ballot, which under compulsory
-voting means a blank or null vote. Whether that support joins the leader or
-leaves depends on how settled the leader's reputation is, which is what
-separates open from contested seats.
+informs voters about position more than about quality. One parameter movement
+then delivers three comparative statics. The posterior gap between the top two
+becomes less dispersed, so rank reversals become rarer and the expected margin
+widens. The posterior variance of every candidate's valence rises, so an
+ambiguity-averse voter is readier to leave the valid ballot, which under
+compulsory voting means a blank or null vote. And because an unsettled record
+disperses voters' impressions, the runner-up's supporters are selected on
+idiosyncratic distaste for the leader only where the leader is an incumbent --
+which is what separates open from contested seats.
 \end{abstract}
 
 \section{Environment}
@@ -57,10 +63,42 @@ voters of mass one. Voter $i$'s payoff from candidate $j$ is
           \;+\; \varepsilon_{ij},
 \]
 where $\theta_j$ is a common-value valence nobody observes and
-$\varepsilon_{ij}$ is a fixed idiosyncratic taste the voter knows. Beliefs
-about valence start at $\theta_j \sim N(m_j, 1/h_j)$: $m_j$ is the candidate's
-reputation and $h_j$ measures how settled the record is. An incumbent who has
-governed for four years has a high $h$; a first-time candidate has a low one.
+$\varepsilon_{ij} \sim N(0, v_\varepsilon)$, drawn independently across voters
+and candidates, is a durable idiosyncratic taste the voter knows.
+$\hat V_i(\theta_j)$ is the posterior variance of $\theta_j$; every voter holds
+the same one, so we write $\hat V(\theta_j)$. The coefficient $\rho \ge 0$
+prices it: the term is the mean--variance reduction of a weight-of-evidence
+preference, under which thin evidence about a candidate is itself a reason to
+withhold a choice \citep{ghirardato2006}. At $\rho = 0$ the voter is an
+expected-utility maximizer and every statement below that runs through $\rho$
+vanishes, which is what makes the ambiguity content testable rather than
+assumed.
+
+Beliefs about valence start at $\theta_j \sim N(m_j, 1/h_j)$: $m_j$ is the
+candidate's reputation and $h_j$ measures how settled the record is. An
+incumbent who has governed for four years has a high $h$; a first-time
+candidate has a low one.
+
+How settled a record is also governs how much voters agree about it.
+
+\begin{assumption}[Impressions]
+\label{as:impressions}
+Before the campaign, voter $i$'s impression of candidate $j$ is
+$m_j + \zeta_{ij}$ with $\zeta_{ij} \sim N(0, \kappa_\zeta/h_j)$, independent
+across voters and candidates and independent of $\varepsilon$. Impressions
+decide which candidate a voter starts out supporting. They do not survive the
+campaign: a filing wave is public and draws local attention, so by the ballot
+stage the common posterior $\hat\theta_j$ has displaced them, and the voter's
+ballot-stage payoff carries $\varepsilon_{ij}$ but not $\zeta_{ij}$.
+\end{assumption}
+
+A four-year record leaves little room for disagreement about what a mayor is
+like; a fresh candidate leaves a great deal. That is the content of
+$\kappa_\zeta/h_j$. The second half of the assumption is the half that does
+work: it separates what sorts voters into camps before the campaign
+(impression plus taste) from what they act on at the ballot (taste alone).
+It is not free, and Section~\ref{sec:scope} says what it costs.
+
 Let $\bar b$ denote the payoff from a blank or null vote, which is what
 refusing to endorse anyone is worth once the ballot carries no instrumental
 value.
@@ -72,6 +110,10 @@ fix the timing and the margin of adjustment. Candidate registration closes on
 is predetermined with respect to $\lambda$. And voting is compulsory
 (CF/88 art.~14 \S1), so a voter who wants out of the contest adjusts the mark
 rather than the attendance: the exit option is a blank or null vote.
+
+Throughout, $\varphi$ and $\Phi$ are the standard normal density and
+distribution function, and $\bar\Phi = 1 - \Phi$. The attack fraction $\phi$
+of Section~\ref{sec:foil} is a separate object and does not reappear after it.
 
 \section{The transfer channel cannot produce the result}
 \label{sec:foil}
@@ -96,7 +138,9 @@ front-runner is the most attacked.
 
 \begin{proposition}[Transfer cannot consolidate]
 \label{prop:foil}
-Under mutual $1 \leftrightarrow 2$ attacks, post-attack support is
+Take $\phi > 0$, $\alpha \le 1$, $\gamma \ge 0$ and the feasibility constraint
+$\phi + \gamma \le 1$, which says a candidate cannot lose more support than it
+has. Under mutual $1 \leftrightarrow 2$ attacks, post-attack support is
 \[
   s_1 = s^\circ_1(1 - \phi - \gamma) + \phi(1-\alpha)\,s^\circ_2,
   \qquad
@@ -106,16 +150,16 @@ so the top-two margin satisfies
 \[
   s_1 - s_2 \;=\; (s^\circ_1 - s^\circ_2)\,\kappa,
   \qquad
-  \kappa \;\equiv\; 1 - \gamma - \phi(2-\alpha).
+  \kappa \;\equiv\; 1 - \gamma - \phi(2-\alpha) \;<\; 1 .
 \]
-For every $\phi \in (0,1)$, $\alpha \in [0,1]$ and $\gamma \in [0,1)$ we have
-$\kappa < 1$. Adding $3 \to 1$ subtracts a further $\phi\,s^\circ_1$ from the
-margin. Hence the transfer map cannot widen the top-two margin while
-preserving the identity of the leader.
+Adding $3 \to 1$ subtracts a further $\phi\,s^\circ_1$ from the margin. Hence
+the transfer map cannot widen the top-two margin while preserving the identity
+of the leader. The conclusion survives normalizing by the surviving valid
+vote, and it survives letting the two attack intensities differ.
 \end{proposition}
 
 \begin{proof}
-Subtracting,
+\emph{Step 1 (the contraction).} Subtracting,
 \[
   s_1 - s_2
   = (s^\circ_1 - s^\circ_2)(1 - \phi - \gamma)
@@ -124,20 +168,56 @@ Subtracting,
 \]
 Since $\alpha \le 1$ we have $2 - \alpha \ge 1$, so $\phi(2-\alpha) \ge \phi >
 0$, and with $\gamma \ge 0$ this gives $\kappa < 1$. If $\kappa \in (0,1)$ the
-margin strictly narrows. If $\kappa \le 0$ the sign of $s_1 - s_2$ is
+margin cannot widen: it narrows strictly when $s^\circ_1 > s^\circ_2$, and it
+stays at zero when $s^\circ_1 = s^\circ_2$, which the weak ordering of
+Section~\ref{sec:env} admits. If $\kappa \le 0$ the sign of $s_1 - s_2$ is
 non-positive, so candidate 2 has caught or passed candidate 1 and the leader
 is no longer the pre-attack leader. When $3 \to 1$ is added, candidate 1 loses
 a further $\phi\,s^\circ_1$ and candidate 2 loses nothing, so
 $s_1 - s_2 = (s^\circ_1 - s^\circ_2)\kappa - \phi\,s^\circ_1$, which is
 smaller still.
+
+\emph{Step 2 (shares, not levels).} The map leaks mass: a fraction $\alpha$ of
+every transfer goes to the outside option and a fraction $\gamma$ of each
+attacker's own support is lost to backlash. So $s_1 - s_2$ is a level margin
+while the estimates are vote-share margins, and the claim has to be checked
+after normalization. Write $S = s^\circ_1 + s^\circ_2$ and leave $s^\circ_3$
+untouched. Then $s_1 + s_2 = S(1 - \gamma - \phi\alpha)$ and the surviving
+total is $T = S(1 - \gamma - \phi\alpha) + s^\circ_3$. The normalized margin
+widens only if $\kappa/T > 1/(S + s^\circ_3)$, that is only if
+\[
+  2\phi(\alpha - 1)\,S \;>\; s^\circ_3\,(1 - \kappa).
+\]
+The left side is at most zero because $\alpha \le 1$; the right side is at
+least zero because $1 - \kappa = \gamma + \phi(2-\alpha) > 0$. The inequality
+fails, so the normalized margin cannot widen either.
+
+\emph{Step 3 (asymmetric intensities).} Let $\phi_{12}$ and $\phi_{21}$ be the
+fractions the leader and the runner-up strip from each other. Then
+\[
+  s_1 - s_2 = (s^\circ_1 - s^\circ_2)(1-\gamma)
+    - (2-\alpha)\bigl(\phi_{21}s^\circ_1 - \phi_{12}s^\circ_2\bigr),
+\]
+so widening requires $\phi_{12}/\phi_{21} > s^\circ_1/s^\circ_2 > 1$: the
+leader would have to attack harder than the runner-up, by more than its own
+support advantage. The documented intensities run the other way,
+$\phi_{12}/\phi_{21} \approx 1.9/3.0$, so the asymmetric case holds a
+fortiori and the closing claim covers the whole class.
 \end{proof}
+
+A grid check of the closed form and of the no-widening claim, including the
+$3 \to 1$ profile, is in \texttt{docs/model/check\_proposition1.py}.
 
 \begin{remark}
 Widening the margin under the transfer map requires a one-sided downward
 attack, $1 \to 2$ with no reciprocation. That is excluded by the equilibrium,
 in which candidate 2's best target is candidate 1, and it is not what the data
-shows. The per-pair attack frequencies are also 1--3pp, an order of magnitude
-too small to move municipality-level vote shares by three points.
+shows. The magnitudes do not reach the result either. An attack frequency of
+3pp means the transfer occurs with probability $0.03$, and conditional on
+occurring it moves $\phi\,s^\circ$. Even at a generous $\phi = 0.3$ against a
+target holding a third of the vote, the expected move is $0.03 \times 0.3
+\times 0.33 \approx 0.003$: about three tenths of a point, an order of
+magnitude below the three-point vote move being explained.
 \end{remark}
 
 \begin{remark}[Object of comparison]
@@ -168,9 +248,13 @@ magnitude.
 A filing is an allegation about $\theta_j$. It is informative with probability
 $\pi$ and pure noise with probability $1 - \pi$, and the voter cannot tell
 which. Writing $\tau_I$ for the precision of an informative filing, the
-effective precision is $\bar\tau = \pi\tau_I$, and the posterior mean is
+effective precision is $\bar\tau = \pi\tau_I$; the race emits a public signal
+$x_j = \theta_j + e_j$ with $e_j \sim N(0, 1/\bar\tau)$ independent across
+candidates, and the posterior is normal with
 \[
-  \hat\theta_j \;=\; \frac{h_j m_j + \bar\tau s_j}{h_j + \bar\tau}.
+  \hat\theta_j \;=\; \frac{h_j m_j + \bar\tau x_j}{h_j + \bar\tau},
+  \qquad
+  \hat V(\theta_j) \;=\; \frac{1}{h_j + \bar\tau}.
 \]
 Genuine information about a candidate and a weapon that happens to persuade
 enter through the same $\bar\tau$. They are therefore not separable for the
@@ -182,24 +266,202 @@ the environment, not a shortcoming of the instrument
 \paragraph{The status signal.}
 The filer is optimizing and targets the highest-ranked opponent, which is the
 premise Proposition~\ref{prop:foil} takes from \citet{nakaguma2025}. So the
-identity of the target is informative about who is ahead, and its precision is
-high, because the filer knows the race. A court case also draws local
-attention, and revealing which candidates are first and second is known to
-move votes \citep{anagol2016}.
+identity of the target is informative about who is ahead, and its precision
+$\sigma_{\mathrm{status}}$ is high, because the filer knows the race. A court
+case also draws local attention, and revealing which candidates are first and
+second is known to move votes \citep{anagol2016}.
 
 Litigation is thus precise about position and imprecise about quality.
 
 \section{Consolidation}
 \label{sec:consolidation}
 
+\subsection{What \texorpdfstring{$\lambda$}{lambda} does to the primitives}
+
+The modeling content of the whole note sits in one assumption, so it is stated
+as one rather than smuggled into a proof.
+
+\begin{assumption}[The noisy arena]
+\label{as:arena}
+$\dfrac{d\bar\tau}{d\lambda} < 0$ and
+$\dfrac{d\sigma_{\mathrm{status}}}{d\lambda} > 0$.
+\end{assumption}
+
+Judicialization crowds the arena with procedural content -- propaganda,
+registration, campaign accounting -- that carries little information about
+whether a candidate would govern well. Raising $\lambda$ therefore lowers
+$\pi$, the chance that a given filing is about valence at all, and
+$\bar\tau = \pi\tau_I$ falls with it. The same suits are public, costly, and
+filed only against opponents worth attacking, so more of them sharpen common
+knowledge of the rank order. One channel degrades information about
+\emph{type}; the other improves information about \emph{rank}. That asymmetry
+is the assumption, and the rest of this section is its consequences.
+
+\begin{assumption}[Weak signal]
+\label{as:weak}
+$\bar\tau < h$: the prior carries more information about a candidate's valence
+than any single election's filings do.
+\end{assumption}
+
+\subsection{The type channel}
+
+\begin{lemma}[The posterior gap]
+\label{lem:gap}
+Restrict the top two to a common prior precision, $h_1 = h_2 = h$;
+Proposition~\ref{prop:seat} relaxes it. Write $w = \bar\tau/(h + \bar\tau)$,
+$\Delta = \hat\theta_1 - \hat\theta_2$, and $\varsigma^2 = 2v_\varepsilon$ for
+the variance of $\varepsilon_{i1} - \varepsilon_{i2}$. Conditional on the
+realized valences,
+\[
+  \mu_\Delta \;\equiv\; \mathbb{E}[\Delta]
+  \;=\; (1-w)(m_1 - m_2) + w(\theta_1 - \theta_2),
+  \qquad
+  \sigma^2_\Delta \;\equiv\; \mathrm{Var}(\Delta)
+  \;=\; \frac{2\bar\tau}{(h + \bar\tau)^2},
+\]
+and
+\[
+  \frac{d\sigma^2_\Delta}{d\bar\tau}
+  \;=\; \frac{2\,(h - \bar\tau)}{(h + \bar\tau)^3} \;>\; 0
+  \quad\text{under Assumption~\ref{as:weak}.}
+\]
+Suppose $\mu_\Delta > 0$. Then
+\begin{enumerate}
+\item[(a)] the probability of a rank reversal is
+      $\Pr(\Delta < 0) = \Phi(-\mu_\Delta/\sigma_\Delta)$, strictly
+      \emph{increasing} in $\sigma_\Delta$;
+\item[(b)] the expected two-way margin between the top two is
+      \[
+        \mathbb{E}\bigl[\,2\Phi(\Delta/\varsigma) - 1\,\bigr]
+        \;=\; 2\,\Phi\!\left(
+          \frac{\mu_\Delta}{\sqrt{\varsigma^2 + \sigma^2_\Delta}}
+        \right) - 1,
+      \]
+      strictly \emph{decreasing} in $\sigma_\Delta$.
+\end{enumerate}
+Under Assumptions~\ref{as:arena} and~\ref{as:weak}, $\sigma_\Delta$ is
+strictly decreasing in $\lambda$. So a rise in $\lambda$ makes rank reversals
+rarer and the expected two-way margin wider.
+\end{lemma}
+
+\begin{proof}
+With a common $h$, $\hat\theta_j = (1-w)m_j + w x_j$, so
+$\Delta = (1-w)(m_1-m_2) + w(x_1 - x_2)$. Conditional on $(\theta_1,\theta_2)$
+the signal errors are independent $N(0,1/\bar\tau)$, which gives $\mu_\Delta$
+and
+\[
+  \sigma^2_\Delta = w^2\cdot\frac{2}{\bar\tau}
+  = \left(\frac{\bar\tau}{h+\bar\tau}\right)^{\!2}\frac{2}{\bar\tau}
+  = \frac{2\bar\tau}{(h+\bar\tau)^2}.
+\]
+Differentiating,
+$d\sigma^2_\Delta/d\bar\tau
+ = \bigl[2(h+\bar\tau)^2 - 4\bar\tau(h+\bar\tau)\bigr]/(h+\bar\tau)^4
+ = 2(h-\bar\tau)/(h+\bar\tau)^3$, which is positive exactly when
+$\bar\tau < h$.
+
+(a) $\Delta \sim N(\mu_\Delta, \sigma^2_\Delta)$, so
+$\Pr(\Delta<0) = \Phi(-\mu_\Delta/\sigma_\Delta)$ and
+\[
+  \frac{\partial \Pr(\Delta<0)}{\partial\sigma_\Delta}
+  = \varphi\!\left(\frac{\mu_\Delta}{\sigma_\Delta}\right)
+    \frac{\mu_\Delta}{\sigma^2_\Delta} \;>\; 0
+  \qquad\text{whenever } \mu_\Delta > 0 .
+\]
+
+(b) Under the common-$h$ restriction the two ambiguity terms coincide and
+cancel from the comparison between the top two, so voter $i$ prefers candidate
+1 to candidate 2 exactly when $\Delta + \varepsilon_{i1} - \varepsilon_{i2} >
+0$. Conditional on $\Delta$ the two-way margin is therefore
+$2\Phi(\Delta/\varsigma) - 1$. Write $\Delta = \mu_\Delta + \sigma_\Delta Z$
+with $Z$ standard normal and use
+$\mathbb{E}[\Phi(a + bZ)] = \Phi\bigl(a/\sqrt{1+b^2}\bigr)$, which follows
+from $\Phi(a+bZ) = \Pr(U - bZ \le a)$ for an independent standard normal $U$
+together with $U - bZ \sim N(0, 1+b^2)$. With $a = \mu_\Delta/\varsigma$ and
+$b = \sigma_\Delta/\varsigma$ the expectation is
+$\Phi\bigl(\mu_\Delta/\sqrt{\varsigma^2+\sigma^2_\Delta}\bigr)$, strictly
+decreasing in $\sigma_\Delta$ when $\mu_\Delta > 0$.
+
+Finally $d\sigma_\Delta/d\lambda
+= (d\sigma_\Delta/d\bar\tau)(d\bar\tau/d\lambda) < 0$: the first factor is
+positive by Assumption~\ref{as:weak} and the second is negative by
+Assumption~\ref{as:arena}.
+\end{proof}
+
+\begin{remark}[Why this is not a Jensen argument]
+Part (b) is not obtained by calling the map from $\Delta$ to the margin
+concave. That map is concave on the positive half-line and convex on the
+negative one, so a mean-preserving contraction of a distribution with support
+on both sides gets no unambiguous sign from curvature alone, and an argument
+that took one would be assuming its conclusion. What delivers the sign is the
+exact Gaussian convolution identity, which needs no support condition. The
+reading is also sharper than a curvature argument would give: noise does not
+favor the leader directly. It supplies the only route by which the runner-up
+could have overtaken, and lowering it closes that route. Part (a) says the
+same thing without any vote-share mapping at all.
+\end{remark}
+
+\subsection{The coordination channel}
+
+The second leg is a standard result and is cited here rather than re-derived.
+As $\sigma_{\mathrm{status}}$ rises the rank order approaches common
+knowledge, and in a coordination equilibrium voters desert candidates ranked
+third and below, with the desertion running toward the believed leader
+\citep{myerson1993,fey1997,cox1997}. We import it in reduced form: a fraction
+$c(\sigma_{\mathrm{status}}) \in [0,1]$ of the voters attached to candidates
+ranked third and below deserts, with $c' > 0$, and a fraction $q > 1/2$ of
+those deserters moves to the believed leader.
+
+\subsection{The proposition}
+
 \begin{proposition}[Consolidation]
 \label{prop:consolidation}
-As $\lambda$ rises, rank moves toward common knowledge while valence beliefs
-barely update. In a coordination equilibrium over the two leading candidates
-\citep{myerson1993,fey1997,cox1997}, support flows from the runner-up to the
-leader. The identity of the leader is unchanged and the size of the field is
+Let $n \in [0,1)$ be the mass of voters attached to candidates ranked third
+and below. Under Assumptions~\ref{as:impressions}, \ref{as:arena}
+and~\ref{as:weak}, with $h_1 = h_2 = h$ and $\mu_\Delta > 0$, the expected
+top-two margin is
+\[
+  \mathbb{E}\,[\,s_1 - s_2\,]
+  \;=\; (1-n)\left[\,2\,\Phi\!\left(
+      \frac{\mu_\Delta}{\sqrt{\varsigma^2 + \sigma^2_\Delta}}\right) - 1
+      \,\right]
+   \;+\; n\,c(\sigma_{\mathrm{status}})\,(2q-1),
+\]
+and
+\[
+  \frac{d\,\mathbb{E}[\,s_1 - s_2\,]}{d\lambda} \;>\; 0 .
+\]
+The probability of a rank reversal falls, so the identity of the leader is
+more likely to be preserved rather than less, and the size of the field is
 unchanged.
 \end{proposition}
+
+\begin{proof}
+The mass $1-n$ attached to the top two splits between them, and by
+Lemma~\ref{lem:gap}(b) its expected contribution to the margin is
+$(1-n)\bigl[2\Phi(\mu_\Delta/\sqrt{\varsigma^2+\sigma^2_\Delta}) - 1\bigr]$.
+Of the mass $n$ attached to the rest, a fraction $c$ deserts, $q$ of it to
+candidate 1 and $1-q$ to candidate 2, contributing
+$n\,c\,\bigl(q - (1-q)\bigr) = n\,c\,(2q-1)$. Adding gives the display.
+
+Differentiate. The first term moves only through $\sigma_\Delta$, and
+\[
+  \frac{\partial}{\partial \sigma_\Delta}
+  \left[2\Phi\!\left(\frac{\mu_\Delta}
+      {\sqrt{\varsigma^2+\sigma^2_\Delta}}\right)-1\right]
+  \cdot \frac{d\sigma_\Delta}{d\lambda} \;>\; 0,
+\]
+because the bracket is strictly decreasing in $\sigma_\Delta$ by
+Lemma~\ref{lem:gap}(b) while $d\sigma_\Delta/d\lambda < 0$ by
+Assumptions~\ref{as:arena} and~\ref{as:weak}. The second term has derivative
+$n(2q-1)\,c'(\sigma_{\mathrm{status}})\,
+ d\sigma_{\mathrm{status}}/d\lambda \ge 0$, since $q > 1/2$, $c' > 0$ and
+$d\sigma_{\mathrm{status}}/d\lambda > 0$ by Assumption~\ref{as:arena}, and it
+is strictly positive when $n > 0$. Both channels are non-negative and the
+first is strictly positive, so the sum is. The reversal statement is
+Lemma~\ref{lem:gap}(a) with $\sigma_\Delta$ falling in $\lambda$. The field is
+fixed because registration closes before the filings (Section~\ref{sec:env}).
+\end{proof}
 
 The candidate-supply null is structural rather than incidental: the status
 signal arrives after the registration deadline, so it cannot act on the
@@ -207,57 +469,239 @@ candidate set.
 
 \begin{proposition}[Concentration indices are redundant]
 \label{prop:concentration}
-If the shift is a one-parameter reallocation between the top two, then every
-summary concentration index -- the effective number of candidates, the
-Herfindahl index, the combined top-two share -- is a monotone function of that
-same parameter, and none of them carries a restriction independent of the
-margin.
+Let the shift be a one-parameter reallocation between the top two:
+$w \mapsto w + t$ and $r \mapsto r - t$, with every other candidate's share
+unchanged. Then
+\begin{enumerate}
+\item[(i)] the combined top-two share $w + r$ is \emph{invariant} in $t$;
+\item[(ii)] $\mathrm{HHI}(t) = \mathrm{HHI}(0) + 2t(w-r) + 2t^2$, so
+      $d\mathrm{HHI}/dt = 2(w - r + 2t)$, which changes sign at
+      $t = -(w-r)/2$; the index is U-shaped in $t$ and monotone only on
+      $t \ge -(w-r)/2$, which is exactly the region where the leader stays
+      ahead;
+\item[(iii)] on that region the effective number of candidates
+      $1/\mathrm{HHI}$ is strictly decreasing in $t$.
+\end{enumerate}
+The margin itself is $(w-r) + 2t$. So on the region where the leader stays
+ahead each index is a deterministic function of the same single parameter, and
+none of them carries a restriction independent of the margin.
 \end{proposition}
+
+\begin{proof}
+(i) $(w+t) + (r-t) = w + r$ for every $t$.
+
+(ii) Expanding, $(w+t)^2 + (r-t)^2 = w^2 + r^2 + 2t(w-r) + 2t^2$; the other
+candidates' shares enter $\mathrm{HHI}$ additively and are unchanged.
+Differentiating gives $2(w-r) + 4t$, which vanishes at $t = -(w-r)/2$ and is
+positive above it. The leader stays ahead when $w + t \ge r - t$, that is when
+$t \ge -(w-r)/2$: the same threshold.
+
+(iii) $x \mapsto 1/x$ is strictly decreasing on $x > 0$, and $\mathrm{HHI}$ is
+strictly increasing in $t$ there. Finally $(w+t) - (r-t) = (w-r) + 2t$.
+\end{proof}
 
 This is why concentration cannot identify which mechanism is at work. The
 point is not that the concentration estimates are imprecise; it is that even a
-precise one would be the margin restated. Pushing the estimated top-two
-reallocation through each municipality's own 2024 share vector implies
-$\Delta\mathrm{HHI} = +0.018$ and $\Delta\mathrm{ENP} = -0.053$, and the
+precise one would be the margin restated -- and in the case of the combined
+top-two share it would carry no information at all. Pushing the estimated
+top-two reallocation through each municipality's own 2024 share vector implies
+$\Delta\mathrm{HHI} = +0.018$ and $\Delta\mathrm{ENP} = -0.055$, while the
 separately estimated index regressions give $+0.023$ (0.013) and $-0.044$
 (0.039). Both implied values sit inside the estimated intervals, so the index
 regressions add no restriction to the margin result
-(\texttt{docs/model/check\_proposition2.py}).
+(\texttt{docs/model/check\_proposition3.py}).
 
 \section{Exit and the seat split}
 \label{sec:seat}
 
+\subsection{Exit}
+
 \begin{proposition}[Exit]
 \label{prop:exit}
-A supporter of the runner-up who learns the race is not close faces a
-collapsed pivot probability, so the choice becomes expressive: mark the leader
-if $\hat\theta_1 + \varepsilon_{i1} \ge \bar b$, and otherwise mark blank.
+Once the status signal makes the rank order common knowledge the pivot
+probability collapses and the choice becomes expressive: voter $i$ marks the
+candidate solving
+\[
+  \max_j \;\Bigl[\,\hat\theta_j - \frac{\rho/2}{h_j + \bar\tau}
+    + \varepsilon_{ij}\,\Bigr]
+\]
+if that maximum is at least $\bar b$, and marks blank otherwise. Write
+$c_j = \bar b - \hat\theta_j + (\rho/2)/(h_j+\bar\tau)$. Holding the posterior
+means fixed,
+\[
+  \frac{d\Pr(\mathrm{blank})}{d\lambda}
+  \;=\; -\,\frac{d\bar\tau}{d\lambda}
+    \sum_j \frac{\rho/2}{(h_j+\bar\tau)^2}\,
+    \frac{\varphi\bigl(c_j/\sqrt{v_\varepsilon}\bigr)}{\sqrt{v_\varepsilon}}
+    \prod_{k \ne j}\Phi\bigl(c_k/\sqrt{v_\varepsilon}\bigr)
+  \;>\; 0
+\]
+under Assumption~\ref{as:arena}, and the effect is exactly zero at $\rho = 0$.
 Under compulsory voting the exit option is a blank or null vote rather than
-abstention, so turnout is unmoved \citep{ghirardato2006}.
+abstention, so turnout is unmoved.
 \end{proposition}
+
+\begin{proof}
+The voter blanks when every candidate falls short of $\bar b$, that is when
+$\varepsilon_{ij} < c_j$ for all $j$. The $\varepsilon_{ij}$ are independent
+$N(0,v_\varepsilon)$, so
+$\Pr(\mathrm{blank}) = \prod_j \Phi\bigl(c_j/\sqrt{v_\varepsilon}\bigr)$.
+Holding $\hat\theta_j$ fixed,
+$\partial c_j/\partial\bar\tau = -(\rho/2)(h_j+\bar\tau)^{-2} \le 0$, so
+\[
+  \frac{\partial \Pr(\mathrm{blank})}{\partial \bar\tau}
+  = \sum_j
+    \frac{\varphi\bigl(c_j/\sqrt{v_\varepsilon}\bigr)}{\sqrt{v_\varepsilon}}
+    \frac{\partial c_j}{\partial \bar\tau}
+    \prod_{k\ne j}\Phi\bigl(c_k/\sqrt{v_\varepsilon}\bigr) \;\le\; 0,
+\]
+strictly negative when $\rho > 0$ and identically zero when $\rho = 0$.
+Multiplying by $d\bar\tau/d\lambda < 0$ gives the display and its sign.
+Conditioning on the posterior means is what isolates the ambiguity channel;
+their own movement in $\bar\tau$ is the type channel, which
+Proposition~\ref{prop:consolidation} already treats, and it leaves
+$\mathbb{E}[\hat\theta_j] = m_j$ for every $\bar\tau$.
+\end{proof}
+
+The mechanism is the posterior variance. $\hat V(\theta_j) = 1/(h_j +
+\bar\tau)$ is decreasing in $\bar\tau$, so under Assumption~\ref{as:arena} a
+rise in $\lambda$ raises the posterior variance of \emph{every} candidate's
+valence, and an ambiguity-averse voter discounts every candidate by more. The
+maximum falls, more voters find no name worth $\bar b$, and the blank rate
+rises. The blank response and the consolidation are then the same single
+parameter movement seen from two sides -- $\bar\tau$ falling widens the margin
+through Lemma~\ref{lem:gap} and empties the ballot through
+Proposition~\ref{prop:exit}. Because the effect vanishes at $\rho = 0$, the
+blank rise is the testable content of ambiguity aversion rather than a
+restatement of it \citep{ghirardato2006}; and compulsory voting is what routes
+the response into the mark rather than into attendance, which is the margin
+the abstention literature works on \citep{feddersen1996}.
+
+\subsection{The seat split}
+
+The seat dimension enters through one primitive, the prior precision on the
+leader's valence. In a contested seat an incumbent is running, so $h_1$ is
+high: voters have already learned $\theta_1$ and have already sorted on it. In
+an open seat there is no incumbent, so $h_1$ is low and there is nothing to
+have sorted on.
+
+\begin{lemma}[Selection among the runner-up's supporters]
+\label{lem:selection}
+Under Assumption~\ref{as:impressions}, voter $i$ starts out supporting
+candidate 2 exactly when
+\[
+  D_i \;\equiv\; (\varepsilon_{i1} + \zeta_{i1})
+    - (\varepsilon_{i2} + \zeta_{i2}) \;<\; -\delta,
+  \qquad
+  \delta \;\equiv\; \Bigl(m_1 - \tfrac{\rho/2}{h_1}\Bigr)
+    - \Bigl(m_2 - \tfrac{\rho/2}{h_2}\Bigr),
+\]
+and $\delta \ge 0$ is equivalent to $s^\circ_1 \ge s^\circ_2$. Write
+$\sigma_D^2 = 2v_\varepsilon + \kappa_\zeta/h_1 + \kappa_\zeta/h_2$,
+$z = \delta/\sigma_D$ and
+$r = \sqrt{v_\varepsilon}/\sigma_D = \mathrm{corr}(\varepsilon_{i1}, D_i)$.
+Then
+\begin{enumerate}
+\item[(a)] $\displaystyle
+      \mathbb{E}\bigl[\varepsilon_{i1} \mid D_i < -\delta\bigr]
+      = -\,\frac{v_\varepsilon}{\sigma_D}\,\frac{\varphi(z)}{\Phi(-z)}$,
+      which is strictly increasing in $\sigma_D$ and hence strictly
+      \emph{decreasing} in $h_1$;
+\item[(b)] for every threshold $t$,
+      $\Pr\bigl(\varepsilon_{i1} \ge t \mid D_i < -\delta\bigr)$ is strictly
+      decreasing in $h_1$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+$D_i$ is symmetric about zero, so $s^\circ_1 = \Pr(D_i \ge -\delta) \ge 1/2$
+exactly when $\delta \ge 0$; that is the labeling of Section~\ref{sec:env} and
+not an extra hypothesis.
+
+(a) $(\varepsilon_{i1}, D_i)$ is bivariate normal with
+$\mathrm{Cov}(\varepsilon_{i1}, D_i) = v_\varepsilon$, so
+$\mathbb{E}[\varepsilon_{i1} \mid D_i] = (v_\varepsilon/\sigma_D^2)\,D_i$ and
+\[
+  \mathbb{E}[\varepsilon_{i1} \mid D_i < -\delta]
+  = \frac{v_\varepsilon}{\sigma_D^2}\,
+    \mathbb{E}[D_i \mid D_i < -\delta]
+  = \frac{v_\varepsilon}{\sigma_D^2}
+    \left(-\sigma_D\frac{\varphi(z)}{\Phi(-z)}\right)
+  = -\frac{v_\varepsilon}{\sigma_D}\,M(z),
+\]
+where $M(z) = \varphi(z)/\Phi(-z)$ is the standard normal hazard rate, which
+is positive and strictly increasing. Raising $\sigma_D$ lowers
+$v_\varepsilon/\sigma_D$ and, because $\delta \ge 0$, lowers $z$ and so does
+not raise $M(z)$; the product falls and its negative rises. And $\sigma_D$ is
+strictly decreasing in $h_1$.
+
+(b) Standardize. With $a = t/\sqrt{v_\varepsilon}$ the quantity is
+$\Pr(Z_1 \ge a \mid Z_2 \le -z)$ for a standard bivariate normal pair with
+correlation $r > 0$, and it is decreasing in each of $z$ and $r$. In $z$:
+\[
+  \Pr(Z_1 \ge a \mid Z_2 \le -z)
+  = \mathbb{E}\left[\left.\bar\Phi\!\left(\frac{a - rZ_2}{\sqrt{1-r^2}}\right)
+    \;\right|\; Z_2 \le -z\right],
+\]
+whose integrand is increasing in $Z_2$ because $r > 0$, while the conditional
+law of $Z_2$ given $Z_2 \le -z$ falls in the first-order stochastic order as
+$z$ rises. In $r$: by Plackett's identity,
+$\partial\Pr(Z_1 \le a_1, Z_2 \le a_2)/\partial r$ equals the bivariate normal
+density at $(a_1,a_2)$ and is therefore positive; applying it to
+$\Pr(-Z_1 \le -a,\; Z_2 \le -z)$, whose pair has correlation $-r$, makes the
+numerator decreasing in $r$, while the denominator $\Phi(-z)$ does not depend
+on $r$. Raising $h_1$ lowers $\sigma_D$, which raises both $z$ and $r$, so it
+lowers the conditional probability.
+\end{proof}
 
 \begin{proposition}[The seat split]
 \label{prop:seat}
-The runner-up loses a similar mass whichever kind of seat is contested. What
-differs is where that mass goes: to the leader where the revealed leader is a
-fresh candidate, and off the valid ballot where the revealed leader is an
-incumbent.
+Take the runner-up's departing supporters, the mass that
+Proposition~\ref{prop:consolidation} moves. Each of them either marks
+candidate 1 or marks blank, by the rule of Proposition~\ref{prop:exit}. At a
+common threshold -- in particular at $\rho = 0$ -- the fraction that marks
+candidate 1 is strictly lower where the seat is contested. So the runner-up
+loses a comparable mass in either kind of seat, and what differs is where that
+mass goes: to the winner in an open seat, with the valid vote holding, and
+split between the winner and the blank ballot in a contested seat.
 \end{proposition}
 
-Two primitives differ across seat types, and both push the same way.
+\begin{proof}
+A departing supporter of candidate 2 marks candidate 1 when
+$\hat\theta_1 - (\rho/2)/(h_1+\bar\tau) + \varepsilon_{i1} \ge \bar b$, that
+is when $\varepsilon_{i1} \ge t$ with
+$t = \bar b - \hat\theta_1 + (\rho/2)/(h_1 + \bar\tau)$, and blanks otherwise.
+These voters are exactly the population of Lemma~\ref{lem:selection}, so the
+fraction marking candidate 1 is
+$\Pr(\varepsilon_{i1} \ge t \mid D_i < -\delta)$, which by
+Lemma~\ref{lem:selection}(b) is strictly decreasing in $h_1$. A contested seat
+is a high-$h_1$ seat and an open seat a low-$h_1$ seat, which gives the
+ordering. At $\rho = 0$ the threshold $t$ does not depend on $h_1$ and the
+comparison is exactly Lemma~\ref{lem:selection}(b).
+\end{proof}
 
-First, the prior precision $h_1$. In a contested seat the leader is the
-incumbent, $h_1$ is high, $\hat\theta_1 \approx m_1$, and the type signal moves
-nothing. In an open seat the leader is a fresh candidate with a diffuse
-reputation and a genuinely unresolved rank, so the status signal has more to
-resolve and coordination is stronger.
+The split comes from selection on $\varepsilon$ alone, and it is worth being
+explicit about what the ambiguity term of Proposition~\ref{prop:exit} does
+here, because it does not generate the split and does not even help. That term
+raises the blank rate in \emph{both} kinds of seat, so on its own it predicts
+no contrast. Worse, its level differs in the unhelpful direction:
+$\hat V(\theta_1) = 1/(h_1 + \bar\tau)$ is largest exactly where $h_1$ is
+smallest, so the ambiguity penalty on the leader is heaviest in the open seat,
+which is where the model predicts the least blanking. Formally, $t$ is higher
+in the open seat when $\rho > 0$. The prediction therefore holds outright at
+$\rho = 0$ and, for $\rho > 0$, requires the selection effect of
+Lemma~\ref{lem:selection}(b) to dominate that differential penalty. Saying so
+is the honest statement of it.
 
-Second, selection on $\varepsilon_{i1}$. Supporting the challenger against a
-sitting mayor is itself evidence of a settled negative view of that mayor, so
-the distribution of $\varepsilon_{i1}$ among the runner-up's supporters is
-first-order dominated in contested seats. A larger mass sits below $\bar b$
-and exits. An open-seat leader has not been in office long enough to have
-accumulated committed opponents.
+The reading is the one the mechanism suggests. Where the leader is a sitting
+mayor, still supporting the challenger is a revealed rejection of someone the
+whole electorate has had four years to judge, so those voters are selected on
+genuinely low taste for the incumbent, and a large share of them will not mark
+that name under any amount of coordination pressure. Where the leader is
+fresh, starting out with the runner-up says much less, because the
+pre-campaign split was driven by impressions that the campaign then washes
+out; those voters' tastes are close to unselected, and most of them follow the
+coordination.
 
 \section{What the model does not do}
 \label{sec:scope}
@@ -271,6 +715,23 @@ endogenize the filer's decision: the attack direction is taken from
 require exactly the selection the instrument exists to sidestep. It says
 nothing about judges, and nothing about welfare. Runoff municipalities, where
 a second round changes the coordination problem, are outside it.
+
+Four of its steps are assumed rather than derived, and it is better to name
+them than to let them read as results. Assumption~\ref{as:arena} is the whole
+modeling content of Section~\ref{sec:consolidation}: nothing here shows that
+$\lambda$ must push $\bar\tau$ down and $\sigma_{\mathrm{status}}$ up, only
+that everything else follows if it does. Assumption~\ref{as:weak} is what
+makes the posterior gap contract rather than spread, and it is not innocuous,
+since it fails for a sufficiently informative filing wave. The second half of
+Assumption~\ref{as:impressions} -- that pre-campaign impressions decide the
+initial camps but are washed out of the ballot-stage payoff -- is what makes
+the seat split run in the predicted direction; without it the selected object
+in Lemma~\ref{lem:selection} would be the composite
+$\varepsilon_{i1} + \zeta_{i1}$ rather than $\varepsilon_{i1}$, and the
+selection would reverse, because a fresh leader's more dispersed impressions
+would themselves make the runner-up's camp more extreme. And the coordination
+leg of Proposition~\ref{prop:consolidation} is imported from the literature
+rather than derived \citep{myerson1993,fey1997,cox1997}.
 
 Two conditions bound the mechanism. Coordination needs a small number of
 focal contenders, so a genuinely three-way race weakens it. And the reasoning

@@ -16,6 +16,7 @@ data/clean/candidate_vote_panel.csv
 *.fdb_latexmk
 *.synctex.gz
 *.blg
+*.bbl
 
 # ── output/ whitelist ─────────────────────────────────────────────────────────
 # Ignore everything under output/, then re-add the document sources (and the
