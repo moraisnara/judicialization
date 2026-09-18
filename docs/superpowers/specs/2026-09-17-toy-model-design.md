@@ -182,9 +182,10 @@ arrives after the registration deadline, so it cannot act on the candidate set.
 > every summary concentration index is a monotone function of that same
 > parameter and carries no restriction independent of the margin.
 
-Consistency check. The margin estimate implies ΔENP = −0.073 and ΔHHI = +0.018;
+Consistency check. The margin estimate implies ΔENP = −0.055 and ΔHHI = +0.018;
 the estimates are −0.044 (0.039) and +0.023 (0.013). Both within one standard
-error of the implied value, and both informationally redundant.
+error of the implied value, and both informationally redundant. Computed in
+`docs/model/check_proposition3.py`.
 
 This gives **D4 a derivation instead of an assertion**: concentration cannot
 identify a face because it is the margin restated.
@@ -306,14 +307,17 @@ The model must not upgrade any result past its FRAMING tier.
 | Theory appendix frames | `output/presentation/frames/app_theory.tex` (rewritten) plus two new frames | The two signals; the transfer foil; the ballot decomposition |
 | Main-deck frame | beside `output/presentation/frames/src_twofaces.tex` | One frame: "position, not quality" |
 | Apply sheet | `docs/PAPER_APPLY_model.md` | What changes in the paper's theory section, for Nara to write |
-| Citations | `output/presentation/biblio.bib`, `references.bib` | New theory entries (§12) |
+| Citations | `output/presentation/biblio.bib` | New theory entries (§12) (the paper's references.bib is still a stub; the apply sheet lists what to copy) |
 
 Nara writes the paper. No prose goes into `output/paper/paper.tex` or
 `output/paper/extended_abstract.tex`.
 
 ## 12. Citations to add
 
-To be verified in `C:\Users\naral\Zotero` before any web search.
+Searched Zotero 2026-09-17 (1,642 items): none of the six are present, so all
+were added from publisher sources. They live in `output/presentation/biblio.bib`
+only; `output/paper/references.bib` is still a stub and gets them when the paper
+needs them.
 
 - Myerson & Weber — voting equilibria, coordination on focal contenders.
 - Fey — informational cascades and strategic coordination in plurality races.
