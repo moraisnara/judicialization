@@ -136,10 +136,17 @@ Read together: **consolidation is general** across seat types; the **face is
 seat-conditional**.
 
 *Fact added 2026-09-16, not a framing change:* the open-seat margin already widened
-before treatment (reduced-form pre-trend p=.047); the contested-seat margin did not
+before treatment (2SLS placebo pre-trend, p=.047); the contested-seat margin did not
 (p=.905). "Consolidation is general" therefore rests on an open-seat estimate with a
 pre-trend. Whether the claim survives is listed under *Open result questions* in
 `output/presentation/DECK_WORKPLAN.md`.
+
+*Label corrected 2026-09-18 — the number is unchanged, only its basis was misnamed:*
+p=.047 is a 2SLS placebo on the instrumented treatment, run on the open-seat
+subsample (`executive_margin_iv_fixest.csv`, `spec = open_seat`, `estimator = 2sls`).
+It is not a reduced-form regression on the instrument: that test
+(`pretrend_balance.csv`, `rf_p`) is pooled with no seat split and gives p=.137 for
+the margin.
 
 **"Decisiveness" is not a leveling claim.** Absence of a barrier signature is not
 evidence of leveling: valid votes do not *rise* in open seats, they merely fail to
