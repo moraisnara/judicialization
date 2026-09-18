@@ -2,12 +2,12 @@
 \begin{frame}{Appendix --- Where the Runner-Up's Losses Go}
 \hypertarget{app:ballotdecomp}{}
 \footnotesize
-The seat table reports the top two as shares of valid votes and the ballot as
-shares of registered voters. That hides the contrast, because the top two move
-by similar amounts in valid shares and what differs between seat types is the
-size of the valid pie.
+The seat table mixes denominators: the top two as shares of valid votes, the
+ballot as shares of registered voters. On one denominator the top two move by
+similar amounts and what differs between seat types is the size of the valid
+pie.
 \begin{center}\small
-\renewcommand{\arraystretch}{1.2}
+\renewcommand{\arraystretch}{1.05}
 \begin{tabular}{lccccc}
 \toprule\toprule
  & \textbf{Winner} & \textbf{Runner-up} & \textbf{Blank/null} & Others & Turnout\\
@@ -21,26 +21,28 @@ Contested & \DecompContWinner & \DecompContRunnerUp & \DecompContExit & \DecompC
 \bottomrule\bottomrule
 \end{tabular}
 \end{center}
-{\scriptsize Percentage points of registered voters per unit of judicialization,
-at the subsample 2024 means. State (UF) fixed effects, state-clustered standard
-errors.}
+{\scriptsize Percentage points of registered voters per unit of judicialization, at subsample 2024 means; state (UF) FE, state-clustered SE.}
 
-The runner-up loses about three points of the electorate whichever kind of seat
-is contested. Where the seat is contested the winner takes up only
-\DecompContWinner\ of it. The wedge is the blank vote, which rises
-(\ContBlankCoef, $p=\ContBlankP$); the valid vote falls by a consistent amount
-(\ContValidCoef, $p=\ContValidP$). Where the seat is open the winner takes up
-\DecompOpenWinner\ and the valid vote holds (\OpenValidCoef,
-$p=\OpenValidP$).
+The runner-up's share of the electorate falls by a similar amount in either
+kind of seat. Where the seat is contested the winner takes up only
+\DecompContWinner\,pp of it: the blank vote rises (\ContBlankCoef,
+$p=\ContBlankP$) as the valid vote falls (\ContValidCoef, $p=\ContValidP$).
+Where the seat is open the winner takes up \DecompOpenWinner\,pp and the valid
+vote holds (\OpenValidCoef,
+$p=\OpenValidP$).\hfill\hyperlink{app:transferfoil}{\beamerreturnbutton{Back}}
 
 {\centering\scriptsize\ns{Arithmetic on separate point estimates with no
-propagated standard errors: an implication, not a result. The three valid
-shares should sum to zero and depart from it by \DecompContResid\,pp
-(contested) and \DecompOpenResid\,pp (open), so the others column is not
-interpretable. Only the contested row clears weak-IV inference; the open row
-also fails its pre-trend ($p=\OpenPtMarginP$, against $p=\ContPtMarginP$). The
-blank rate carries the wedge because its reduced form passes the pre-trend test
-($p=\PtRFBlankP$) while the valid rate's does not ($p=\PtRFValidP$).}\par}
-\vfill
-\centerline{\hyperlink{src:seathet}{\beamerreturnbutton{Back}}}
+propagated standard errors: an implication, not a result. Each $p$ is an
+underlying coefficient's, not the cell's: the vote cells mix a share
+coefficient with the valid-rate coefficient and show the share's $p$;
+Blank/null sums blank and null and shows the smaller of the two $p$'s, a
+selection over dependent tests, not a joint test; only Turnout's $p$ is its
+own. The three valid shares should sum to zero and depart by
+\DecompContResid\,pp (contested) and \DecompOpenResid\,pp (open), so the
+others column is not interpretable. Only the contested row clears weak-IV
+inference; the open row also fails its pre-trend (2SLS placebo on the
+2016--2020 margin change, $p=\OpenPtMarginP$ against $p=\ContPtMarginP$),
+while the blank rate carries the wedge because its reduced-form pre-trend on
+the instrument passes ($p=\PtRFBlankP$) and the valid rate's does not
+($p=\PtRFValidP$).}\par}
 \end{frame}
