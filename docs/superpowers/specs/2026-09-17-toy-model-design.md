@@ -222,33 +222,48 @@ open-only (+0.160, p=.059 vs +0.011, p=.737).
 ### 7.1 The implied decomposition
 
 Converting the seat table from shares-of-valid into shares of registered voters
-(so that the columns must sum to zero) gives:
+(so that every column sits on one denominator and the four ballot columns
+should add up to the turnout column) gives:
 
 | | #1 | #2 | blank/null | others | turnout |
 |---|---|---|---|---|---|
-| Open | **+3.3pp** | −2.8pp | +0.5pp | −0.1pp | **+0.9pp** |
-| Contested | **+1.8pp** | −3.2pp | +0.8pp | +0.1pp | **−0.5pp** |
+| Open | **+3.3pp** | −2.9pp | +0.5pp | −0.4pp | **+0.9pp** |
+| Contested | **+1.7pp** | −3.2pp | +0.7pp | +0.4pp | **−0.7pp** |
+
+Recomputed from `output/tables/regressions/executive_margin_iv_fixest.csv` at
+subsample 2024 means; these are the numbers the deck frame carries, via the
+`Decomp*` macros in `output/tables/tex/abstract_macros.tex`.
 
 The two rows describe different events, and this is the sharpest statement of
 the Leveling/Barrier contrast the data supports.
 
 - **Open seats: mobilization toward the leader.** #1 gains 3.3pp, *more* than #2
-  loses (2.8pp); the balance comes from a 0.9pp rise in turnout. Nothing leaves
-  the ballot. Hence the majority crossing.
-- **Contested seats: withdrawal.** Of the 3.2pp leaving #2, 1.8pp reaches #1,
-  0.8pp becomes a blank or null vote and 0.5pp abstains — so 1.3pp, about 41%,
-  exits the valid ballot entirely. Hence no majority crossing.
+  loses (2.9pp); turnout rises 0.9pp and only 0.5pp leaves the valid ballot.
+  Hence the majority crossing.
+- **Contested seats: withdrawal.** Of the 3.2pp leaving #2, 1.7pp reaches #1,
+  0.7pp becomes a blank or null vote and turnout falls 0.7pp — so about 1.4pp,
+  44% of what #2 loses, exits the valid ballot entirely. Hence no majority
+  crossing.
 
-Three caveats, all of which the memo must carry:
+Four caveats, all of which the memo and the deck frame must carry:
 
 1. This is arithmetic on separate point estimates with **no propagated standard
    errors**. It is an implication, not a result. Estimating it jointly (delta
    method or bootstrap over the seat fits) is an optional follow-up, explicitly
    outside this design's scope.
-2. The seat table reports only **pooled** 2024 means (winner 0.607, runner-up
-   0.337, valid 0.792), so those are used for both subsamples. Subsample means
-   would shift the levels somewhat.
-3. The open-seat row rests on the estimate that **fails its pre-trend** (§9).
+2. The *others* column is the **estimated** others-share coefficient, not a
+   residual plug, so the three valid shares no longer sum to zero by
+   construction: they depart by −0.42pp (open) and +0.27pp (contested), which
+   is reported as a residual and is why the others column is not interpretable.
+   The choice of denominators is not the source of that gap — swapping the
+   subsample 2024 means for the pooled ones (winner 0.607, runner-up 0.337,
+   valid 0.792) moves no cell by more than 0.04pp.
+3. **No *p* printed under a cell is that cell's own.** Each vote cell combines a
+   vote-share coefficient with the valid-rate coefficient and carries the share
+   coefficient's *p*; the blank/null cell is a sum and carries
+   `min(blank p, null p)`, a selection over two dependent tests, not a joint
+   test. Only turnout's *p* belongs to the number above it.
+4. The open-seat row rests on the estimate that **fails its pre-trend** (§9).
    The contested row is the pre-trend-clean one. The visually stronger half of
    the contrast is the empirically weaker half, and the memo must say so where
    the table appears, not only in a caveats section.
