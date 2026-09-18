@@ -431,7 +431,18 @@ of $w$ and therefore of $\bar\tau$:
 Conditional on a leader whose true valence advantage exceeds its reputational
 advantage, that derivative is positive, so a fall in $\bar\tau$ lowers
 $\mu_\Delta$ and the mean channel runs \emph{against} the variance channel.
-It can also dominate it: at $h = 1$, $v_\varepsilon = 1$,
+The variance also changes frame: conditioning on the realized valences leaves
+only $e_1, e_2$ random in $\hat\theta_j = (1-w)m_j + w(\theta_j + e_j)$, so the
+conditional-frame variance of $\Delta$ is
+\[
+  \sigma^2_{\Delta,\mathrm{cond}} \;\equiv\;
+  \mathrm{Var}(\Delta \mid \theta_1, \theta_2)
+  \;=\; \frac{2\bar\tau}{(h+\bar\tau)^2},
+\]
+not the ex ante $\sigma^2_\Delta = 2\bar\tau/[h(h+\bar\tau)]$ of
+Lemma~\ref{lem:gap}. The numbers below use this conditional-frame variance.
+The mean channel can also dominate the variance channel: at $h = 1$,
+$v_\varepsilon = 1$,
 $m_1 - m_2 = 0.01$ and $\theta_1 - \theta_2 = 1$, moving $\bar\tau$ from $0.5$
 to $0.4$ raises the conditional reversal probability from $0.305$ to $0.323$
 and lowers the conditional expected margin from $0.172$ to $0.150$ -- both
@@ -706,11 +717,11 @@ Take the runner-up's departing supporters, the mass that
 Proposition~\ref{prop:consolidation} moves. Each of them either marks
 candidate 1 or marks blank, by the rule of Proposition~\ref{prop:exit}. At a
 common threshold -- in particular at $\rho = 0$ -- the fraction that marks
-candidate 1 is strictly lower where the seat is contested. In that case the
-runner-up loses a comparable mass in either kind of seat, and what differs is
-where that mass goes: to the winner in an open seat, with the valid vote
-holding, and split between the winner and the blank ballot in a contested
-seat.
+candidate 1 is strictly lower where the seat is contested. Where the
+threshold is common, the runner-up loses a comparable mass in either kind of
+seat, and what differs is where that mass goes: to the winner in an open
+seat, with the valid vote holding, and split between the winner and the blank
+ballot in a contested seat.
 \end{proposition}
 
 \begin{proof}
@@ -721,7 +732,11 @@ the voters who leave the runner-up are candidate 2's camp
 $\{i : D_i < -\delta\}$ of Lemma~\ref{lem:selection}, or a uniform random
 subsample of it, which is what makes the conditional law of
 $\varepsilon_{i1}$ among them the law that lemma computes. That is an
-assumption about who departs, not a consequence of the display.
+assumption about who departs, not a consequence of the display. So is its
+size: Proposition~\ref{prop:consolidation} is derived at $h_1 = h_2 = h$,
+while this proposition turns on $h_1$ differing by seat, so treating that
+departing mass as comparable across seat types is a further assumption about
+magnitudes, not something Proposition~\ref{prop:consolidation} delivers.
 
 A departing supporter of candidate 2 marks candidate 1 when
 $\hat\theta_1 - (\rho/2)/(h_1+\bar\tau) + \varepsilon_{i1} \ge \bar b$, that
@@ -737,11 +752,23 @@ For that to be the whole of the effect the threshold has to be the same in the
 two seats, and at $\rho = 0$ it is not automatically: $t$ reduces to
 $\bar b - \hat\theta_1$, which still carries $h_1$ through
 $\hat\theta_1 = (h_1 m_1 + \bar\tau x_1)/(h_1 + \bar\tau)$, running from $x_1$
-toward $m_1$ as $h_1$ grows. The ex ante frame of Lemma~\ref{lem:gap} removes
-it: $\mathbb{E}[\hat\theta_1] = m_1$ for every $h_1$, so across realizations
-the $\rho = 0$ threshold is $\bar b - m_1$ in both seat types and the
-comparison is exactly Lemma~\ref{lem:selection}(b). That is the same device
-Proposition~\ref{prop:exit}'s proof uses, for the same reason.
+toward $m_1$ as $h_1$ grows. Hold $\hat\theta_1$ at a common realized value
+across the two seat types: this is the same device Proposition~\ref{prop:exit}'s
+proof uses, holding a posterior mean fixed to isolate one channel from
+$\hat\theta_1$'s own movement. At that common value the $\rho = 0$ threshold
+$\bar b - \hat\theta_1$ is identical in both seats, and the comparison is
+exactly Lemma~\ref{lem:selection}(b): two races that share a realized leader
+standing and differ only in whether an incumbent is running, so $h_1$ alone
+carries the seat difference through $\sigma_D$. Taking the ex ante frame of
+Lemma~\ref{lem:gap} instead -- averaging
+$\Pr(\varepsilon_{i1} \ge t \mid D_i < -\delta)$ over $\hat\theta_1$'s own law
+rather than fixing it -- would not deliver this: $\mathrm{Var}(\hat\theta_1)
+= \bar\tau/[h_1(h_1+\bar\tau)]$ is decreasing in $h_1$, so the open seat's
+threshold is the more dispersed one, and
+$\mathbb{E}[\Pr(\varepsilon_{i1}\ge t \mid D_i<-\delta)]$ need not equal
+$\Pr(\varepsilon_{i1}\ge \mathbb{E}[t]\mid D_i<-\delta)$ inside that nonlinear
+probability -- the same substitution the remark ``Why this is not a Jensen
+argument'' above declines to make for Lemma~\ref{lem:gap}(b).
 \end{proof}
 
 The split comes from selection on $\varepsilon$ alone, and it is worth being
@@ -780,8 +807,11 @@ require exactly the selection the instrument exists to sidestep. It says
 nothing about judges, and nothing about welfare. Runoff municipalities, where
 a second round changes the coordination problem, are outside it.
 
-Four of its steps are assumed rather than derived, and it is better to name
-them than to let them read as results. Assumption~\ref{as:arena} is the whole
+Six of its steps are assumed rather than derived, and it is better to name
+them than to let them read as results. The attack direction imported from
+\citet{nakaguma2025}, noted just above, is the first: Section~\ref{sec:signals}'s
+status channel and Proposition~\ref{prop:foil}'s foil both rest on it.
+Assumption~\ref{as:arena} is the whole
 modeling content of Section~\ref{sec:consolidation}: nothing here shows that
 $\lambda$ must push $\bar\tau$ down and $\tau_{\mathrm{status}}$ up, only
 that everything else follows if it does. The second half of
@@ -795,7 +825,12 @@ would themselves make the runner-up's camp more extreme. The identity of the
 departing set is assumed too, in Proposition~\ref{prop:seat}'s proof:
 Proposition~\ref{prop:consolidation} moves mass between the top two without
 naming who moves, so taking the movers to be candidate 2's camp, or a uniform
-subsample of it, is what lets Lemma~\ref{lem:selection} apply to them. And the
+subsample of it, is what lets Lemma~\ref{lem:selection} apply to them. So is
+the size of that mass: Proposition~\ref{prop:consolidation} is derived at
+$h_1 = h_2 = h$, while Proposition~\ref{prop:seat} turns on $h_1$ differing
+by seat, so its claim that the runner-up loses a comparable mass in either
+kind of seat is a further assumption, not a consequence of
+Proposition~\ref{prop:consolidation}. And the
 coordination leg of Proposition~\ref{prop:consolidation} is imported from the
 literature rather than derived \citep{myerson1993,fey1997,cox1997}.
 
@@ -805,7 +840,10 @@ ante, taken over the prior on valences as well as over the signal noise, which
 matches a cross-section of municipalities differing in $\lambda$ but says
 nothing about a race whose valences are already drawn. Conditional on those,
 the remark \emph{Why the lemma is stated ex ante} shows the two comparative
-statics have no sign at all.
+statics have no sign at all. Proposition~\ref{prop:exit}'s blank-vote result
+is the exception: its proof holds the posterior means $\hat\theta_j$ fixed
+and moves only $\bar\tau$ through the ambiguity term, so it is a statement
+about a single race whose valences are already drawn, not an ex ante one.
 
 Two conditions bound the mechanism. Coordination needs a small number of
 focal contenders, so a genuinely three-way race weakens it. And the reasoning
