@@ -20,9 +20,9 @@ assumptions:
 | The candidate-supply and turnout nulls | Structural: registration closes before filings land; voting is compulsory |
 
 *Correction from the brief: the D4 row cites Proposition 3 ("Concentration
-indices are redundant," `docs/model/theory_model.tex:523`), not Proposition 2.
-The D5 row cites Proposition 5 ("The seat split," `docs/model/theory_model.tex:714`),
-not Proposition 4 (Proposition 4 is "Exit," `docs/model/theory_model.tex:576` —
+indices are redundant," `docs/model/theory_model.tex:525`), not Proposition 2.
+The D5 row cites Proposition 5 ("The seat split," `docs/model/theory_model.tex:716`),
+not Proposition 4 (Proposition 4 is "Exit," `docs/model/theory_model.tex:578` —
 the blank-vote result, a different proposition). The memo's proposition order is
 1 Transfer foil (L143), 2 Consolidation (L469), 3 Concentration (L523), 4 Exit
 (L576), 5 Seat split (L714); see this sheet's verification note below.*
@@ -184,12 +184,12 @@ ways the paper needs to carry every time it cites the seat split.
 1. **It compares two races, not one race over time.** The proof holds the
    leader's realized posterior mean `θ̂₁` at a common value across seat types
    and compares "two races that share a realized leader standing and differ
-   only in whether an incumbent is running" (`docs/model/theory_model.tex:760-761`).
+   only in whether an incumbent is running" (`docs/model/theory_model.tex:764-765`).
    It is a between-race statement conditional on that shared realization, not
    a claim about what happens inside one municipality as judicialization
    rises, and not an unconditional claim across realizations — the memo says
    this explicitly: "Neither averages over the prior on valences"
-   (`docs/model/theory_model.tex:848-850`).
+   (`docs/model/theory_model.tex:853-854`).
 2. **It holds outright only at a common blank-vote threshold, ρ = 0.** Above
    that, the ambiguity term raises the blank rate in both kinds of seat and,
    because the posterior variance of the leader's valence is largest exactly
@@ -197,13 +197,13 @@ ways the paper needs to carry every time it cites the seat split.
    open seat — the opposite of where the model predicts less blanking. "The
    prediction therefore holds outright at ρ = 0 and, for ρ > 0, requires the
    selection effect of Lemma [Selection] to dominate that differential
-   penalty" (`docs/model/theory_model.tex:782-785`).
+   penalty" (`docs/model/theory_model.tex:786-788`).
 3. **It rests on the second half of Assumption 1** (Impressions,
-   `docs/model/theory_model.tex:84`) — that pre-campaign impressions sort
+   `docs/model/theory_model.tex:87`) — that pre-campaign impressions sort
    voters into camps but are washed out of the ballot-stage payoff. Without
    it, "the selected object in Lemma [Selection] would be the composite
    `ε_i1 + ζ_i1` rather than `ε_i1`, and the selection would reverse"
-   (`docs/model/theory_model.tex:817-824`): the prediction flips, it does not
+   (`docs/model/theory_model.tex:824-827`): the prediction flips, it does not
    just weaken.
 
 None of this changes the tiers. Consolidation (Proposition 2) stays **Robust**;
@@ -218,34 +218,34 @@ stays tentative.
 ## 11. What the memo itself flags as assumed, not derived
 
 `docs/model/theory_model.tex`, Section 6 ("What the model does not do",
-`docs/model/theory_model.tex:797-798`) names six steps the model asserts
+`docs/model/theory_model.tex:801`) names six steps the model asserts
 rather than proves. The paper should not claim more certainty for these than
 the memo does:
 
 1. **The attack direction.** Taken from Nakaguma (2025) as a maintained
    assumption; both the status channel (Section 3) and Proposition 1's foil
-   rest on it (`docs/model/theory_model.tex:811-813`).
-2. **Assumption 2 (the noisy arena),** `docs/model/theory_model.tex:288-292`,
+   rest on it (`docs/model/theory_model.tex:815-817`).
+2. **Assumption 2 (the noisy arena),** `docs/model/theory_model.tex:290-294`,
    is the entire modeling content of the consolidation section: nothing in
    the memo shows that `λ` must push the type-signal precision down and the
    status-signal precision up — only that everything else follows if it does
-   (`docs/model/theory_model.tex:814-817`).
+   (`docs/model/theory_model.tex:818-821`).
 3. **The second half of Assumption 1** (Impressions), that pre-campaign
    impressions wash out by the ballot stage — the same assumption limit 10.3
    above states for Proposition 5 specifically
-   (`docs/model/theory_model.tex:817-824`).
+   (`docs/model/theory_model.tex:821-827`).
 4. **The identity of the departing set** in Proposition 5's proof: taking the
    movers to be candidate 2's camp (or a uniform subsample of it) is an
    assumption, not a consequence of Proposition 2, which moves mass between
-   the top two without naming who moves (`docs/model/theory_model.tex:824-828`).
+   the top two without naming who moves (`docs/model/theory_model.tex:828-832`).
 5. **The size of the departing mass.** Proposition 2 is derived at
    `h₁ = h₂ = h`; Proposition 5 turns on `h₁` differing by seat. Treating the
    departing mass as comparable across seat types is a further assumption,
-   not something Proposition 2 delivers (`docs/model/theory_model.tex:828-833`).
+   not something Proposition 2 delivers (`docs/model/theory_model.tex:832-837`).
 6. **The coordination leg of Proposition 2** (mass flowing from the
    runner-up to the leader as rank becomes common knowledge) is imported from
    Myerson & Weber, Fey, and Cox rather than derived
-   (`docs/model/theory_model.tex:833-835`).
+   (`docs/model/theory_model.tex:837-839`).
 
 ## 12. Verification run for this sheet
 
