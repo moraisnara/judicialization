@@ -114,6 +114,10 @@ rather than the attendance: the exit option is a blank or null vote.
 Throughout, $\varphi$ and $\Phi$ are the standard normal density and
 distribution function, and $\bar\Phi = 1 - \Phi$. The attack fraction $\phi$
 of Section~\ref{sec:foil} is a separate object and does not reappear after it.
+Precisions are written $h$ and $\tau$, variances $v$ and $\hat V$, and
+standard deviations $\sigma$ and $\varsigma$: so $\bar\tau$ and
+$\tau_{\mathrm{status}}$ below are precisions, while $\sigma_\Delta$ and
+$\sigma_D$ are standard deviations.
 
 \section{The transfer channel cannot produce the result}
 \label{sec:foil}
@@ -267,7 +271,7 @@ the environment, not a shortcoming of the instrument
 The filer is optimizing and targets the highest-ranked opponent, which is the
 premise Proposition~\ref{prop:foil} takes from \citet{nakaguma2025}. So the
 identity of the target is informative about who is ahead, and its precision
-$\sigma_{\mathrm{status}}$ is high, because the filer knows the race. A court
+$\tau_{\mathrm{status}}$ is high, because the filer knows the race. A court
 case also draws local attention, and revealing which candidates are first and
 second is known to move votes \citep{anagol2016}.
 
@@ -284,7 +288,7 @@ as one rather than smuggled into a proof.
 \begin{assumption}[The noisy arena]
 \label{as:arena}
 $\dfrac{d\bar\tau}{d\lambda} < 0$ and
-$\dfrac{d\sigma_{\mathrm{status}}}{d\lambda} > 0$.
+$\dfrac{d\tau_{\mathrm{status}}}{d\lambda} > 0$.
 \end{assumption}
 
 Judicialization crowds the arena with procedural content -- propaganda,
@@ -297,35 +301,31 @@ knowledge of the rank order. One channel degrades information about
 \emph{type}; the other improves information about \emph{rank}. That asymmetry
 is the assumption, and the rest of this section is its consequences.
 
-\begin{assumption}[Weak signal]
-\label{as:weak}
-$\bar\tau < h$: the prior carries more information about a candidate's valence
-than any single election's filings do.
-\end{assumption}
-
 \subsection{The type channel}
 
 \begin{lemma}[The posterior gap]
 \label{lem:gap}
 Restrict the top two to a common prior precision, $h_1 = h_2 = h$;
-Proposition~\ref{prop:seat} relaxes it. Write $w = \bar\tau/(h + \bar\tau)$,
+Proposition~\ref{prop:seat} relaxes it. Let the priors be independent across
+candidates. Write $w = \bar\tau/(h + \bar\tau)$,
 $\Delta = \hat\theta_1 - \hat\theta_2$, and $\varsigma^2 = 2v_\varepsilon$ for
-the variance of $\varepsilon_{i1} - \varepsilon_{i2}$. Conditional on the
-realized valences,
+the variance of $\varepsilon_{i1} - \varepsilon_{i2}$. Taken ex ante, over the
+prior on $(\theta_1,\theta_2)$ as well as over the signal noise, $\Delta$ is
+normal with
 \[
-  \mu_\Delta \;\equiv\; \mathbb{E}[\Delta]
-  \;=\; (1-w)(m_1 - m_2) + w(\theta_1 - \theta_2),
+  \mu_\Delta \;\equiv\; \mathbb{E}[\Delta] \;=\; m_1 - m_2,
   \qquad
   \sigma^2_\Delta \;\equiv\; \mathrm{Var}(\Delta)
-  \;=\; \frac{2\bar\tau}{(h + \bar\tau)^2},
+  \;=\; \frac{2\bar\tau}{h\,(h + \bar\tau)} ,
 \]
-and
+so $\mu_\Delta$ carries no $\bar\tau$, while
 \[
   \frac{d\sigma^2_\Delta}{d\bar\tau}
-  \;=\; \frac{2\,(h - \bar\tau)}{(h + \bar\tau)^3} \;>\; 0
-  \quad\text{under Assumption~\ref{as:weak}.}
+  \;=\; \frac{2}{(h + \bar\tau)^2} \;>\; 0
+  \qquad\text{for every } \bar\tau > 0 .
 \]
-Suppose $\mu_\Delta > 0$. Then
+Suppose $\mu_\Delta > 0$, that is, the leader also holds the better
+reputation. Then
 \begin{enumerate}
 \item[(a)] the probability of a rank reversal is
       $\Pr(\Delta < 0) = \Phi(-\mu_\Delta/\sigma_\Delta)$, strictly
@@ -339,26 +339,44 @@ Suppose $\mu_\Delta > 0$. Then
       \]
       strictly \emph{decreasing} in $\sigma_\Delta$.
 \end{enumerate}
-Under Assumptions~\ref{as:arena} and~\ref{as:weak}, $\sigma_\Delta$ is
-strictly decreasing in $\lambda$. So a rise in $\lambda$ makes rank reversals
-rarer and the expected two-way margin wider.
+Under Assumption~\ref{as:arena}, $\sigma_\Delta$ is strictly decreasing in
+$\lambda$. So a rise in $\lambda$ makes rank reversals rarer and the expected
+two-way margin wider, with no restriction on $\bar\tau$ relative to $h$ and
+nothing held fixed.
 \end{lemma}
 
+The frame is ex ante and that is the modeling content, not a technicality: the
+comparative static is taken across realizations of the campaign, which is the
+object the estimates correspond to -- a cross-section of municipalities that
+differ in $\lambda$, not the single realized draw of one municipality.
+
 \begin{proof}
-With a common $h$, $\hat\theta_j = (1-w)m_j + w x_j$, so
-$\Delta = (1-w)(m_1-m_2) + w(x_1 - x_2)$. Conditional on $(\theta_1,\theta_2)$
-the signal errors are independent $N(0,1/\bar\tau)$, which gives $\mu_\Delta$
-and
+With a common $h$, $\hat\theta_j = (1-w)m_j + w x_j$, where
+$x_j = \theta_j + e_j$ with $\theta_j \sim N(m_j, 1/h)$ and
+$e_j \sim N(0, 1/\bar\tau)$, all four draws independent. So $x_j$ is normal
+with mean $m_j$ and variance $1/h + 1/\bar\tau$, giving
+$\mathbb{E}[\hat\theta_j] = (1-w)m_j + w\,m_j = m_j$, which carries no
+$\bar\tau$, and
 \[
-  \sigma^2_\Delta = w^2\cdot\frac{2}{\bar\tau}
-  = \left(\frac{\bar\tau}{h+\bar\tau}\right)^{\!2}\frac{2}{\bar\tau}
-  = \frac{2\bar\tau}{(h+\bar\tau)^2}.
+  \mathrm{Var}(\hat\theta_j)
+  = w^2\left(\frac{1}{h} + \frac{1}{\bar\tau}\right)
+  = \frac{\bar\tau^2}{(h+\bar\tau)^2}\cdot\frac{h+\bar\tau}{h\,\bar\tau}
+  = \frac{\bar\tau}{h\,(h+\bar\tau)} .
 \]
-Differentiating,
-$d\sigma^2_\Delta/d\bar\tau
- = \bigl[2(h+\bar\tau)^2 - 4\bar\tau(h+\bar\tau)\bigr]/(h+\bar\tau)^4
- = 2(h-\bar\tau)/(h+\bar\tau)^3$, which is positive exactly when
-$\bar\tau < h$.
+Since $\Delta$ is a linear combination of independent normals it is normal,
+with $\mu_\Delta = m_1 - m_2$ and
+$\sigma^2_\Delta = 2\bar\tau/[h(h+\bar\tau)]$. Differentiating,
+\[
+  \frac{d\sigma^2_\Delta}{d\bar\tau}
+  = \frac{d}{d\bar\tau}\,\frac{2\bar\tau}{h^2 + h\bar\tau}
+  = \frac{2(h^2 + h\bar\tau) - 2h\bar\tau}{(h^2 + h\bar\tau)^2}
+  = \frac{2h^2}{h^2(h+\bar\tau)^2}
+  = \frac{2}{(h+\bar\tau)^2},
+\]
+positive for every $\bar\tau > 0$. The two limits fix what the expression
+means: $\sigma^2_\Delta \to 0$ as $\bar\tau \to 0$, where the posteriors never
+leave the reputations, and $\sigma^2_\Delta \to 2/h$ as $\bar\tau \to \infty$,
+where they reach the valences themselves.
 
 (a) $\Delta \sim N(\mu_\Delta, \sigma^2_\Delta)$, so
 $\Pr(\Delta<0) = \Phi(-\mu_\Delta/\sigma_\Delta)$ and
@@ -384,7 +402,7 @@ decreasing in $\sigma_\Delta$ when $\mu_\Delta > 0$.
 
 Finally $d\sigma_\Delta/d\lambda
 = (d\sigma_\Delta/d\bar\tau)(d\bar\tau/d\lambda) < 0$: the first factor is
-positive by Assumption~\ref{as:weak} and the second is negative by
+positive for every $\bar\tau > 0$ and the second is negative by
 Assumption~\ref{as:arena}.
 \end{proof}
 
@@ -401,15 +419,38 @@ could have overtaken, and lowering it closes that route. Part (a) says the
 same thing without any vote-share mapping at all.
 \end{remark}
 
+\begin{remark}[Why the lemma is stated ex ante, and what is lost]
+Conditioning on the realized valences instead gives
+$\mu_\Delta = (1-w)(m_1 - m_2) + w(\theta_1 - \theta_2)$, which is a function
+of $w$ and therefore of $\bar\tau$:
+\[
+  \frac{d\mu_\Delta}{d\bar\tau}
+  \;=\; \frac{h}{(h+\bar\tau)^2}
+        \bigl[(\theta_1 - \theta_2) - (m_1 - m_2)\bigr].
+\]
+Conditional on a leader whose true valence advantage exceeds its reputational
+advantage, that derivative is positive, so a fall in $\bar\tau$ lowers
+$\mu_\Delta$ and the mean channel runs \emph{against} the variance channel.
+It can also dominate it: at $h = 1$, $v_\varepsilon = 1$,
+$m_1 - m_2 = 0.01$ and $\theta_1 - \theta_2 = 1$, moving $\bar\tau$ from $0.5$
+to $0.4$ raises the conditional reversal probability from $0.305$ to $0.323$
+and lowers the conditional expected margin from $0.172$ to $0.150$ -- both
+against Lemma~\ref{lem:gap}. So the conditional statement has no sign, and the
+lemma is not merely more convenient stated ex ante: it is only true stated ex
+ante. What is lost is any claim about a single race whose valences are already
+drawn; what is kept is the claim about the cross-section, which is what the
+estimates measure.
+\end{remark}
+
 \subsection{The coordination channel}
 
 The second leg is a standard result and is cited here rather than re-derived.
-As $\sigma_{\mathrm{status}}$ rises the rank order approaches common
+As $\tau_{\mathrm{status}}$ rises the rank order approaches common
 knowledge, and in a coordination equilibrium voters desert candidates ranked
 third and below, with the desertion running toward the believed leader
 \citep{myerson1993,fey1997,cox1997}. We import it in reduced form: a fraction
-$c(\sigma_{\mathrm{status}}) \in [0,1]$ of the voters attached to candidates
-ranked third and below deserts, with $c' > 0$, and a fraction $q > 1/2$ of
+$g(\tau_{\mathrm{status}}) \in [0,1]$ of the voters attached to candidates
+ranked third and below deserts, with $g' > 0$, and a fraction $q > 1/2$ of
 those deserters moves to the believed leader.
 
 \subsection{The proposition}
@@ -417,15 +458,14 @@ those deserters moves to the believed leader.
 \begin{proposition}[Consolidation]
 \label{prop:consolidation}
 Let $n \in [0,1)$ be the mass of voters attached to candidates ranked third
-and below. Under Assumptions~\ref{as:impressions}, \ref{as:arena}
-and~\ref{as:weak}, with $h_1 = h_2 = h$ and $\mu_\Delta > 0$, the expected
-top-two margin is
+and below. Under Assumptions~\ref{as:impressions} and~\ref{as:arena}, with
+$h_1 = h_2 = h$ and $\mu_\Delta > 0$, the expected top-two margin is
 \[
   \mathbb{E}\,[\,s_1 - s_2\,]
   \;=\; (1-n)\left[\,2\,\Phi\!\left(
       \frac{\mu_\Delta}{\sqrt{\varsigma^2 + \sigma^2_\Delta}}\right) - 1
       \,\right]
-   \;+\; n\,c(\sigma_{\mathrm{status}})\,(2q-1),
+   \;+\; n\,g(\tau_{\mathrm{status}})\,(2q-1),
 \]
 and
 \[
@@ -440,11 +480,13 @@ unchanged.
 The mass $1-n$ attached to the top two splits between them, and by
 Lemma~\ref{lem:gap}(b) its expected contribution to the margin is
 $(1-n)\bigl[2\Phi(\mu_\Delta/\sqrt{\varsigma^2+\sigma^2_\Delta}) - 1\bigr]$.
-Of the mass $n$ attached to the rest, a fraction $c$ deserts, $q$ of it to
+Of the mass $n$ attached to the rest, a fraction $g$ deserts, $q$ of it to
 candidate 1 and $1-q$ to candidate 2, contributing
-$n\,c\,\bigl(q - (1-q)\bigr) = n\,c\,(2q-1)$. Adding gives the display.
+$n\,g\,\bigl(q - (1-q)\bigr) = n\,g\,(2q-1)$. Adding gives the display.
 
-Differentiate. The first term moves only through $\sigma_\Delta$, and
+Differentiate. The first term moves through $\sigma_\Delta$ alone, because by
+Lemma~\ref{lem:gap} the ex ante $\mu_\Delta$ equals $m_1 - m_2$ and so carries
+no $\bar\tau$ and no $\lambda$; and
 \[
   \frac{\partial}{\partial \sigma_\Delta}
   \left[2\Phi\!\left(\frac{\mu_\Delta}
@@ -453,10 +495,10 @@ Differentiate. The first term moves only through $\sigma_\Delta$, and
 \]
 because the bracket is strictly decreasing in $\sigma_\Delta$ by
 Lemma~\ref{lem:gap}(b) while $d\sigma_\Delta/d\lambda < 0$ by
-Assumptions~\ref{as:arena} and~\ref{as:weak}. The second term has derivative
-$n(2q-1)\,c'(\sigma_{\mathrm{status}})\,
- d\sigma_{\mathrm{status}}/d\lambda \ge 0$, since $q > 1/2$, $c' > 0$ and
-$d\sigma_{\mathrm{status}}/d\lambda > 0$ by Assumption~\ref{as:arena}, and it
+Assumption~\ref{as:arena}. The second term has derivative
+$n(2q-1)\,g'(\tau_{\mathrm{status}})\,
+ d\tau_{\mathrm{status}}/d\lambda \ge 0$, since $q > 1/2$, $g' > 0$ and
+$d\tau_{\mathrm{status}}/d\lambda > 0$ by Assumption~\ref{as:arena}, and it
 is strictly positive when $n > 0$. Both channels are non-negative and the
 first is strictly positive, so the sum is. The reversal statement is
 Lemma~\ref{lem:gap}(a) with $\sigma_\Delta$ falling in $\lambda$. The field is
@@ -469,35 +511,39 @@ candidate set.
 
 \begin{proposition}[Concentration indices are redundant]
 \label{prop:concentration}
-Let the shift be a one-parameter reallocation between the top two:
-$w \mapsto w + t$ and $r \mapsto r - t$, with every other candidate's share
-unchanged. Then
+Write $p_1$ and $p_2$ for the observed shares of the leader and the runner-up,
+and let the shift be a one-parameter reallocation between them:
+$p_1 \mapsto p_1 + \eta$ and $p_2 \mapsto p_2 - \eta$, with every other
+candidate's share unchanged. Then
 \begin{enumerate}
-\item[(i)] the combined top-two share $w + r$ is \emph{invariant} in $t$;
-\item[(ii)] $\mathrm{HHI}(t) = \mathrm{HHI}(0) + 2t(w-r) + 2t^2$, so
-      $d\mathrm{HHI}/dt = 2(w - r + 2t)$, which changes sign at
-      $t = -(w-r)/2$; the index is U-shaped in $t$ and monotone only on
-      $t \ge -(w-r)/2$, which is exactly the region where the leader stays
-      ahead;
+\item[(i)] the combined top-two share $p_1 + p_2$ is \emph{invariant} in
+      $\eta$;
+\item[(ii)] $\mathrm{HHI}(\eta) = \mathrm{HHI}(0) + 2\eta(p_1-p_2) + 2\eta^2$,
+      so $d\mathrm{HHI}/d\eta = 2(p_1 - p_2 + 2\eta)$, which changes sign at
+      $\eta = -(p_1-p_2)/2$; the index is U-shaped in $\eta$ and monotone only
+      on $\eta \ge -(p_1-p_2)/2$, which is exactly the region where the leader
+      stays ahead;
 \item[(iii)] on that region the effective number of candidates
-      $1/\mathrm{HHI}$ is strictly decreasing in $t$.
+      $1/\mathrm{HHI}$ is strictly decreasing in $\eta$.
 \end{enumerate}
-The margin itself is $(w-r) + 2t$. So on the region where the leader stays
-ahead each index is a deterministic function of the same single parameter, and
-none of them carries a restriction independent of the margin.
+The margin itself is $(p_1-p_2) + 2\eta$. So on the region where the leader
+stays ahead each index is a deterministic function of the same single
+parameter, and none of them carries a restriction independent of the margin.
 \end{proposition}
 
 \begin{proof}
-(i) $(w+t) + (r-t) = w + r$ for every $t$.
+(i) $(p_1+\eta) + (p_2-\eta) = p_1 + p_2$ for every $\eta$.
 
-(ii) Expanding, $(w+t)^2 + (r-t)^2 = w^2 + r^2 + 2t(w-r) + 2t^2$; the other
-candidates' shares enter $\mathrm{HHI}$ additively and are unchanged.
-Differentiating gives $2(w-r) + 4t$, which vanishes at $t = -(w-r)/2$ and is
-positive above it. The leader stays ahead when $w + t \ge r - t$, that is when
-$t \ge -(w-r)/2$: the same threshold.
+(ii) Expanding, $(p_1+\eta)^2 + (p_2-\eta)^2
+= p_1^2 + p_2^2 + 2\eta(p_1-p_2) + 2\eta^2$; the other candidates' shares
+enter $\mathrm{HHI}$ additively and are unchanged. Differentiating gives
+$2(p_1-p_2) + 4\eta$, which vanishes at $\eta = -(p_1-p_2)/2$ and is positive
+above it. The leader stays ahead when $p_1 + \eta \ge p_2 - \eta$, that is when
+$\eta \ge -(p_1-p_2)/2$: the same threshold.
 
 (iii) $x \mapsto 1/x$ is strictly decreasing on $x > 0$, and $\mathrm{HHI}$ is
-strictly increasing in $t$ there. Finally $(w+t) - (r-t) = (w-r) + 2t$.
+strictly increasing in $\eta$ there. Finally
+$(p_1+\eta) - (p_2-\eta) = (p_1-p_2) + 2\eta$.
 \end{proof}
 
 This is why concentration cannot identify which mechanism is at work. The
@@ -660,24 +706,42 @@ Take the runner-up's departing supporters, the mass that
 Proposition~\ref{prop:consolidation} moves. Each of them either marks
 candidate 1 or marks blank, by the rule of Proposition~\ref{prop:exit}. At a
 common threshold -- in particular at $\rho = 0$ -- the fraction that marks
-candidate 1 is strictly lower where the seat is contested. So the runner-up
-loses a comparable mass in either kind of seat, and what differs is where that
-mass goes: to the winner in an open seat, with the valid vote holding, and
-split between the winner and the blank ballot in a contested seat.
+candidate 1 is strictly lower where the seat is contested. In that case the
+runner-up loses a comparable mass in either kind of seat, and what differs is
+where that mass goes: to the winner in an open seat, with the valid vote
+holding, and split between the winner and the blank ballot in a contested
+seat.
 \end{proposition}
 
 \begin{proof}
+First, who departs. Proposition~\ref{prop:consolidation}'s display allocates
+the top-two mass by a probit rule on $\Delta + \varepsilon_{i1} -
+\varepsilon_{i2}$ and never names a departing set, so the set is named here:
+the voters who leave the runner-up are candidate 2's camp
+$\{i : D_i < -\delta\}$ of Lemma~\ref{lem:selection}, or a uniform random
+subsample of it, which is what makes the conditional law of
+$\varepsilon_{i1}$ among them the law that lemma computes. That is an
+assumption about who departs, not a consequence of the display.
+
 A departing supporter of candidate 2 marks candidate 1 when
 $\hat\theta_1 - (\rho/2)/(h_1+\bar\tau) + \varepsilon_{i1} \ge \bar b$, that
 is when $\varepsilon_{i1} \ge t$ with
 $t = \bar b - \hat\theta_1 + (\rho/2)/(h_1 + \bar\tau)$, and blanks otherwise.
-These voters are exactly the population of Lemma~\ref{lem:selection}, so the
-fraction marking candidate 1 is
-$\Pr(\varepsilon_{i1} \ge t \mid D_i < -\delta)$, which by
-Lemma~\ref{lem:selection}(b) is strictly decreasing in $h_1$. A contested seat
+The fraction marking candidate 1 is therefore
+$\Pr(\varepsilon_{i1} \ge t \mid D_i < -\delta)$, which at any fixed $t$ is
+strictly decreasing in $h_1$ by Lemma~\ref{lem:selection}(b). A contested seat
 is a high-$h_1$ seat and an open seat a low-$h_1$ seat, which gives the
-ordering. At $\rho = 0$ the threshold $t$ does not depend on $h_1$ and the
-comparison is exactly Lemma~\ref{lem:selection}(b).
+ordering.
+
+For that to be the whole of the effect the threshold has to be the same in the
+two seats, and at $\rho = 0$ it is not automatically: $t$ reduces to
+$\bar b - \hat\theta_1$, which still carries $h_1$ through
+$\hat\theta_1 = (h_1 m_1 + \bar\tau x_1)/(h_1 + \bar\tau)$, running from $x_1$
+toward $m_1$ as $h_1$ grows. The ex ante frame of Lemma~\ref{lem:gap} removes
+it: $\mathbb{E}[\hat\theta_1] = m_1$ for every $h_1$, so across realizations
+the $\rho = 0$ threshold is $\bar b - m_1$ in both seat types and the
+comparison is exactly Lemma~\ref{lem:selection}(b). That is the same device
+Proposition~\ref{prop:exit}'s proof uses, for the same reason.
 \end{proof}
 
 The split comes from selection on $\varepsilon$ alone, and it is worth being
@@ -719,19 +783,29 @@ a second round changes the coordination problem, are outside it.
 Four of its steps are assumed rather than derived, and it is better to name
 them than to let them read as results. Assumption~\ref{as:arena} is the whole
 modeling content of Section~\ref{sec:consolidation}: nothing here shows that
-$\lambda$ must push $\bar\tau$ down and $\sigma_{\mathrm{status}}$ up, only
-that everything else follows if it does. Assumption~\ref{as:weak} is what
-makes the posterior gap contract rather than spread, and it is not innocuous,
-since it fails for a sufficiently informative filing wave. The second half of
+$\lambda$ must push $\bar\tau$ down and $\tau_{\mathrm{status}}$ up, only
+that everything else follows if it does. The second half of
 Assumption~\ref{as:impressions} -- that pre-campaign impressions decide the
 initial camps but are washed out of the ballot-stage payoff -- is what makes
 the seat split run in the predicted direction; without it the selected object
 in Lemma~\ref{lem:selection} would be the composite
 $\varepsilon_{i1} + \zeta_{i1}$ rather than $\varepsilon_{i1}$, and the
 selection would reverse, because a fresh leader's more dispersed impressions
-would themselves make the runner-up's camp more extreme. And the coordination
-leg of Proposition~\ref{prop:consolidation} is imported from the literature
-rather than derived \citep{myerson1993,fey1997,cox1997}.
+would themselves make the runner-up's camp more extreme. The identity of the
+departing set is assumed too, in Proposition~\ref{prop:seat}'s proof:
+Proposition~\ref{prop:consolidation} moves mass between the top two without
+naming who moves, so taking the movers to be candidate 2's camp, or a uniform
+subsample of it, is what lets Lemma~\ref{lem:selection} apply to them. And the
+coordination leg of Proposition~\ref{prop:consolidation} is imported from the
+literature rather than derived \citep{myerson1993,fey1997,cox1997}.
+
+One further limit is a matter of what the statements are about rather than of
+what is assumed. Lemma~\ref{lem:gap} and everything downstream of it are ex
+ante, taken over the prior on valences as well as over the signal noise, which
+matches a cross-section of municipalities differing in $\lambda$ but says
+nothing about a race whose valences are already drawn. Conditional on those,
+the remark \emph{Why the lemma is stated ex ante} shows the two comparative
+statics have no sign at all.
 
 Two conditions bound the mechanism. Coordination needs a small number of
 focal contenders, so a genuinely three-way race weakens it. And the reasoning
